@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toddler Typing Fun!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard', 'Arial Rounded MT Bold', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 90vw;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #ffeaa7;
+        }
+
+        .instruction {
+            font-size: 1.8rem;
+            color: #6c5ce7;
+            margin-bottom: 30px;
+        }
+
+        .word-display {
+            font-size: 6rem;
+            letter-spacing: 15px;
+            margin: 40px 0;
+            min-height: 120px;
+        }
+
+        .letter {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .letter.pending {
+            color: #dfe6e9;
+            background: #f8f9fa;
+        }
+
+        .letter.current {
+            color: #0984e3;
+            background: #dfe6e9;
+            transform: scale(1.2);
+            animation: bounce 0.5s infinite;
+        }
+
+        .letter.completed {
+            color: #00b894;
+            background: #d4edda;
+            transform: scale(1.1);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1.2) translateY(0); }
+            50% { transform: scale(1.2) translateY(-10px); }
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            color: #e17055;
+            margin-top: 20px;
+        }
+
+        .stars {
+            font-size: 3rem;
+            margin: 20px 0;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            opacity: 0;
+        }
+
+        .hint {
+            font-size: 1.3rem;
+            color: #b2bec3;
+            margin-top: 20px;
+        }
+
+        .keyboard-hint {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .next-key {
+            display: inline-block;
+            font-size: 4rem;
+            padding: 20px 40px;
+            background: linear-gradient(145deg, #74b9ff, #0984e3);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 0 #0652dd;
+            text-transform: uppercase;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .wrong-key {
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            color: #00b894;
+            text-shadow: 4px 4px 0 #55efc4;
+            animation: pop 0.5s ease-out;
+            z-index: 1001;
+            display: none;
+        }
+
+        @keyframes pop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .picture {
+            font-size: 8rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">Typing Fun!</h1>
+        <p class="instruction">Type the word:</p>
+
+        <div class="picture" id="picture"></div>
+        <div class="word-display" id="word-display"></div>
+
+        <div class="keyboard-hint">
+            <p style="font-size: 1.5rem; color: #6c5ce7; margin-bottom: 15px;">Press this key:</p>
+            <div class="next-key" id="next-key"></div>
+        </div>
+
+        <div class="stars" id="stars"></div>
+        <div class="score-display">Words completed: <span id="score">0</span></div>
+        <p class="hint">Just press the letters you see!</p>
+    </div>
+
+    <div class="success-message" id="success-message">YAY!</div>
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        // Word list with emojis - simple words for toddlers
+        const words = [
+            { word: 'CAT', emoji: '🐱' },
+            { word: 'DOG', emoji: '🐕' },
+            { word: 'SUN', emoji: '☀️' },
+            { word: 'MOM', emoji: '👩' },
+            { word: 'DAD', emoji: '👨' },
+            { word: 'BEE', emoji: '🐝' },
+            { word: 'COW', emoji: '🐄' },
+            { word: 'PIG', emoji: '🐷' },
+            { word: 'HAT', emoji: '🎩' },
+            { word: 'BUS', emoji: '🚌' },
+            { word: 'CAR', emoji: '🚗' },
+            { word: 'FISH', emoji: '🐟' },
+            { word: 'BIRD', emoji: '🐦' },
+            { word: 'BALL', emoji: '⚽' },
+            { word: 'TREE', emoji: '🌳' },
+            { word: 'STAR', emoji: '⭐' },
+            { word: 'MOON', emoji: '🌙' },
+            { word: 'FROG', emoji: '🐸' },
+            { word: 'DUCK', emoji: '🦆' },
+            { word: 'BEAR', emoji: '🐻' },
+        ];
+
+        let currentWordIndex = 0;
+        let currentLetterIndex = 0;
+        let score = 0;
+        let currentWord = '';
+
+        const wordDisplay = document.getElementById('word-display');
+        const nextKeyDisplay = document.getElementById('next-key');
+        const scoreDisplay = document.getElementById('score');
+        const starsDisplay = document.getElementById('stars');
+        const pictureDisplay = document.getElementById('picture');
+        const successMessage = document.getElementById('success-message');
+        const celebration = document.getElementById('celebration');
+
+        // Cooldown to prevent rapid key spam
+        let lastKeyTime = 0;
+        const keyCooldown = 100; // milliseconds
+
+        // Text-to-Speech setup
+        let speechVoice = null;
+
+        function initSpeech() {
+            // Wait for voices to load (they load async)
+            if (speechSynthesis.getVoices().length > 0) {
+                selectVoice();
+            } else {
+                speechSynthesis.onvoiceschanged = selectVoice;
+            }
+        }
+
+        function selectVoice() {
+            const voices = speechSynthesis.getVoices();
+            // Log available voices for debugging
+            console.log('Available voices:', voices.map(v => v.name));
+
+            // Prefer enhanced/premium voices - they sound much more natural
+            // On macOS: look for "(Enhanced)" or "(Premium)" voices first
+            speechVoice = voices.find(v => v.name === 'Samantha (Enhanced)') ||
+                          voices.find(v => v.name.includes('Enhanced') && v.lang.startsWith('en')) ||
+                          voices.find(v => v.name.includes('Premium') && v.lang.startsWith('en')) ||
+                          voices.find(v => v.name === 'Samantha') ||
+                          voices.find(v => v.name.includes('Samantha')) ||
+                          // Fallback to any good English voice
+                          voices.find(v => v.lang.startsWith('en-US')) ||
+                          voices.find(v => v.lang.startsWith('en')) ||
+                          voices[0];
+
+            console.log('Selected voice:', speechVoice?.name);
+        }
+
+        function speak(text, rate = 0.8) {
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = rate;  // Slower for toddlers
+            utterance.pitch = 1.1;  // Slightly higher pitch, friendlier
+            utterance.volume = 1;
+
+            if (speechVoice) {
+                utterance.voice = speechVoice;
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function speakWord(word) {
+            speak(word.toLowerCase(), 0.7);
+        }
+
+        function speakLetter(letter) {
+            // Use lowercase to avoid "capital A" - says "little a" naturally
+            speak(letter.toLowerCase(), 0.9);
+        }
+
+        function speakCelebration() {
+            const phrases = ['Yay!', 'Great job!', 'Awesome!', 'You did it!', 'Wonderful!', 'Super!'];
+            const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+            speak(phrase, 1);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            initSpeech();
+            shuffleArray(words);
+            loadWord();
+        }
+
+        function loadWord() {
+            const wordData = words[currentWordIndex % words.length];
+            currentWord = wordData.word;
+            currentLetterIndex = 0;
+
+            pictureDisplay.textContent = wordData.emoji;
+            renderWord();
+            updateNextKey();
+
+            // Speak the word after a brief delay
+            setTimeout(() => speakWord(currentWord), 300);
+        }
+
+        function renderWord() {
+            wordDisplay.innerHTML = '';
+
+            for (let i = 0; i < currentWord.length; i++) {
+                const letterSpan = document.createElement('span');
+                letterSpan.textContent = currentWord[i];
+                letterSpan.className = 'letter';
+
+                if (i < currentLetterIndex) {
+                    letterSpan.classList.add('completed');
+                } else if (i === currentLetterIndex) {
+                    letterSpan.classList.add('current');
+                } else {
+                    letterSpan.classList.add('pending');
+                }
+
+                wordDisplay.appendChild(letterSpan);
+            }
+        }
+
+        function updateNextKey() {
+            if (currentLetterIndex < currentWord.length) {
+                nextKeyDisplay.textContent = currentWord[currentLetterIndex];
+            }
+        }
+
+        function updateStars() {
+            starsDisplay.textContent = '⭐'.repeat(Math.min(score, 10));
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#ffeaa7', '#74b9ff', '#55efc4', '#fd79a8', '#a29bfe'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-20px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.animation = `fall ${2 + Math.random() * 2}s ease-out forwards`;
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                celebration.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        function showSuccess() {
+            successMessage.style.display = 'block';
+            createConfetti();
+
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 1500);
+        }
+
+        function shakeNextKey() {
+            nextKeyDisplay.classList.add('wrong-key');
+            setTimeout(() => {
+                nextKeyDisplay.classList.remove('wrong-key');
+            }, 300);
+        }
+
+        function handleKeyPress(event) {
+            const now = Date.now();
+
+            // Cooldown to prevent keyboard mashing
+            if (now - lastKeyTime < keyCooldown) {
+                return;
+            }
+            lastKeyTime = now;
+
+            // Only accept letters
+            if (!/^[a-zA-Z]$/.test(event.key)) {
+                return;
+            }
+
+            const pressedKey = event.key.toUpperCase();
+            const expectedKey = currentWord[currentLetterIndex];
+
+            if (pressedKey === expectedKey) {
+                // Correct key!
+                speakLetter(pressedKey);
+                currentLetterIndex++;
+                renderWord();
+
+                if (currentLetterIndex >= currentWord.length) {
+                    // Word completed!
+                    score++;
+                    scoreDisplay.textContent = score;
+                    updateStars();
+                    showSuccess();
+
+                    // Celebrate then say the completed word
+                    setTimeout(() => speakCelebration(), 300);
+                    setTimeout(() => speakWord(currentWord), 1200);
+
+                    setTimeout(() => {
+                        currentWordIndex++;
+                        loadWord();
+                    }, 2500);
+                } else {
+                    updateNextKey();
+                }
+            } else {
+                // Wrong key - gentle feedback
+                shakeNextKey();
+            }
+        }
+
+        // Add CSS for confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) rotate(0deg);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateY(100vh) rotate(720deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event listeners
+        document.addEventListener('keydown', handleKeyPress);
+
+        // Prevent default behavior for some keys to avoid page scroll etc.
+        document.addEventListener('keydown', (e) => {
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
