@@ -78,6 +78,7 @@ function goHome() {
     activeKeyMap = {};
     correctKey = null;
     clearTimeout(hintTimer);
+    startHomeTips();
 }
 
 // Home screen click support
@@ -88,11 +89,39 @@ document.querySelectorAll('.game-card').forEach(card => {
     });
 });
 
+// Rotating home subtitle
+const HOME_TIPS = [
+    'Press a number to play!',
+    '10 games to explore!',
+    'Learn colors, shapes & more!',
+    'Spell words letter by letter!',
+    'Find patterns & rhymes!',
+    'Train your memory!',
+];
+let homeTipIdx = 0;
+let homeTipTimer = null;
+const homeSubtitle = document.querySelector('.home-subtitle');
+
+/** Cycles the home subtitle text every 3 seconds. */
+function startHomeTips() {
+    clearInterval(homeTipTimer);
+    homeTipTimer = setInterval(() => {
+        homeTipIdx = (homeTipIdx + 1) % HOME_TIPS.length;
+        homeSubtitle.style.opacity = '0';
+        setTimeout(() => {
+            homeSubtitle.textContent = HOME_TIPS[homeTipIdx];
+            homeSubtitle.style.opacity = '1';
+        }, 300);
+    }, 3500);
+}
+startHomeTips();
+
 /**
  * Starts a new game session for the given game mode.
  * @param {string} game - Game mode identifier (e.g. 'colors', 'words')
  */
 function startGame(game) {
+    clearInterval(homeTipTimer);
     currentGame = game;
     stars = 0;
     streak = 0;

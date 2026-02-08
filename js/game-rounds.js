@@ -772,14 +772,26 @@ function memoryRound() {
     };
 
     promptEmoji.textContent = '🧠';
-    promptText.innerHTML = 'Find the matching pairs!';
+    promptText.innerHTML = 'Remember the cards!';
     choicesEl.className = 'choices';
     choicesEl.innerHTML = '';
 
+    // Peek: briefly show all cards face-up so the child can memorize
+    inputLocked = true;
+    memoryState.revealed.fill(true);
     renderMemoryGrid();
+    setKeyHint('Remember where each emoji is!');
+    setTimeout(() => Audio_.speak('Look! Remember where each one is!'), 300);
 
-    setKeyHint('Press 1-8 to flip a card!');
-    setTimeout(() => Audio_.speak('Find the matching pairs! Press a number to flip a card!'), 300);
+    // Flip cards back after peek duration (progressive: less time at higher stars)
+    const peekTime = stars < 5 ? 2500 : 1500;
+    setTimeout(() => {
+        memoryState.revealed.fill(false);
+        renderMemoryGrid();
+        inputLocked = false;
+        promptText.innerHTML = 'Find the matching pairs!';
+        setKeyHint('Press 1-8 to flip a card!');
+    }, peekTime);
 }
 
 /** Renders the 4x2 memory card grid into extraArea. */
