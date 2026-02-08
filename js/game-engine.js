@@ -305,7 +305,10 @@ function nextRound() {
         case 'letters': lettersRound(); break;
         case 'animals': animalsRound(); break;
         case 'math':    mathRound();    break;
-        case 'words':   wordsRound();   break;
+        case 'words':    wordsRound();    break;
+        case 'patterns': patternsRound(); break;
+        case 'rhymes':   rhymesRound();   break;
+        case 'memory':   memoryRound();   break;
     }
 }
 
@@ -317,7 +320,7 @@ document.addEventListener('keydown', (e) => {
 
     // ── Home screen ──
     if (currentGame === null && homeScreen.classList.contains('active')) {
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -353,6 +356,14 @@ document.addEventListener('keydown', (e) => {
                 setTimeout(() => keycapEl.classList.remove('pressed-anim'), 150);
             }
             handleWordKeyPress(key);
+        }
+        return;
+    }
+
+    // Memory mode uses direct card flip handling
+    if (currentGame === 'memory') {
+        if (/^[1-8]$/.test(key)) {
+            handleMemoryKeyPress(key);
         }
         return;
     }

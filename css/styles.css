@@ -103,14 +103,15 @@ body {
 
 .game-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    max-width: 520px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 580px;
     width: 100%;
     padding: 0 10px;
 }
-@media (max-width: 380px) {
-    .game-grid { gap: 10px; }
+@media (max-width: 480px) {
+    .game-grid { gap: 8px; }
+    .game-card { padding: 12px 6px 10px; }
 }
 
 .game-card {
@@ -150,6 +151,9 @@ body {
 .game-card.animals { border-color: var(--yellow);  } .game-card.animals::before { background: var(--yellow); }
 .game-card.math    { border-color: var(--orange);  } .game-card.math::before    { background: var(--orange); }
 .game-card.words   { border-color: #1abc9c;       } .game-card.words::before   { background: #1abc9c; }
+.game-card.patterns { border-color: #e056a0;      } .game-card.patterns::before { background: #e056a0; }
+.game-card.rhymes  { border-color: #3dc1d3;       } .game-card.rhymes::before  { background: #3dc1d3; }
+.game-card.memory  { border-color: #fd79a8;       } .game-card.memory::before  { background: #fd79a8; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -519,7 +523,7 @@ body {
 }
 @media (min-width: 768px) {
     .choices { max-width: 520px; gap: 18px; }
-    .game-grid { max-width: 520px; gap: 18px; }
+    .game-grid { max-width: 600px; gap: 14px; }
 }
 
 /* ===== Sound toggle ===== */
@@ -602,4 +606,88 @@ body {
 /* Home key hint label under each card */
 .card-key {
     margin-top: 2px;
+}
+
+/* ===== Pattern game ===== */
+.pattern-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0 12px;
+    flex-wrap: wrap;
+}
+.pattern-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(44px, 10vw, 64px);
+    height: clamp(44px, 10vw, 64px);
+    border-radius: 14px;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    animation: popIn 0.3s ease-out backwards;
+}
+.pattern-item.mystery {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border: 3px solid rgba(255,255,255,0.3);
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== Memory game ===== */
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 460px;
+    width: 100%;
+    padding: 0 10px;
+    margin: 0 auto;
+}
+.memory-card {
+    aspect-ratio: 1;
+    min-height: 80px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(2.2rem, 9vw, 3.2rem);
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    position: relative;
+}
+.memory-card.face-down {
+    background: linear-gradient(135deg, var(--card), var(--card-light));
+    border: 3px solid var(--card-light);
+}
+.memory-card.face-down::after {
+    content: '?';
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 800;
+    color: rgba(255,255,255,0.2);
+}
+.memory-card.face-up {
+    background: var(--card);
+    border: 3px solid var(--blue);
+    animation: popIn 0.3s ease-out;
+}
+.memory-card.matched {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1));
+    border: 3px solid var(--green);
+    opacity: 0.7;
+}
+.memory-card .memory-keycap {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    transform: scale(0.75);
+}
+.memory-pairs-left {
+    text-align: center;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 8px;
+    font-weight: 600;
 }

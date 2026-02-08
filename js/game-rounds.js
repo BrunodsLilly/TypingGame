@@ -552,3 +552,302 @@ function handleWordKeyPress(key) {
         }
     }
 }
+
+// ============================================
+// PATTERNS Game — "What comes next?" press 1, 2, 3, 4
+// ============================================
+
+/**
+ * Pattern templates. Each defines a repeating sequence and the display pool.
+ * The pattern array indices refer into the pool for that round.
+ * @type {Array<{name: string, pool: string[], pattern: number[]}>}
+ */
+const PATTERNS_DATA = [
+    // AB patterns (simplest)
+    { name: 'fruits',   pool: ['🍎', '🍌'],           pattern: [0, 1, 0, 1, 0, 1] },
+    { name: 'animals',  pool: ['🐱', '🐕'],           pattern: [0, 1, 0, 1, 0, 1] },
+    { name: 'sky',      pool: ['⭐', '🌙'],           pattern: [0, 1, 0, 1, 0, 1] },
+    { name: 'nature',   pool: ['🌸', '🌿'],           pattern: [0, 1, 0, 1, 0, 1] },
+    { name: 'food',     pool: ['🍪', '🍩'],           pattern: [0, 1, 0, 1, 0, 1] },
+    { name: 'hearts',   pool: ['❤️', '💙'],           pattern: [0, 1, 0, 1, 0, 1] },
+    // ABC patterns
+    { name: 'trio',     pool: ['🔴', '🟡', '🔵'],     pattern: [0, 1, 2, 0, 1, 2] },
+    { name: 'pets',     pool: ['🐱', '🐕', '🐟'],     pattern: [0, 1, 2, 0, 1, 2] },
+    { name: 'weather',  pool: ['☀️', '☁️', '🌧️'],    pattern: [0, 1, 2, 0, 1, 2] },
+    { name: 'shapes',   pool: ['🔵', '🟢', '🟣'],     pattern: [0, 1, 2, 0, 1, 2] },
+    // AABB patterns
+    { name: 'double',   pool: ['🎈', '🎀'],           pattern: [0, 0, 1, 1, 0, 0] },
+    { name: 'paired',   pool: ['🐻', '🐰'],           pattern: [0, 0, 1, 1, 0, 0] },
+    // ABB patterns
+    { name: 'abb1',     pool: ['🌟', '🌈'],           pattern: [0, 1, 1, 0, 1, 1] },
+    { name: 'abb2',     pool: ['🍎', '🍊'],           pattern: [0, 1, 1, 0, 1, 1] },
+];
+
+/**
+ * Sets up a Patterns round: shows a sequence of emojis with the last
+ * one hidden as "?", and 4 choices for what comes next. Keys 1-4.
+ */
+function patternsRound() {
+    const template = PATTERNS_DATA[Math.floor(Math.random() * PATTERNS_DATA.length)];
+    const sequence = template.pattern.map(i => template.pool[i]);
+
+    // The answer is the last item; show all but last, then "?"
+    const shown = sequence.slice(0, -1);
+    const answer = sequence[sequence.length - 1];
+
+    // Build wrong choices from the pool + some random emojis
+    const distractors = ['🎪', '🎭', '🎯', '🎲', '🦄', '🌻', '🍕', '🎸'];
+    const wrongPool = [...template.pool.filter(e => e !== answer), ...distractors];
+    const options = pickN([answer, ...wrongPool], 4, answer);
+    const correctIdx = options.indexOf(answer);
+
+    promptEmoji.textContent = '🔁';
+    promptText.innerHTML = `What comes <b>next</b>?`;
+
+    // Show the pattern sequence
+    let patternHTML = '<div class="pattern-display">';
+    shown.forEach((item, i) => {
+        patternHTML += `<span class="pattern-item" style="animation-delay:${i * 0.08}s">${item}</span>`;
+    });
+    patternHTML += '<span class="pattern-item mystery">❓</span>';
+    patternHTML += '</div>';
+    extraArea.innerHTML = patternHTML;
+
+    activeKeyMap = {};
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+    options.forEach((item, i) => {
+        const keyNum = String(i + 1);
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.dataset.key = keyNum;
+        btn.innerHTML = `<span class="choice-visual">${item}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+            // Reveal the answer in the pattern
+            const mystery = extraArea.querySelector('.pattern-item.mystery');
+            if (mystery) {
+                mystery.textContent = answer;
+                mystery.classList.remove('mystery');
+                mystery.style.border = '3px solid var(--green)';
+                mystery.style.background = 'linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1))';
+            }
+        }));
+        choicesEl.appendChild(btn);
+        activeKeyMap[keyNum] = i;
+    });
+    correctKey = String(correctIdx + 1);
+
+    scheduleHint(correctIdx);
+    setKeyHint(`Press ${correctKey}!`);
+    setTimeout(() => Audio_.speak(`What comes next in the pattern? Press ${correctKey}!`), 300);
+}
+
+// ============================================
+// RHYMES Game — "What rhymes with ___?" press 1, 2, 3, 4
+// ============================================
+
+/**
+ * Rhyme groups for the Rhymes game. Each group contains words that rhyme.
+ * @type {Array<{words: Array<{word: string, emoji: string}>}>}
+ */
+const RHYMES_DATA = [
+    { words: [{ word: 'CAT', emoji: '🐱' }, { word: 'HAT', emoji: '🎩' }, { word: 'BAT', emoji: '🦇' }, { word: 'MAT', emoji: '🟫' }] },
+    { words: [{ word: 'DOG', emoji: '🐕' }, { word: 'LOG', emoji: '🪵' }, { word: 'FOG', emoji: '🌫️' }, { word: 'FROG', emoji: '🐸' }] },
+    { words: [{ word: 'BEAR', emoji: '🐻' }, { word: 'HAIR', emoji: '💇' }, { word: 'CHAIR', emoji: '🪑' }, { word: 'PEAR', emoji: '🍐' }] },
+    { words: [{ word: 'BEE', emoji: '🐝' }, { word: 'TREE', emoji: '🌳' }, { word: 'KEY', emoji: '🔑' }, { word: 'SEA', emoji: '🌊' }] },
+    { words: [{ word: 'FISH', emoji: '🐟' }, { word: 'DISH', emoji: '🍽️' }, { word: 'WISH', emoji: '🌠' }] },
+    { words: [{ word: 'CAKE', emoji: '🎂' }, { word: 'LAKE', emoji: '🏞️' }, { word: 'SNAKE', emoji: '🐍' }, { word: 'RAKE', emoji: '🧹' }] },
+    { words: [{ word: 'MOON', emoji: '🌙' }, { word: 'SPOON', emoji: '🥄' }, { word: 'TUNE', emoji: '🎵' }, { word: 'BALLOON', emoji: '🎈' }] },
+    { words: [{ word: 'STAR', emoji: '⭐' }, { word: 'CAR', emoji: '🚗' }, { word: 'JAR', emoji: '🏺' }, { word: 'FAR', emoji: '🔭' }] },
+    { words: [{ word: 'KING', emoji: '🤴' }, { word: 'RING', emoji: '💍' }, { word: 'SING', emoji: '🎤' }, { word: 'WING', emoji: '🪽' }] },
+    { words: [{ word: 'SUN', emoji: '☀️' }, { word: 'FUN', emoji: '🎉' }, { word: 'RUN', emoji: '🏃' }, { word: 'BUN', emoji: '🍔' }] },
+    { words: [{ word: 'PIG', emoji: '🐷' }, { word: 'BIG', emoji: '🏔️' }, { word: 'DIG', emoji: '⛏️' }, { word: 'WIG', emoji: '👩' }] },
+    { words: [{ word: 'BALL', emoji: '⚽' }, { word: 'TALL', emoji: '🦒' }, { word: 'WALL', emoji: '🧱' }, { word: 'FALL', emoji: '🍂' }] },
+    { words: [{ word: 'BOAT', emoji: '⛵' }, { word: 'GOAT', emoji: '🐐' }, { word: 'COAT', emoji: '🧥' }] },
+    { words: [{ word: 'RAIN', emoji: '🌧️' }, { word: 'TRAIN', emoji: '🚂' }, { word: 'BRAIN', emoji: '🧠' }, { word: 'PLANE', emoji: '✈️' }] },
+    { words: [{ word: 'BUG', emoji: '🐛' }, { word: 'HUG', emoji: '🤗' }, { word: 'MUG', emoji: '☕' }, { word: 'RUG', emoji: '🟤' }] },
+];
+
+/**
+ * Non-rhyming distractor words used when a rhyme group has fewer than 4 words.
+ * @type {Array<{word: string, emoji: string}>}
+ */
+const RHYME_DISTRACTORS = [
+    { word: 'BOOK', emoji: '📖' }, { word: 'DUCK', emoji: '🦆' }, { word: 'SHOE', emoji: '👟' },
+    { word: 'LAMP', emoji: '💡' }, { word: 'DRUM', emoji: '🥁' }, { word: 'MILK', emoji: '🥛' },
+    { word: 'SOCK', emoji: '🧦' }, { word: 'BELL', emoji: '🔔' }, { word: 'FROG', emoji: '🐸' },
+    { word: 'NEST', emoji: '🪹' }, { word: 'CLOUD', emoji: '☁️' }, { word: 'BIRD', emoji: '🐦' },
+];
+
+/**
+ * Sets up a Rhymes round: picks a prompt word from a rhyme group, shows
+ * one correct rhyming word and 3 wrong choices. Keys 1-4.
+ */
+function rhymesRound() {
+    const group = RHYMES_DATA[Math.floor(Math.random() * RHYMES_DATA.length)];
+    // Pick a prompt word and a different rhyming answer
+    const shuffledGroup = shuffle(group.words);
+    const prompt = shuffledGroup[0];
+    const answer = shuffledGroup[1];
+
+    // Build wrong choices: pick from distractors that aren't in this rhyme group
+    const groupWords = group.words.map(w => w.word);
+    const wrongPool = RHYME_DISTRACTORS.filter(d => !groupWords.includes(d.word));
+    const wrongChoices = shuffle(wrongPool).slice(0, 3);
+
+    const options = shuffle([answer, ...wrongChoices]);
+    const correctIdx = options.indexOf(answer);
+
+    promptEmoji.textContent = prompt.emoji;
+    promptText.innerHTML = `What rhymes with <b>${prompt.word}</b>?`;
+    extraArea.innerHTML = '';
+
+    activeKeyMap = {};
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+    options.forEach((item, i) => {
+        const keyNum = String(i + 1);
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.dataset.key = keyNum;
+        btn.innerHTML = `<span class="choice-visual">${item.emoji}</span><span class="choice-label">${item.word}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+        choicesEl.appendChild(btn);
+        activeKeyMap[keyNum] = i;
+    });
+    correctKey = String(correctIdx + 1);
+
+    scheduleHint(correctIdx);
+    setKeyHint(`Press ${correctKey} for ${answer.word}!`);
+    setTimeout(() => Audio_.speak(`What rhymes with ${prompt.word}? Press ${correctKey} for ${answer.word}!`), 300);
+}
+
+// ============================================
+// MEMORY Game — flip matching pairs with keys 1-8
+// ============================================
+
+/**
+ * Emoji pool for memory cards.
+ * @type {string[]}
+ */
+const MEMORY_EMOJIS = ['🐱', '🐕', '🌟', '🎈', '🍎', '🐸', '🌈', '🎂', '🦋', '🐻', '🌻', '🍕', '🚀', '🐝', '🎵', '🐷'];
+
+/**
+ * State for the current memory game.
+ * @type {{cards: string[], revealed: boolean[], matched: boolean[], firstFlip: number|null, pairsLeft: number}}
+ */
+let memoryState = { cards: [], revealed: [], matched: [], firstFlip: null, pairsLeft: 0 };
+
+/**
+ * Sets up a Memory round: creates a 4x2 grid of 4 pairs (8 cards),
+ * all face-down. Player presses 1-8 to flip cards and find matches.
+ */
+function memoryRound() {
+    // Pick 4 random emojis, duplicate for pairs, shuffle
+    const picked = shuffle(MEMORY_EMOJIS).slice(0, 4);
+    const cards = shuffle([...picked, ...picked]);
+
+    memoryState = {
+        cards: cards,
+        revealed: new Array(8).fill(false),
+        matched: new Array(8).fill(false),
+        firstFlip: null,
+        pairsLeft: 4,
+    };
+
+    promptEmoji.textContent = '🧠';
+    promptText.innerHTML = 'Find the matching pairs!';
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+
+    renderMemoryGrid();
+
+    setKeyHint('Press 1-8 to flip a card!');
+    setTimeout(() => Audio_.speak('Find the matching pairs! Press a number to flip a card!'), 300);
+}
+
+/** Renders the 4x2 memory card grid into extraArea. */
+function renderMemoryGrid() {
+    let html = '<div class="memory-grid">';
+    for (let i = 0; i < 8; i++) {
+        const keyNum = String(i + 1);
+        if (memoryState.matched[i]) {
+            html += `<div class="memory-card matched"><span>${memoryState.cards[i]}</span><span class="memory-keycap">${keycapHTML(keyNum)}</span></div>`;
+        } else if (memoryState.revealed[i]) {
+            html += `<div class="memory-card face-up"><span>${memoryState.cards[i]}</span><span class="memory-keycap">${keycapHTML(keyNum)}</span></div>`;
+        } else {
+            html += `<div class="memory-card face-down"><span class="memory-keycap">${keycapHTML(keyNum, 'active-key')}</span></div>`;
+        }
+    }
+    html += '</div>';
+    html += `<div class="memory-pairs-left">${memoryState.pairsLeft} pair${memoryState.pairsLeft !== 1 ? 's' : ''} left</div>`;
+    extraArea.innerHTML = html;
+}
+
+/**
+ * Handles a keypress in Memory mode. Flips cards, checks for matches,
+ * and awards a star for each matched pair.
+ * @param {string} key - Key pressed ('1'-'8')
+ */
+function handleMemoryKeyPress(key) {
+    if (inputLocked) return;
+    const idx = parseInt(key) - 1;
+    if (idx < 0 || idx >= 8) return;
+    if (memoryState.matched[idx] || memoryState.revealed[idx]) return;
+
+    Audio_.tap();
+    memoryState.revealed[idx] = true;
+    renderMemoryGrid();
+
+    if (memoryState.firstFlip === null) {
+        // First card of a pair
+        memoryState.firstFlip = idx;
+        setKeyHint('Now flip another card!');
+    } else {
+        // Second card
+        const first = memoryState.firstFlip;
+        memoryState.firstFlip = null;
+        inputLocked = true;
+
+        if (memoryState.cards[first] === memoryState.cards[idx]) {
+            // Match!
+            setTimeout(() => {
+                memoryState.matched[first] = true;
+                memoryState.matched[idx] = true;
+                memoryState.pairsLeft--;
+                renderMemoryGrid();
+
+                Audio_.correct();
+                showCelebration();
+                earnStar();
+
+                const encouragements = ['Yay!', 'Great job!', 'A match!', 'You found it!', 'Super!', 'Amazing!'];
+                setTimeout(() => Audio_.speak(encouragements[Math.floor(Math.random() * encouragements.length)]), 400);
+
+                setTimeout(() => {
+                    inputLocked = false;
+                    if (memoryState.pairsLeft <= 0) {
+                        // All pairs found — this counts as extra celebration
+                        // Stars are already given per pair, move to next round
+                        if (stars < MAX_STARS) {
+                            nextRound();
+                        }
+                    } else {
+                        setKeyHint('Press 1-8 to flip a card!');
+                    }
+                }, 800);
+            }, 300);
+        } else {
+            // No match — flip both back after a delay
+            Audio_.wrong();
+            resetStreak();
+            setTimeout(() => {
+                memoryState.revealed[first] = false;
+                memoryState.revealed[idx] = false;
+                renderMemoryGrid();
+                inputLocked = false;
+                setKeyHint('Try again! Press 1-8!');
+            }, 1000);
+        }
+    }
+}
