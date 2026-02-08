@@ -27,7 +27,7 @@ TypingGame/
     audio.js            Audio_ IIFE (Web Audio API + SpeechSynthesis) + sound button
     celebration.js      Celebration overlay, CHEERS data, particle burst, grand finale
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
-    game-rounds.js      All game data constants + all 10 round functions + helpers
+    game-rounds.js      All game data constants + all 11 round functions + helpers
   CLAUDE.md             This file
 ```
 
@@ -46,7 +46,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 10 modes — its content is rebuilt each round.
+**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 11 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
@@ -56,7 +56,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - Words mode uses `handleWordKeyPress(key)` for letter-by-letter typing
 - Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 
-**10 Game Modes** (keys 1-9, 0):
+**11 Game Modes** (keys 1-9, 0, E):
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
@@ -67,8 +67,11 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 8. **Patterns** — Complete the repeating pattern sequence
 9. **Rhymes** — Find the word that rhymes
 0. **Memory** — Flip cards to find matching pairs
+E. **Elements** — Identify periodic table elements from their symbol
 
-**Progressive Difficulty**: Count, Math, Patterns, and Words get harder at 5+ stars (bigger numbers, complex patterns, longer words).
+**Progressive Difficulty**: Colors (advanced colors at 5+), Count, Math, Patterns, Words, and Elements (no atomic number at 5+) get harder at 5+ stars.
+
+**No Answer Giveaways**: Choice-based games do NOT highlight the correct answer initially. The 5-second auto-hint is the only fallback. Voice prompts ask the question without revealing which key to press.
 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
@@ -82,4 +85,4 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
 - **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
 - **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback, auto-hints after 5 seconds, pulsing keycap on correct answer.
-- **Voice**: The correct key to press is always spoken aloud and shown visually. Wrong answers get encouraging "try again" speech.
+- **Voice**: Questions are spoken aloud. Wrong answers get encouraging "try again" speech. The correct key is NOT revealed in voice prompts — the 5-second auto-hint provides help when needed.

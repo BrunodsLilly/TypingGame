@@ -155,6 +155,7 @@ body {
 .game-card.patterns { border-color: #e056a0;      } .game-card.patterns::before { background: #e056a0; }
 .game-card.rhymes  { border-color: #3dc1d3;       } .game-card.rhymes::before  { background: #3dc1d3; }
 .game-card.memory  { border-color: #fd79a8;       } .game-card.memory::before  { background: #fd79a8; }
+.game-card.elements { border-color: #5DADE2;       } .game-card.elements::before { background: #5DADE2; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -722,4 +723,56 @@ body {
     color: rgba(255,255,255,0.5);
     margin-top: 8px;
     font-weight: 600;
+}
+
+/* ===== Elements Game ===== */
+.element-card-display {
+    display: flex;
+    justify-content: center;
+    margin: 0.5rem 0 1rem;
+}
+.element-card-big {
+    position: relative;
+    width: clamp(120px, 30vw, 180px);
+    height: clamp(140px, 35vw, 210px);
+    border: 4px solid;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    gap: 4px;
+    animation: popIn 0.4s ease-out;
+}
+.element-number {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+}
+.element-symbol {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+.element-emoji {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+}
+.element-fact {
+    text-align: center;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+    color: rgba(255,255,255,0.8);
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    animation: popIn 0.3s ease-out;
+    font-weight: 600;
+}
+.element-choice .choice-label {
+    font-size: clamp(0.75rem, 2vw, 0.95rem);
 }

@@ -91,12 +91,13 @@ document.querySelectorAll('.game-card').forEach(card => {
 
 // Rotating home subtitle
 const HOME_TIPS = [
-    'Press a number to play!',
-    '10 games to explore!',
+    'Press a key to play!',
+    '11 games to explore!',
     'Learn colors, shapes & more!',
     'Spell words letter by letter!',
     'Find patterns & rhymes!',
     'Train your memory!',
+    'Discover the elements!',
 ];
 let homeTipIdx = 0;
 let homeTipTimer = null;
@@ -127,7 +128,7 @@ startHomeTips();
 const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
-    rhymes: '#3dc1d3', memory: '#fd79a8',
+    rhymes: '#3dc1d3', memory: '#fd79a8', elements: '#5DADE2',
 };
 
 function startGame(game) {
@@ -360,6 +361,7 @@ function nextRound() {
         case 'patterns': patternsRound(); break;
         case 'rhymes':   rhymesRound();   break;
         case 'memory':   memoryRound();   break;
+        case 'elements': elementsRound(); break;
     }
 }
 
@@ -371,7 +373,7 @@ document.addEventListener('keydown', (e) => {
 
     // ── Home screen ──
     if (currentGame === null && homeScreen.classList.contains('active')) {
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'elements' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);

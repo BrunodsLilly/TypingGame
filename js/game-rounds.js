@@ -8,7 +8,7 @@
  * Color data for the Colors game mode.
  * @type {Array<{name: string, hex: string}>}
  */
-const COLORS_DATA = [
+const COLORS_BASIC = [
     { name: 'red',    hex: '#e74c3c' },
     { name: 'blue',   hex: '#3498db' },
     { name: 'yellow', hex: '#f1c40f' },
@@ -20,12 +20,37 @@ const COLORS_DATA = [
 ];
 
 /**
+ * Advanced colors added at 5+ stars for extra challenge.
+ * @type {Array<{name: string, hex: string}>}
+ */
+const COLORS_ADVANCED = [
+    { name: 'teal',     hex: '#008080' },
+    { name: 'coral',    hex: '#FF7F50' },
+    { name: 'navy',     hex: '#001F3F' },
+    { name: 'lavender', hex: '#B57EDC' },
+    { name: 'maroon',   hex: '#800000' },
+    { name: 'lime',     hex: '#32CD32' },
+    { name: 'cyan',     hex: '#00BCD4' },
+    { name: 'gold',     hex: '#FFD700' },
+    { name: 'magenta',  hex: '#FF00FF' },
+    { name: 'peach',    hex: '#FFCBA4' },
+    { name: 'olive',    hex: '#808000' },
+    { name: 'salmon',   hex: '#FA8072' },
+    { name: 'indigo',   hex: '#4B0082' },
+    { name: 'crimson',  hex: '#DC143C' },
+    { name: 'turquoise',hex: '#40E0D0' },
+    { name: 'tan',      hex: '#D2B48C' },
+];
+
+/**
  * Sets up a Colors round: picks a target color, shows 4 swatch choices,
  * maps keys 1-4 to choices, and speaks the prompt.
  */
 function colorsRound() {
-    const correct = COLORS_DATA[Math.floor(Math.random() * COLORS_DATA.length)];
-    const options = pickN(COLORS_DATA, 4, correct);
+    // Progressive: stars 0-4 use basic colors, stars 5+ mix in advanced colors
+    const colorPool = stars < 5 ? COLORS_BASIC : [...COLORS_BASIC, ...COLORS_ADVANCED];
+    const correct = colorPool[Math.floor(Math.random() * colorPool.length)];
+    const options = pickN(colorPool, 4, correct);
     const correctIdx = options.indexOf(correct);
 
     promptEmoji.textContent = '\uD83C\uDFA8';
@@ -40,7 +65,7 @@ function colorsRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn';
         btn.dataset.key = keyNum;
-        btn.innerHTML = `<div class="color-swatch" style="background:${c.hex}"></div><span class="choice-label">${c.name}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<div class="color-swatch" style="background:${c.hex}"></div><span class="choice-label">${c.name}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyNum] = i;
@@ -48,8 +73,8 @@ function colorsRound() {
     correctKey = String(correctIdx + 1);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctKey} for ${correct.name}!`);
-    setTimeout(() => Audio_.speak(`Find ${correct.name}. Press ${correctKey}!`), 300);
+    setKeyHint(`Which one is ${correct.name}?`);
+    setTimeout(() => Audio_.speak(`Find ${correct.name}!`), 300);
 }
 
 // ── SHAPES ──
@@ -88,7 +113,7 @@ function shapesRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn';
         btn.dataset.key = keyNum;
-        btn.innerHTML = `<div class="shape-visual">${s.svg}</div><span class="choice-label">${s.name}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<div class="shape-visual">${s.svg}</div><span class="choice-label">${s.name}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyNum] = i;
@@ -96,8 +121,8 @@ function shapesRound() {
     correctKey = String(correctIdx + 1);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctKey} for ${correct.name}!`);
-    setTimeout(() => Audio_.speak(`Find the ${correct.name}. Press ${correctKey}!`), 300);
+    setKeyHint(`Which one is the ${correct.name}?`);
+    setTimeout(() => Audio_.speak(`Find the ${correct.name}!`), 300);
 }
 
 // ── COUNTING ──
@@ -145,8 +170,7 @@ function countRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn number-btn';
         btn.dataset.key = keyStr;
-        const isCorrect = n === correctCount;
-        btn.innerHTML = `<span class="choice-visual">${n}</span><span class="choice-keycap">${keycapHTML(keyStr, isCorrect ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${n}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyStr] = i;
@@ -154,8 +178,8 @@ function countRound() {
     correctKey = String(correctCount);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctCount}!`);
-    setTimeout(() => Audio_.speak(`How many? Count them! Press the number!`), 300);
+    setKeyHint('Count them! Press the number!');
+    setTimeout(() => Audio_.speak('How many? Count them! Press the number!'), 300);
 }
 
 // ── LETTERS ──
@@ -202,8 +226,7 @@ function lettersRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn letter-btn';
         btn.dataset.key = keyStr;
-        const isCorrect = l === correct;
-        btn.innerHTML = `<span class="choice-visual">${l}</span><span class="choice-keycap">${keycapHTML(l, isCorrect ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${l}</span><span class="choice-keycap">${keycapHTML(l)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyStr] = i;
@@ -257,8 +280,7 @@ function animalsRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn';
         btn.dataset.key = keyNum;
-        const isCorrect = a === correct;
-        btn.innerHTML = `<span class="choice-visual">${a.emoji}</span><span class="choice-label">${a.name}</span><span class="choice-keycap">${keycapHTML(keyNum, isCorrect ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${a.emoji}</span><span class="choice-label">${a.name}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyNum] = i;
@@ -266,8 +288,8 @@ function animalsRound() {
     correctKey = String(correctIdx + 1);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctKey} for ${correct.name}!`);
-    setTimeout(() => Audio_.speak(`Who says ${correct.sound}? Press ${correctKey}!`), 300);
+    setKeyHint(`Who says "${correct.sound}"?`);
+    setTimeout(() => Audio_.speak(`Who says ${correct.sound}?`), 300);
 }
 
 // ── MATH ──
@@ -341,8 +363,7 @@ function mathRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn number-btn';
         btn.dataset.key = keyStr;
-        const isCorrect = n === answer;
-        btn.innerHTML = `<span class="choice-visual">${n}</span><span class="choice-keycap">${keycapHTML(keyStr, isCorrect ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${n}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
             const slot = document.getElementById('math-answer-slot');
             if (slot) {
@@ -357,7 +378,7 @@ function mathRound() {
     correctKey = String(answer);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${answer}!`);
+    setKeyHint(`${n1} + ${n2} = ? Press the number!`);
     setTimeout(() => Audio_.speak(`${n1} plus ${n2} equals what? Press the number!`), 300);
 }
 
@@ -637,7 +658,7 @@ function patternsRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn';
         btn.dataset.key = keyNum;
-        btn.innerHTML = `<span class="choice-visual">${item}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${item}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
             // Reveal the answer in the pattern
             const mystery = extraArea.querySelector('.pattern-item.mystery');
@@ -654,8 +675,8 @@ function patternsRound() {
     correctKey = String(correctIdx + 1);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctKey}!`);
-    setTimeout(() => Audio_.speak(`What comes next in the pattern? Press ${correctKey}!`), 300);
+    setKeyHint('What comes next?');
+    setTimeout(() => Audio_.speak('What comes next in the pattern?'), 300);
 }
 
 // ============================================
@@ -726,7 +747,7 @@ function rhymesRound() {
         const btn = document.createElement('button');
         btn.className = 'choice-btn';
         btn.dataset.key = keyNum;
-        btn.innerHTML = `<span class="choice-visual">${item.emoji}</span><span class="choice-label">${item.word}</span><span class="choice-keycap">${keycapHTML(keyNum, i === correctIdx ? 'active-key' : '')}</span>`;
+        btn.innerHTML = `<span class="choice-visual">${item.emoji}</span><span class="choice-label">${item.word}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
         btn.addEventListener('click', () => handleAnswer(i, correctIdx));
         choicesEl.appendChild(btn);
         activeKeyMap[keyNum] = i;
@@ -734,8 +755,91 @@ function rhymesRound() {
     correctKey = String(correctIdx + 1);
 
     scheduleHint(correctIdx);
-    setKeyHint(`Press ${correctKey} for ${answer.word}!`);
-    setTimeout(() => Audio_.speak(`What rhymes with ${prompt.word}? Press ${correctKey} for ${answer.word}!`), 300);
+    setKeyHint(`What rhymes with ${prompt.word}?`);
+    setTimeout(() => Audio_.speak(`What rhymes with ${prompt.word}?`), 300);
+}
+
+// ============================================
+// ELEMENTS Game — "Periodic Table" style element identification
+// ============================================
+
+/**
+ * Element data for the Periodic Table game. Each element has its atomic number,
+ * symbol, name, a kid-friendly emoji, color category, and a fun fact.
+ * @type {Array<{number: number, symbol: string, name: string, emoji: string, category: string, color: string, fact: string}>}
+ */
+const ELEMENTS_DATA = [
+    { number: 1,  symbol: 'H',  name: 'Hydrogen',  emoji: '\uD83D\uDCA7', category: 'gas',        color: '#5DADE2', fact: 'The lightest element! It makes water.' },
+    { number: 2,  symbol: 'He', name: 'Helium',     emoji: '\uD83C\uDF88', category: 'noble gas',  color: '#AF7AC5', fact: 'Makes balloons float up high!' },
+    { number: 6,  symbol: 'C',  name: 'Carbon',     emoji: '\u2666\uFE0F', category: 'nonmetal',   color: '#5D6D7E', fact: 'Diamonds and pencils are made of this!' },
+    { number: 7,  symbol: 'N',  name: 'Nitrogen',   emoji: '\uD83C\uDF2C\uFE0F', category: 'gas', color: '#5DADE2', fact: 'Most of the air you breathe is nitrogen!' },
+    { number: 8,  symbol: 'O',  name: 'Oxygen',     emoji: '\uD83E\uDE7B', category: 'gas',        color: '#5DADE2', fact: 'You need this to breathe!' },
+    { number: 10, symbol: 'Ne', name: 'Neon',        emoji: '\uD83D\uDCA1', category: 'noble gas',  color: '#AF7AC5', fact: 'Makes bright glowing signs!' },
+    { number: 11, symbol: 'Na', name: 'Sodium',      emoji: '\uD83E\uDDC2', category: 'metal',      color: '#F5B041', fact: 'Found in table salt!' },
+    { number: 12, symbol: 'Mg', name: 'Magnesium',   emoji: '\u2728',       category: 'metal',      color: '#F5B041', fact: 'Burns with a super bright sparkle!' },
+    { number: 13, symbol: 'Al', name: 'Aluminum',    emoji: '\uD83E\uDD6B', category: 'metal',      color: '#F5B041', fact: 'Wraps your food to keep it fresh!' },
+    { number: 14, symbol: 'Si', name: 'Silicon',     emoji: '\uD83D\uDCBB', category: 'metalloid',  color: '#45B39D', fact: 'Used to make computer chips!' },
+    { number: 16, symbol: 'S',  name: 'Sulfur',      emoji: '\uD83D\uDCA9', category: 'nonmetal',   color: '#F4D03F', fact: 'Smells like rotten eggs! Stinky!' },
+    { number: 20, symbol: 'Ca', name: 'Calcium',     emoji: '\uD83E\uDDB4', category: 'metal',      color: '#F5B041', fact: 'Makes your bones and teeth strong!' },
+    { number: 26, symbol: 'Fe', name: 'Iron',        emoji: '\uD83E\uDDF2', category: 'metal',      color: '#E74C3C', fact: 'Makes things magnetic and strong!' },
+    { number: 29, symbol: 'Cu', name: 'Copper',      emoji: '\uD83E\uDE99', category: 'metal',      color: '#E67E22', fact: 'Shiny pennies are made of this!' },
+    { number: 47, symbol: 'Ag', name: 'Silver',      emoji: '\uD83E\uDD48', category: 'metal',      color: '#BDC3C7', fact: 'Shiny and sparkly like jewelry!' },
+    { number: 79, symbol: 'Au', name: 'Gold',        emoji: '\uD83E\uDD47', category: 'metal',      color: '#F1C40F', fact: 'The most precious yellow metal!' },
+    { number: 80, symbol: 'Hg', name: 'Mercury',     emoji: '\uD83C\uDF21\uFE0F', category: 'metal', color: '#BDC3C7', fact: 'A liquid metal used in thermometers!' },
+    { number: 82, symbol: 'Pb', name: 'Lead',        emoji: '\u2B1B',       category: 'metal',      color: '#5D6D7E', fact: 'Very heavy! Used in shields.' },
+    { number: 50, symbol: 'Sn', name: 'Tin',         emoji: '\uD83E\uDD6B', category: 'metal',      color: '#BDC3C7', fact: 'Used to make cans for food!' },
+    { number: 78, symbol: 'Pt', name: 'Platinum',    emoji: '\uD83D\uDC8E', category: 'metal',      color: '#D5D8DC', fact: 'Even more rare than gold!' },
+];
+
+/**
+ * Sets up an Elements round. Shows an element card with its symbol and atomic
+ * number, then asks the child to identify the element name from 4 choices.
+ * At 5+ stars, shows only the symbol (no atomic number hint).
+ */
+function elementsRound() {
+    const correct = ELEMENTS_DATA[Math.floor(Math.random() * ELEMENTS_DATA.length)];
+    const options = pickN(ELEMENTS_DATA, 4, correct);
+    const correctIdx = options.indexOf(correct);
+
+    promptEmoji.textContent = '\u269B\uFE0F';
+    promptText.innerHTML = `What element is this?`;
+
+    // Build the element card display
+    const showNumber = stars < 5;
+    extraArea.innerHTML = `
+        <div class="element-card-display">
+            <div class="element-card-big" style="border-color:${correct.color}; background: linear-gradient(135deg, ${correct.color}22, ${correct.color}11);">
+                ${showNumber ? `<span class="element-number">${correct.number}</span>` : ''}
+                <span class="element-symbol" style="color:${correct.color}">${correct.symbol}</span>
+                <span class="element-emoji">${correct.emoji}</span>
+            </div>
+        </div>
+    `;
+
+    activeKeyMap = {};
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+    options.forEach((el, i) => {
+        const keyNum = String(i + 1);
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn element-choice';
+        btn.dataset.key = keyNum;
+        btn.innerHTML = `<span class="choice-visual">${el.emoji}</span><span class="choice-label">${el.name}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+        btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+            // Show the fun fact after correct answer
+            const factDiv = document.createElement('div');
+            factDiv.className = 'element-fact';
+            factDiv.textContent = correct.fact;
+            extraArea.appendChild(factDiv);
+        }));
+        choicesEl.appendChild(btn);
+        activeKeyMap[keyNum] = i;
+    });
+    correctKey = String(correctIdx + 1);
+
+    scheduleHint(correctIdx);
+    setKeyHint(`What element has the symbol ${correct.symbol}?`);
+    setTimeout(() => Audio_.speak(`What element has the symbol ${correct.symbol}?`), 300);
 }
 
 // ============================================
