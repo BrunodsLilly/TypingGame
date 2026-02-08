@@ -113,10 +113,13 @@ const COUNT_EMOJIS = ['\uD83C\uDF4E', '\uD83D\uDC31', '\u2B50', '\uD83C\uDF38', 
  * choices where the key is the number itself, and speaks the prompt.
  */
 function countRound() {
-    const correctCount = Math.floor(Math.random() * 5) + 1; // 1-5
+    // Progressive: stars 0-4 count 1-3, stars 5+ count 1-5
+    const maxCount = stars < 5 ? 3 : 5;
+    const correctCount = Math.floor(Math.random() * maxCount) + 1;
     const emoji = COUNT_EMOJIS[Math.floor(Math.random() * COUNT_EMOJIS.length)];
 
-    const allNums = [1, 2, 3, 4, 5];
+    const allNums = [];
+    for (let i = 1; i <= maxCount; i++) allNums.push(i);
     const options = pickN(allNums, 4, correctCount);
     const correctIdx = options.indexOf(correctCount);
 
@@ -281,8 +284,10 @@ const MATH_EMOJIS = ['\uD83C\uDF4E', '\u2B50', '\uD83C\uDF38', '\uD83D\uDC31', '
  * where the key is the number itself, and speaks the prompt.
  */
 function mathRound() {
-    const n1 = Math.floor(Math.random() * 4) + 1;
-    const n2 = Math.floor(Math.random() * 4) + 1;
+    // Progressive: stars 0-4 use 1-2, stars 5+ use 1-4
+    const maxN = stars < 5 ? 2 : 4;
+    const n1 = Math.floor(Math.random() * maxN) + 1;
+    const n2 = Math.floor(Math.random() * maxN) + 1;
     const answer = n1 + n2;
     const emoji = MATH_EMOJIS[Math.floor(Math.random() * MATH_EMOJIS.length)];
 
@@ -425,9 +430,15 @@ let currentWordData = null;
  */
 let currentWordLetterIdx = 0;
 
-/** Refills and shuffles the words queue from WORDS_DATA. */
+/**
+ * Refills and shuffles the words queue from WORDS_DATA, filtered
+ * by current difficulty (star count).
+ */
 function shuffleWordsQueue() {
-    wordsQueue = shuffle([...WORDS_DATA]);
+    // Progressive: stars 0-4 use words with ≤ 4 letters, stars 5+ use all
+    const maxLen = stars < 5 ? 4 : Infinity;
+    const pool = WORDS_DATA.filter(w => w.word.length <= maxLen);
+    wordsQueue = shuffle([...pool]);
 }
 
 /**
@@ -435,6 +446,7 @@ function shuffleWordsQueue() {
  * renders letter tiles, and speaks the word and first letter.
  */
 function wordsRound() {
+    // Re-shuffle if empty or if difficulty changed mid-session
     if (wordsQueue.length === 0) shuffleWordsQueue();
     currentWordData = wordsQueue.pop();
     currentWordLetterIdx = 0;
@@ -588,7 +600,9 @@ const PATTERNS_DATA = [
  * one hidden as "?", and 4 choices for what comes next. Keys 1-4.
  */
 function patternsRound() {
-    const template = PATTERNS_DATA[Math.floor(Math.random() * PATTERNS_DATA.length)];
+    // Progressive: stars 0-4 use AB patterns only (first 6), stars 5+ use all patterns
+    const pool = stars < 5 ? PATTERNS_DATA.slice(0, 6) : PATTERNS_DATA;
+    const template = pool[Math.floor(Math.random() * pool.length)];
     const sequence = template.pattern.map(i => template.pool[i]);
 
     // The answer is the last item; show all but last, then "?"

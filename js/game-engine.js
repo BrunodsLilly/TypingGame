@@ -143,8 +143,10 @@ function earnStar() {
     updateStreak();
     if (stars >= MAX_STARS) {
         setTimeout(() => {
+            showGrandFinale();
+            Audio_.celebration();
             Audio_.speak("You got all the stars! Amazing job!");
-            setTimeout(goHome, 2500);
+            setTimeout(goHome, 3000);
         }, 1200);
     }
 }

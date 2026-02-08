@@ -496,6 +496,15 @@ body {
     animation: celebPop 1s ease-out forwards;
     text-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
+.celebration-overlay.active .celebration-text.finale {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    background: linear-gradient(135deg, #f1c40f, #e67e22, #ff6b9d, #c44dff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 4px 20px rgba(241, 196, 15, 0.5));
+}
 @keyframes celebPop {
     0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); }
     40% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); }
