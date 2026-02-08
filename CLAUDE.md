@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-"Lua's Learning Adventure" — a keyboard-only educational game for a 3-year-old, built as a single-file HTML/CSS/JS application (`index.html`). No build tools, no frameworks, no dependencies.
+"Lua's Learning Adventure" — a keyboard-only educational game for a 3-year-old. No build tools, no frameworks, no dependencies. Plain HTML/CSS/JS served via any static HTTP server.
 
 ## Running Locally
 
@@ -16,34 +16,55 @@ npx http-server -p 8766 -c-1
 
 There are no tests, linter, or CI pipeline.
 
+## File Structure
+
+```
+TypingGame/
+  index.html            HTML shell (~65 lines) — links CSS and 4 JS files
+  css/
+    styles.css          All CSS: variables, animations, responsive breakpoints
+  js/
+    audio.js            Audio_ IIFE (Web Audio API + SpeechSynthesis) + sound button
+    celebration.js      Celebration overlay, CHEERS data, particle burst
+    game-engine.js      Navigation, state, utils, answer handler, keyboard listener
+    game-rounds.js      All game data constants + all 7 round functions + word helpers
+  CLAUDE.md             This file
+```
+
+### Script Load Order
+
+```html
+<script src="js/audio.js"></script>        <!-- no deps, defines Audio_ -->
+<script src="js/celebration.js"></script>   <!-- no deps besides DOM -->
+<script src="js/game-engine.js"></script>   <!-- needs Audio_, showCelebration -->
+<script src="js/game-rounds.js"></script>   <!-- needs everything above -->
+```
+
+All scripts share the global scope (no modules, no bundler). The load order matters because later scripts reference globals defined by earlier ones.
+
 ## Architecture
-
-Everything lives in `index.html` (~1550 lines). The file is structured in order:
-
-1. **CSS** — Custom properties (`:root`), animations (`@keyframes`), responsive breakpoints
-2. **HTML** — Two screens: `#home` (game selection grid) and `#game` (reused for all modes), plus celebration overlay and key hint bar
-3. **JavaScript** — Organized into clearly labeled sections:
 
 ### Key Architectural Patterns
 
 **Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 7 modes — its content is rebuilt each round.
 
-**Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener at the bottom dispatches through this map.
+**Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
 **Game Mode Pattern**: Each mode follows the same structure:
-- A `*Round()` function (e.g., `colorsRound()`, `wordsRound()`) that sets up the prompt, choices, `activeKeyMap`, `correctKey`, hint timer, and voice prompt
-- `handleAnswer(selectedIdx, correctIdx)` is the shared handler for all choice-based games (Colors, Shapes, Count, Letters, Animals, Math)
-- Words mode is special — it uses `handleWordKeyPress(key)` for letter-by-letter typing instead of the shared answer handler
+- A `*Round()` function (e.g., `colorsRound()`, `wordsRound()`) in `game-rounds.js` that sets up the prompt, choices, `activeKeyMap`, `correctKey`, hint timer, and voice prompt
+- `handleAnswer(selectedIdx, correctIdx)` in `game-engine.js` is the shared handler for all choice-based games (Colors, Shapes, Count, Letters, Animals, Math)
+- Words mode is special — it uses `handleWordKeyPress(key)` in `game-rounds.js` for letter-by-letter typing instead of the shared answer handler
 
 **7 Game Modes**: Colors (1), Shapes (2), Count (3), Letters/ABCs (4), Animals (5), Math (6), Words (7). Home screen maps number keys 1-7 to games via `gameMap`.
 
-**Audio**: `Audio_` singleton using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
+**Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
 **Progress**: 10-star system per session, streak counter with fire badge at 3+. Completing all 10 stars triggers congratulations and returns home.
 
 ## Design Constraints
 
 - **Keyboard-only**: Never introduce mouse/touch-dependent interactions. Every game must work via keyboard keys with visual keycap badges showing which key to press.
-- **Single file**: Keep everything in `index.html`. No external dependencies, no build step.
+- **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
+- **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
 - **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback, auto-hints after 5 seconds, pulsing keycap on correct answer.
 - **Voice**: The correct key to press is always spoken aloud and shown visually.
