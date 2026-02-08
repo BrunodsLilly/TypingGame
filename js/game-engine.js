@@ -278,6 +278,9 @@ function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
         Audio_.wrong();
         resetStreak();
 
+        const tryAgainPhrases = ['Oops! Try again!', 'Not quite! Try again!', 'Almost! Try again!'];
+        setTimeout(() => Audio_.speak(tryAgainPhrases[Math.floor(Math.random() * tryAgainPhrases.length)]), 300);
+
         btns[selectedIdx].style.pointerEvents = 'none';
         setTimeout(() => {
             btns[selectedIdx].classList.remove('wrong');

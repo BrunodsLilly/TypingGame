@@ -562,6 +562,8 @@ function handleWordKeyPress(key) {
             currentEl.style.animation = 'wrongShake 0.4s ease-out';
             setTimeout(() => currentEl.style.animation = '', 400);
         }
+        // Speak the expected letter to help the child learn
+        setTimeout(() => Audio_.speak(`Press ${expected.toUpperCase()}!`, 1.0), 500);
     }
 }
 
@@ -855,13 +857,14 @@ function handleMemoryKeyPress(key) {
             // No match — flip both back after a delay
             Audio_.wrong();
             resetStreak();
+            setTimeout(() => Audio_.speak('Not a match! Try again!'), 300);
             setTimeout(() => {
                 memoryState.revealed[first] = false;
                 memoryState.revealed[idx] = false;
                 renderMemoryGrid();
                 inputLocked = false;
                 setKeyHint('Try again! Press 1-8!');
-            }, 1000);
+            }, 1200);
         }
     }
 }
