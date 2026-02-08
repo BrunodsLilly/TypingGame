@@ -120,6 +120,16 @@ startHomeTips();
  * Starts a new game session for the given game mode.
  * @param {string} game - Game mode identifier (e.g. 'colors', 'words')
  */
+/**
+ * Maps game mode identifiers to their theme colors.
+ * @type {Object<string, string>}
+ */
+const GAME_TINTS = {
+    colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
+    animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
+    rhymes: '#3dc1d3', memory: '#fd79a8',
+};
+
 function startGame(game) {
     clearInterval(homeTipTimer);
     currentGame = game;
@@ -129,6 +139,7 @@ function startGame(game) {
     updateStreak();
     homeScreen.classList.remove('active');
     gameScreen.classList.add('active');
+    gameScreen.style.setProperty('--game-tint', GAME_TINTS[game] || 'transparent');
     keyHintBar.style.display = 'flex';
     extraArea.innerHTML = '';
     nextRound();
@@ -149,13 +160,19 @@ function renderStars() {
     }
 }
 
-/** Updates the streak badge visibility and count. */
+/** Updates the streak badge visibility, count, and fire animation at 5+. */
 function updateStreak() {
     if (streak >= 3) {
         streakBadge.textContent = '\uD83D\uDD25 ' + streak;
         streakBadge.classList.add('show');
+        if (streak >= 5) {
+            streakBadge.classList.add('on-fire');
+        } else {
+            streakBadge.classList.remove('on-fire');
+        }
     } else {
         streakBadge.classList.remove('show');
+        streakBadge.classList.remove('on-fire');
     }
 }
 
