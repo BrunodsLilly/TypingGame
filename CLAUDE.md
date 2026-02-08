@@ -71,7 +71,7 @@ E. **Elements** — Identify periodic table elements from their symbol
 
 **Progressive Difficulty**: Colors (advanced colors at 5+), Count, Math, Patterns, Words, and Elements (no atomic number at 5+) get harder at 5+ stars.
 
-**No Answer Giveaways**: Choice-based games do NOT highlight the correct answer initially. The 5-second auto-hint is the only fallback. Voice prompts ask the question without revealing which key to press.
+**No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
@@ -84,5 +84,5 @@ E. **Elements** — Identify periodic table elements from their symbol
 - **Keyboard-only**: Never introduce mouse/touch-dependent interactions. Every game must work via keyboard keys with visual keycap badges showing which key to press.
 - **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
 - **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
-- **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback, auto-hints after 5 seconds, pulsing keycap on correct answer.
+- **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback. No auto-hints — adult supervision provides contextual scaffolding.
 - **Voice**: Questions are spoken aloud. Wrong answers get encouraging "try again" speech. The correct key is NOT revealed in voice prompts — the 5-second auto-hint provides help when needed.

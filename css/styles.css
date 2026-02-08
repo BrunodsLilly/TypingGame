@@ -627,15 +627,6 @@ body {
     font-weight: 600;
 }
 
-/* ===== Hint glow ===== */
-.hint-glow {
-    animation: hintPulse 1s ease-in-out infinite !important;
-}
-@keyframes hintPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.6); }
-    50% { box-shadow: 0 0 20px 8px rgba(46, 204, 113, 0.3); }
-}
-
 /* Home key hint label under each card */
 .card-key {
     margin-top: 2px;

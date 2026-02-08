@@ -72,7 +72,7 @@ function colorsRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`Which one is ${correct.name}?`);
     setTimeout(() => Audio_.speak(`Find ${correct.name}!`), 300);
 }
@@ -120,7 +120,7 @@ function shapesRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`Which one is the ${correct.name}?`);
     setTimeout(() => Audio_.speak(`Find the ${correct.name}!`), 300);
 }
@@ -177,7 +177,7 @@ function countRound() {
     });
     correctKey = String(correctCount);
 
-    scheduleHint(correctIdx);
+
     setKeyHint('Count them! Press the number!');
     setTimeout(() => Audio_.speak('How many? Count them! Press the number!'), 300);
 }
@@ -233,7 +233,7 @@ function lettersRound() {
     });
     correctKey = correct.toLowerCase();
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`Press ${correct} on the keyboard!`);
     setTimeout(() => Audio_.speak(`Press the letter ${correct}! ${correct} for ${(LETTER_WORDS[correct] || '').split(' ').slice(1).join(' ')}`), 300);
 }
@@ -287,7 +287,7 @@ function animalsRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`Who says "${correct.sound}"?`);
     setTimeout(() => Audio_.speak(`Who says ${correct.sound}?`), 300);
 }
@@ -377,7 +377,7 @@ function mathRound() {
     });
     correctKey = String(answer);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`${n1} + ${n2} = ? Press the number!`);
     setTimeout(() => Audio_.speak(`${n1} plus ${n2} equals what? Press the number!`), 300);
 }
@@ -674,7 +674,7 @@ function patternsRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint('What comes next?');
     setTimeout(() => Audio_.speak('What comes next in the pattern?'), 300);
 }
@@ -754,7 +754,7 @@ function rhymesRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`What rhymes with ${prompt.word}?`);
     setTimeout(() => Audio_.speak(`What rhymes with ${prompt.word}?`), 300);
 }
@@ -837,7 +837,7 @@ function elementsRound() {
     });
     correctKey = String(correctIdx + 1);
 
-    scheduleHint(correctIdx);
+
     setKeyHint(`What element has the symbol ${correct.symbol}?`);
     setTimeout(() => Audio_.speak(`What element has the symbol ${correct.symbol}?`), 300);
 }

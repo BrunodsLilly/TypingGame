@@ -48,9 +48,6 @@ let streak = 0;
 /** @type {boolean} When true, keyboard/click input is ignored (during answer animations) */
 let inputLocked = false;
 
-/** @type {number|null} Timer ID for the auto-hint timeout */
-let hintTimer = null;
-
 /** @type {number} Number of stars needed to complete a game session */
 const MAX_STARS = 10;
 
@@ -77,7 +74,6 @@ function goHome() {
     currentGame = null;
     activeKeyMap = {};
     correctKey = null;
-    clearTimeout(hintTimer);
     startHomeTips();
 }
 
@@ -204,27 +200,6 @@ function resetStreak() {
     updateStreak();
 }
 
-// ============================================
-// Hints
-// ============================================
-
-/**
- * Schedules an auto-hint to glow the correct choice after 5 seconds.
- * @param {number} correctIdx - Index of the correct choice button
- */
-function scheduleHint(correctIdx) {
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => {
-        const btns = choicesEl.querySelectorAll('.choice-btn');
-        if (btns[correctIdx]) {
-            btns[correctIdx].classList.add('hint-glow');
-            // Also pulse the keycap
-            const keycap = btns[correctIdx].querySelector('.keycap');
-            if (keycap) keycap.classList.add('active-key');
-        }
-    }, 5000);
-}
-
 /**
  * Sets the text shown in the bottom keyboard hint bar.
  * @param {string} text - Hint text to display
@@ -295,7 +270,6 @@ function keycapHTML(label, extraClass = '') {
  */
 function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
     if (inputLocked) return;
-    clearTimeout(hintTimer);
 
     const btns = choicesEl.querySelectorAll('.choice-btn');
 
@@ -332,10 +306,6 @@ function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
         setTimeout(() => {
             btns[selectedIdx].classList.remove('wrong');
             btns[selectedIdx].style.pointerEvents = '';
-            // Hint correct after wrong
-            btns[correctIdx].classList.add('hint-glow');
-            const keycap = btns[correctIdx].querySelector('.keycap');
-            if (keycap) keycap.classList.add('active-key');
         }, 800);
     }
 }
