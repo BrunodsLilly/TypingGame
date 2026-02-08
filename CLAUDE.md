@@ -20,14 +20,14 @@ There are no tests, linter, or CI pipeline.
 
 ```
 TypingGame/
-  index.html            HTML shell (~65 lines) — links CSS and 4 JS files
+  index.html            HTML shell (~70 lines) — links CSS and 4 JS files
   css/
     styles.css          All CSS: variables, animations, responsive breakpoints
   js/
     audio.js            Audio_ IIFE (Web Audio API + SpeechSynthesis) + sound button
-    celebration.js      Celebration overlay, CHEERS data, particle burst
+    celebration.js      Celebration overlay, CHEERS data, particle burst, grand finale
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
-    game-rounds.js      All game data constants + all 7 round functions + word helpers
+    game-rounds.js      All game data constants + all 10 round functions + helpers
   CLAUDE.md             This file
 ```
 
@@ -46,20 +46,35 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 7 modes — its content is rebuilt each round.
+**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 10 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
 **Game Mode Pattern**: Each mode follows the same structure:
 - A `*Round()` function (e.g., `colorsRound()`, `wordsRound()`) in `game-rounds.js` that sets up the prompt, choices, `activeKeyMap`, `correctKey`, hint timer, and voice prompt
-- `handleAnswer(selectedIdx, correctIdx)` in `game-engine.js` is the shared handler for all choice-based games (Colors, Shapes, Count, Letters, Animals, Math)
-- Words mode is special — it uses `handleWordKeyPress(key)` in `game-rounds.js` for letter-by-letter typing instead of the shared answer handler
+- `handleAnswer(selectedIdx, correctIdx)` in `game-engine.js` is the shared handler for choice-based games
+- Words mode uses `handleWordKeyPress(key)` for letter-by-letter typing
+- Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 
-**7 Game Modes**: Colors (1), Shapes (2), Count (3), Letters/ABCs (4), Animals (5), Math (6), Words (7). Home screen maps number keys 1-7 to games via `gameMap`.
+**10 Game Modes** (keys 1-9, 0):
+1. **Colors** — Find the named color swatch
+2. **Shapes** — Find the named shape (SVG)
+3. **Count** — Count emoji items and press the number
+4. **Letters/ABCs** — Press the shown letter on keyboard
+5. **Animals** — Match animal to its sound
+6. **Math** — Addition problems with visual emoji groups
+7. **Words** — Spell words letter-by-letter
+8. **Patterns** — Complete the repeating pattern sequence
+9. **Rhymes** — Find the word that rhymes
+0. **Memory** — Flip cards to find matching pairs
+
+**Progressive Difficulty**: Count, Math, Patterns, and Words get harder at 5+ stars (bigger numbers, complex patterns, longer words).
 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
-**Progress**: 10-star system per session, streak counter with fire badge at 3+. Completing all 10 stars triggers congratulations and returns home.
+**Progress**: 10-star system per session, streak counter with fire badge at 3+ (animated fire at 5+). Completing all 10 stars triggers a grand finale celebration with multi-wave particle burst.
+
+**Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
 
 ## Design Constraints
 
@@ -67,4 +82,4 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
 - **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
 - **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback, auto-hints after 5 seconds, pulsing keycap on correct answer.
-- **Voice**: The correct key to press is always spoken aloud and shown visually.
+- **Voice**: The correct key to press is always spoken aloud and shown visually. Wrong answers get encouraging "try again" speech.
