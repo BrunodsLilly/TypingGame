@@ -11,7 +11,7 @@
  *   wrong: () => void,
  *   celebration: () => void,
  *   tap: () => void,
- *   speak: (text: string, rate?: number) => void,
+ *   speak: (text: string, rate?: number, language?: string) => void,
  *   toggle: () => boolean,
  *   enabled: boolean
  * }}
@@ -25,6 +25,9 @@ const Audio_ = (() => {
 
     /** @type {SpeechSynthesisVoice|null} */
     let speechVoice = null;
+
+    /** @type {SpeechSynthesisVoice|null} */
+    let speechVoicePt = null;
 
     /**
      * Lazily creates (or resumes) the shared AudioContext.
@@ -96,6 +99,10 @@ const Audio_ = (() => {
                           voices.find(v => v.lang.startsWith('en-US')) ||
                           voices.find(v => v.lang.startsWith('en')) ||
                           voices[0];
+            speechVoicePt = voices.find(v => v.name.includes('Enhanced') && v.lang.startsWith('pt-BR')) ||
+                            voices.find(v => v.lang === 'pt-BR') ||
+                            voices.find(v => v.lang.startsWith('pt')) ||
+                            null;
         };
         if (speechSynthesis.getVoices().length > 0) pick();
         else speechSynthesis.onvoiceschanged = pick;
@@ -105,15 +112,22 @@ const Audio_ = (() => {
      * Speaks text aloud using SpeechSynthesis.
      * @param {string} text - Text to speak
      * @param {number} [rate=0.85] - Speech rate (0.1 - 10)
+     * @param {string} [language] - Language code ('en' or 'pt'). Defaults to global `lang`.
      */
-    function speak(text, rate = 0.85) {
+    function speak(text, rate = 0.85, language) {
         if (!soundEnabled) return;
         speechSynthesis.cancel();
+        const useLang = language || (typeof lang !== 'undefined' ? lang : 'en');
         const u = new SpeechSynthesisUtterance(text);
         u.rate = rate;
         u.pitch = 1.15;
         u.volume = 1;
-        if (speechVoice) u.voice = speechVoice;
+        if (useLang === 'pt') {
+            u.lang = 'pt-BR';
+            if (speechVoicePt) u.voice = speechVoicePt;
+        } else {
+            if (speechVoice) u.voice = speechVoice;
+        }
         speechSynthesis.speak(u);
     }
 

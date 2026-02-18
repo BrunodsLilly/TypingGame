@@ -1,0 +1,7 @@
+[     111ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:8766/js/celebration.js:0
+[     111ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:8766/js/i18n.js:0
+[     111ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:8766/js/game-engine.js:0
+[     112ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://localhost:8766/js/game-rounds.js:0
+[     112ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8766/css/styles.css:0
+[     112ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8766/js/audio.js:0
+[     142ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8766/favicon.ico:0

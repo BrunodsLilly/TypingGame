@@ -20,12 +20,13 @@ There are no tests, linter, or CI pipeline.
 
 ```
 TypingGame/
-  index.html            HTML shell (~70 lines) — links CSS and 4 JS files
+  index.html            HTML shell — links CSS and 5 JS files
   css/
     styles.css          All CSS: variables, animations, responsive breakpoints
   js/
     audio.js            Audio_ IIFE (Web Audio API + SpeechSynthesis) + sound button
     celebration.js      Celebration overlay, CHEERS data, particle burst, grand finale
+    i18n.js             Language state (lang), I18N translations dict, t() helper
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
     game-rounds.js      All game data constants + all 11 round functions + helpers
   CLAUDE.md             This file
@@ -36,7 +37,8 @@ TypingGame/
 ```html
 <script src="js/audio.js"></script>        <!-- no deps, defines Audio_ -->
 <script src="js/celebration.js"></script>   <!-- no deps besides DOM -->
-<script src="js/game-engine.js"></script>   <!-- needs Audio_, showCelebration -->
+<script src="js/i18n.js"></script>          <!-- defines lang, I18N, t() -->
+<script src="js/game-engine.js"></script>   <!-- needs Audio_, showCelebration, t() -->
 <script src="js/game-rounds.js"></script>   <!-- needs everything above -->
 ```
 
@@ -63,21 +65,23 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 4. **Letters/ABCs** — Press the shown letter on keyboard
 5. **Animals** — Match animal to its sound
 6. **Math** — Addition problems with visual emoji groups
-7. **Words** — Spell words letter-by-letter
+7. **Words** — Pick a word from 3 choices (keys 1/2/3), then spell it letter-by-letter
 8. **Patterns** — Complete the repeating pattern sequence
 9. **Rhymes** — Find the word that rhymes
 0. **Memory** — Flip cards to find matching pairs
 E. **Elements** — Identify periodic table elements from their symbol
 
-**Progressive Difficulty**: Colors (advanced colors at 5+), Count, Math, Patterns, Words, and Elements (no atomic number at 5+) get harder at 5+ stars.
+**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, and Elements (no atomic number at 3+) get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
-**Progress**: 10-star system per session, streak counter with fire badge at 3+ (animated fire at 5+). Completing all 10 stars triggers a grand finale celebration with multi-wave particle burst.
+**Progress**: 5-star system per session, streak counter with fire badge at 3+ (animated fire at 5+). Completing all 5 stars triggers a grand finale celebration with multi-wave particle burst.
 
 **Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
+
+**Bilingual Mode (EN/PT)**: A language toggle button (bottom-left, or `L` key on home screen) switches between English and Portuguese. When PT is active: voice prompts speak Portuguese (pt-BR), choice labels show both languages (e.g. "vermelho" with "red" below), home card labels switch to Portuguese names. The `lang` global ('en'|'pt') is defined in `i18n.js`. All UI strings go through the `t()` helper. Words and Rhymes games remain English-only (spelling/rhyming is language-specific). Game data objects have `pt` fields for Portuguese names (Colors, Shapes, Animals, Elements).
 
 ## Design Constraints
 

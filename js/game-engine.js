@@ -49,7 +49,7 @@ let streak = 0;
 let inputLocked = false;
 
 /** @type {number} Number of stars needed to complete a game session */
-const MAX_STARS = 10;
+const MAX_STARS = 5;
 
 /**
  * Maps keyboard key strings to choice indices for the current round.
@@ -74,8 +74,45 @@ function goHome() {
     currentGame = null;
     activeKeyMap = {};
     correctKey = null;
+    if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
     startHomeTips();
 }
+
+// ============================================
+// Language Toggle
+// ============================================
+
+/** @type {HTMLElement} */
+const langBtn = document.getElementById('lang-btn');
+
+/** Toggles the language between EN and PT and refreshes the UI. */
+function toggleLang() {
+    lang = lang === 'en' ? 'pt' : 'en';
+    Audio_.tap();
+    updateLangUI();
+    if (currentGame) {
+        nextRound();
+    }
+}
+
+/** Updates all language-dependent UI elements: button text, home card labels, tips. */
+function updateLangUI() {
+    langBtn.textContent = lang === 'pt' ? '\uD83C\uDDE7\uD83C\uDDF7' : '\uD83C\uDDFA\uD83C\uDDF8';
+    // Update home card labels
+    const names = t('gameNames');
+    document.querySelectorAll('.game-card').forEach(card => {
+        const game = card.dataset.game;
+        const label = card.querySelector('.card-label');
+        if (label && names[game]) label.textContent = names[game];
+    });
+    // Update back button text
+    const backText = document.querySelector('.back-hint span:last-child');
+    if (backText) backText.textContent = t('back');
+    // Restart home tips with new language
+    startHomeTips();
+}
+
+langBtn.addEventListener('click', toggleLang);
 
 // Home screen click support
 document.querySelectorAll('.game-card').forEach(card => {
@@ -86,27 +123,21 @@ document.querySelectorAll('.game-card').forEach(card => {
 });
 
 // Rotating home subtitle
-const HOME_TIPS = [
-    'Press a key to play!',
-    '11 games to explore!',
-    'Learn colors, shapes & more!',
-    'Spell words letter by letter!',
-    'Find patterns & rhymes!',
-    'Train your memory!',
-    'Discover the elements!',
-];
 let homeTipIdx = 0;
 let homeTipTimer = null;
 const homeSubtitle = document.querySelector('.home-subtitle');
 
-/** Cycles the home subtitle text every 3 seconds. */
+/** Cycles the home subtitle text every 3 seconds, using current language. */
 function startHomeTips() {
     clearInterval(homeTipTimer);
+    const tips = t('homeTips');
+    homeTipIdx = 0;
+    homeSubtitle.textContent = tips[0];
     homeTipTimer = setInterval(() => {
-        homeTipIdx = (homeTipIdx + 1) % HOME_TIPS.length;
+        homeTipIdx = (homeTipIdx + 1) % tips.length;
         homeSubtitle.style.opacity = '0';
         setTimeout(() => {
-            homeSubtitle.textContent = HOME_TIPS[homeTipIdx];
+            homeSubtitle.textContent = t('homeTips')[homeTipIdx];
             homeSubtitle.style.opacity = '1';
         }, 300);
     }, 3500);
@@ -188,7 +219,7 @@ function earnStar() {
         setTimeout(() => {
             showGrandFinale();
             Audio_.celebration();
-            Audio_.speak("You got all the stars! Amazing job!");
+            Audio_.speak(t('allStars'));
             setTimeout(goHome, 3000);
         }, 1200);
     }
@@ -282,8 +313,8 @@ function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
 
         if (onCorrect) onCorrect();
 
-        const encouragements = ['Yay!', 'Great job!', 'Awesome!', 'You did it!', 'Super!', 'Amazing!', 'Wonderful!'];
-        setTimeout(() => Audio_.speak(encouragements[Math.floor(Math.random() * encouragements.length)]), 400);
+        const enc = t('encouragements');
+        setTimeout(() => Audio_.speak(enc[Math.floor(Math.random() * enc.length)]), 400);
 
         setTimeout(() => {
             Audio_.celebration();
@@ -299,8 +330,8 @@ function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
         Audio_.wrong();
         resetStreak();
 
-        const tryAgainPhrases = ['Oops! Try again!', 'Not quite! Try again!', 'Almost! Try again!'];
-        setTimeout(() => Audio_.speak(tryAgainPhrases[Math.floor(Math.random() * tryAgainPhrases.length)]), 300);
+        const ta = t('tryAgain');
+        setTimeout(() => Audio_.speak(ta[Math.floor(Math.random() * ta.length)]), 300);
 
         btns[selectedIdx].style.pointerEvents = 'none';
         setTimeout(() => {
@@ -343,6 +374,10 @@ document.addEventListener('keydown', (e) => {
 
     // ── Home screen ──
     if (currentGame === null && homeScreen.classList.contains('active')) {
+        if (key === 'l') {
+            toggleLang();
+            return;
+        }
         const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'elements' };
         if (gameMap[key]) {
             // Visual feedback on the card
@@ -369,10 +404,22 @@ document.addEventListener('keydown', (e) => {
 
     if (inputLocked) return;
 
-    // Words mode uses direct letter-by-letter handling
+    // Words mode: pick phase uses Space + number keys, spelling phase uses letters
     if (currentGame === 'words') {
-        if (/^[a-z]$/.test(key)) {
-            // Animate the keycap in the hint area
+        if (wordSelecting) {
+            if (key === ' ' || key === 'enter') {
+                // Pick the current rotating word
+                selectWord(wordCarouselPool[wordCarouselIdx]);
+            } else {
+                // Check quick-pick favorites
+                const fav = WORD_FAVORITES.find(f => f.key === key);
+                if (fav) {
+                    const wordObj = WORDS_DATA.find(w => w.word === fav.word);
+                    if (wordObj) selectWord(wordObj);
+                }
+            }
+        } else if (/^[a-z]$/.test(key)) {
+            // Spelling phase — letter-by-letter
             const keycapEl = extraArea.querySelector('.keycap.active-key');
             if (keycapEl) {
                 keycapEl.classList.add('pressed-anim');

@@ -62,7 +62,7 @@ function showCelebration() {
  * and firework-style particle bursts from multiple positions.
  */
 function showGrandFinale() {
-    celebText.textContent = '\u2B50 ALL STARS! \u2B50';
+    celebText.textContent = (typeof t === 'function') ? t('allStarsText') : '\u2B50 ALL STARS! \u2B50';
     celebText.style.color = '#f1c40f';
     celebOverlay.classList.add('active');
 
