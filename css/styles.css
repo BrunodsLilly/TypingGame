@@ -156,6 +156,7 @@ body {
 .game-card.rhymes  { border-color: #3dc1d3;       } .game-card.rhymes::before  { background: #3dc1d3; }
 .game-card.memory  { border-color: #fd79a8;       } .game-card.memory::before  { background: #fd79a8; }
 .game-card.elements { border-color: #5DADE2;       } .game-card.elements::before { background: #5DADE2; }
+.game-card.geometry { border-color: #E8A0BF;       } .game-card.geometry::before { background: #E8A0BF; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -363,6 +364,14 @@ body {
     border-radius: 50%;
     border: 4px solid rgba(255,255,255,0.2);
 }
+.color-swatch-big {
+    width: clamp(80px, 25vw, 130px);
+    height: clamp(80px, 25vw, 130px);
+    border-radius: 50%;
+    border: 5px solid rgba(255,255,255,0.25);
+    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    animation: popIn 0.4s ease-out;
+}
 
 /* Shape visuals */
 .shape-visual {
@@ -388,9 +397,16 @@ body {
     min-height: 60px;
     align-items: center;
 }
+.count-items.count-grid {
+    max-width: 420px;
+    gap: 4px;
+}
 .count-item {
     font-size: clamp(2rem, 8vw, 3rem);
     animation: popIn 0.3s ease-out backwards;
+}
+.count-item.count-item-small {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
 }
 @keyframes popIn {
     0% { transform: scale(0); }
@@ -845,4 +861,205 @@ body {
 }
 .element-choice .choice-label {
     font-size: clamp(0.75rem, 2vw, 0.95rem);
+}
+
+/* ===== Level Picker ===== */
+.level-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 10px;
+}
+.level-title {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+    font-weight: 800;
+    margin-bottom: 4px;
+    color: rgba(255,255,255,0.8);
+}
+.level-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 16px 18px;
+    background: var(--card);
+    border: 3px solid var(--card-light);
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.12s, border-color 0.2s, box-shadow 0.2s;
+    text-align: left;
+}
+.level-btn:active, .level-btn.pressed { transform: scale(0.96); }
+.level-btn.level-selected {
+    border-color: var(--lvl-tint, var(--blue));
+    box-shadow: 0 0 20px rgba(77, 201, 246, 0.2);
+}
+.level-emoji {
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    flex-shrink: 0;
+}
+.level-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.level-name {
+    font-size: clamp(1rem, 3.5vw, 1.3rem);
+    font-weight: 700;
+}
+.level-desc {
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+    color: rgba(255,255,255,0.45);
+    font-weight: 500;
+}
+.level-keycap {
+    flex-shrink: 0;
+}
+.level-esc {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.35);
+    margin-top: 6px;
+}
+
+/* Level badge on home cards */
+.card-level-badge {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: -2px;
+}
+
+/* ===== Count Level 1 — Moving arena ===== */
+.count-arena {
+    position: relative;
+    width: 380px;
+    max-width: 90vw;
+    height: 200px;
+    margin: 8px auto 12px;
+    border-radius: 20px;
+    border: 3px dashed rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.03);
+    overflow: hidden;
+}
+.count-arena-item {
+    position: absolute;
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    transition: opacity 0.3s;
+}
+.count-arena-item.distractor {
+    opacity: 0.4;
+    filter: grayscale(0.3);
+}
+.count-target-label {
+    text-align: center;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 4px;
+}
+.count-target-label .target-emoji {
+    font-size: 1.3em;
+    margin-right: 6px;
+}
+
+@keyframes countFloat1 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(12px, -18px); }
+    50% { transform: translate(-8px, -10px); }
+    75% { transform: translate(15px, 8px); }
+}
+@keyframes countFloat2 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-15px, 10px); }
+    50% { transform: translate(10px, 18px); }
+    75% { transform: translate(-12px, -8px); }
+}
+@keyframes countFloat3 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(18px, 12px); }
+    50% { transform: translate(-12px, -15px); }
+    75% { transform: translate(8px, -10px); }
+}
+@keyframes countFloat4 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-10px, -12px); }
+    50% { transform: translate(15px, 8px); }
+    75% { transform: translate(-18px, 12px); }
+}
+@keyframes countFloat5 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(8px, 15px); }
+    50% { transform: translate(-18px, -8px); }
+    75% { transform: translate(12px, -15px); }
+}
+@keyframes countFloat6 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-12px, 8px); }
+    50% { transform: translate(8px, -18px); }
+    75% { transform: translate(-15px, 12px); }
+}
+
+/* ===== Count Level 2 — Shape counting ===== */
+.count-shapes-area {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 420px;
+    margin: 8px auto 12px;
+    min-height: 60px;
+    align-items: center;
+}
+.count-shape-item {
+    width: clamp(40px, 10vw, 55px);
+    height: clamp(40px, 10vw, 55px);
+    animation: popIn 0.3s ease-out backwards;
+}
+.count-shape-item svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== Geometry game ===== */
+.geometry-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    margin: 8px auto 12px;
+}
+.geometry-shape-big {
+    width: clamp(120px, 30vw, 180px);
+    height: clamp(120px, 30vw, 180px);
+    animation: popIn 0.4s ease-out;
+}
+.geometry-shape-big svg {
+    width: 100%;
+    height: 100%;
+}
+.geometry-info {
+    text-align: center;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+    color: rgba(255,255,255,0.8);
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    animation: popIn 0.3s ease-out;
+    font-weight: 600;
+}
+.geometry-vs {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-weight: 800;
+    color: rgba(255,255,255,0.3);
 }

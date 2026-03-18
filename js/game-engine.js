@@ -61,6 +61,66 @@ let activeKeyMap = {};
 /** @type {string|null} The key string for the correct answer in the current round */
 let correctKey = null;
 
+// ── Level System ──
+
+/**
+ * Level definitions per game. Each game can have up to 3 levels.
+ * Games without entries here have no level selection (single difficulty).
+ * @type {Object<string, Array<{name: string, ptName: string, desc: string, ptDesc: string, emoji: string}>>}
+ */
+const GAME_LEVELS = {
+    count: [
+        { name: 'Count Things', ptName: 'Contar', desc: 'Count 1-10', ptDesc: 'Conte 1-10', emoji: '🔢' },
+        { name: 'Moving Mix', ptName: 'Mistura', desc: 'Count one kind!', ptDesc: 'Conte um tipo!', emoji: '🦋' },
+        { name: 'Shape Count', ptName: 'Formas', desc: 'Shapes & sides', ptDesc: 'Formas e lados', emoji: '📐' },
+    ],
+    geometry: [
+        { name: 'Sides', ptName: 'Lados', desc: 'How many sides?', ptDesc: 'Quantos lados?', emoji: '📏' },
+        { name: 'Corners & More', ptName: 'Cantos', desc: 'Corners + matching', ptDesc: 'Cantos + combinar', emoji: '🔶' },
+        { name: 'Shape Expert', ptName: 'Expert', desc: 'All types!', ptDesc: 'Todos os tipos!', emoji: '🏆' },
+    ],
+    colors: [
+        { name: 'Basic Colors', ptName: 'B\u00E1sicas', desc: '8 colors', ptDesc: '8 cores', emoji: '🖍️' },
+        { name: 'More Colors', ptName: 'Mais Cores', desc: '24 colors', ptDesc: '24 cores', emoji: '🎨' },
+        { name: 'Color Expert', ptName: 'Expert', desc: '24 + name the color', ptDesc: '24 + nomeie a cor', emoji: '🌈' },
+    ],
+};
+
+/**
+ * Saved level per game. Loaded from localStorage on startup.
+ * @type {Object<string, number>}
+ */
+let gameLevels = {};
+
+/** @type {boolean} True when the level picker is showing */
+let levelPicking = false;
+
+/** @type {string|null} Game being picked for in level picker */
+let levelPickingGame = null;
+
+/** Load saved levels from localStorage */
+function loadLevels() {
+    try {
+        const saved = localStorage.getItem('gameLevels');
+        if (saved) gameLevels = JSON.parse(saved);
+    } catch (_) { /* ignore */ }
+}
+loadLevels();
+
+/** Save levels to localStorage */
+function saveLevels() {
+    try { localStorage.setItem('gameLevels', JSON.stringify(gameLevels)); } catch (_) { /* ignore */ }
+}
+
+/**
+ * Returns the current level (0-indexed) for a game.
+ * @param {string} game
+ * @returns {number}
+ */
+function getLevel(game) {
+    return gameLevels[game] || 0;
+}
+
 // ============================================
 // Navigation
 // ============================================
@@ -72,9 +132,12 @@ function goHome() {
     gameScreen.classList.remove('active');
     keyHintBar.style.display = 'none';
     currentGame = null;
+    levelPicking = false;
+    levelPickingGame = null;
     activeKeyMap = {};
     correctKey = null;
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
+    updateHomeLevelBadges();
     startHomeTips();
 }
 
@@ -105,11 +168,34 @@ function updateLangUI() {
         const label = card.querySelector('.card-label');
         if (label && names[game]) label.textContent = names[game];
     });
+    // Update level badges on home cards
+    updateHomeLevelBadges();
     // Update back button text
     const backText = document.querySelector('.back-hint span:last-child');
     if (backText) backText.textContent = t('back');
     // Restart home tips with new language
     startHomeTips();
+}
+
+/** Shows level badges on home screen cards for games that have levels. */
+function updateHomeLevelBadges() {
+    document.querySelectorAll('.game-card').forEach(card => {
+        const game = card.dataset.game;
+        let badge = card.querySelector('.card-level-badge');
+        if (GAME_LEVELS[game]) {
+            const lvl = getLevel(game);
+            const lvlData = GAME_LEVELS[game][lvl];
+            const text = lvlData.emoji;
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'card-level-badge';
+                card.appendChild(badge);
+            }
+            badge.textContent = text;
+        } else if (badge) {
+            badge.remove();
+        }
+    });
 }
 
 langBtn.addEventListener('click', toggleLang);
@@ -143,6 +229,7 @@ function startHomeTips() {
     }, 3500);
 }
 startHomeTips();
+updateHomeLevelBadges();
 
 /**
  * Starts a new game session for the given game mode.
@@ -155,11 +242,19 @@ startHomeTips();
 const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
-    rhymes: '#3dc1d3', memory: '#fd79a8', elements: '#5DADE2',
+    rhymes: '#3dc1d3', memory: '#fd79a8', elements: '#5DADE2', geometry: '#E8A0BF',
 };
 
 function startGame(game) {
     clearInterval(homeTipTimer);
+
+    // If this game has levels, show the level picker first
+    if (GAME_LEVELS[game] && !levelPicking) {
+        showLevelPicker(game);
+        return;
+    }
+    levelPicking = false;
+
     currentGame = game;
     stars = 0;
     streak = 0;
@@ -171,6 +266,61 @@ function startGame(game) {
     keyHintBar.style.display = 'flex';
     extraArea.innerHTML = '';
     nextRound();
+}
+
+/**
+ * Shows the level picker overlay on the home screen for games with levels.
+ * @param {string} game - Game mode identifier
+ */
+function showLevelPicker(game) {
+    levelPicking = true;
+    levelPickingGame = game;
+    const levels = GAME_LEVELS[game];
+    const currentLvl = getLevel(game);
+    const tint = GAME_TINTS[game] || '#4dc9f6';
+
+    // Build level picker HTML inside extraArea on the game screen
+    // We'll use the home screen with an overlay
+    let html = '<div class="level-picker">';
+    html += `<div class="level-title">${lang === 'pt' ? 'Escolha o n\u00EDvel' : 'Pick a level'}</div>`;
+    levels.forEach((lvl, i) => {
+        const selected = i === currentLvl ? ' level-selected' : '';
+        const name = lang === 'pt' ? lvl.ptName : lvl.name;
+        const desc = lang === 'pt' ? lvl.ptDesc : lvl.desc;
+        html += `<button class="level-btn${selected}" data-level="${i}" style="--lvl-tint: ${tint}">`;
+        html += `<span class="level-keycap">${keycapHTML(String(i + 1), i === currentLvl ? 'active-key' : '')}</span>`;
+        html += `<span class="level-emoji">${lvl.emoji}</span>`;
+        html += `<span class="level-info"><span class="level-name">${name}</span><span class="level-desc">${desc}</span></span>`;
+        html += `</button>`;
+    });
+    html += `<div class="level-esc">${keycapHTML('Esc', 'small')} ${lang === 'pt' ? 'Voltar' : 'Back'}</div>`;
+    html += '</div>';
+
+    // Show on game screen temporarily
+    homeScreen.classList.remove('active');
+    gameScreen.classList.add('active');
+    gameScreen.style.setProperty('--game-tint', tint);
+    keyHintBar.style.display = 'none';
+
+    // Use prompt area + extra area for the picker
+    promptEmoji.textContent = '';
+    promptText.innerHTML = '';
+    choicesEl.innerHTML = '';
+    extraArea.innerHTML = html;
+
+    // Click handlers for level buttons
+    extraArea.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lvl = parseInt(btn.dataset.level);
+            gameLevels[game] = lvl;
+            saveLevels();
+            Audio_.tap();
+            startGame(game);
+        });
+    });
+
+    setKeyHint(lang === 'pt' ? 'Aperte 1-' + levels.length + ' para escolher!' : 'Press 1-' + levels.length + ' to pick!');
+    keyHintBar.style.display = 'flex';
 }
 
 // ============================================
@@ -350,6 +500,7 @@ function nextRound() {
     choicesEl.innerHTML = '';
     activeKeyMap = {};
     correctKey = null;
+    inputLocked = false;  // CRITICAL: unlock input at start of every round
 
     switch (currentGame) {
         case 'colors':  colorsRound();  break;
@@ -363,6 +514,7 @@ function nextRound() {
         case 'rhymes':   rhymesRound();   break;
         case 'memory':   memoryRound();   break;
         case 'elements': elementsRound(); break;
+        case 'geometry': geometryRound(); break;
     }
 }
 
@@ -378,7 +530,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'elements' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'elements', 'g': 'geometry' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -389,6 +541,33 @@ document.addEventListener('keydown', (e) => {
             Audio_.tap();
             startGame(gameMap[key]);
             return;
+        }
+        return;
+    }
+
+    // ── Level picker ──
+    if (levelPicking && levelPickingGame) {
+        if (key === 'escape') {
+            levelPicking = false;
+            levelPickingGame = null;
+            gameScreen.classList.remove('active');
+            homeScreen.classList.add('active');
+            keyHintBar.style.display = 'none';
+            startHomeTips();
+            return;
+        }
+        const lvl = parseInt(key) - 1;
+        if (lvl >= 0 && lvl < GAME_LEVELS[levelPickingGame].length) {
+            // Visual feedback
+            const btn = extraArea.querySelector(`.level-btn[data-level="${lvl}"]`);
+            if (btn) {
+                btn.classList.add('pressed');
+                setTimeout(() => btn.classList.remove('pressed'), 150);
+            }
+            gameLevels[levelPickingGame] = lvl;
+            saveLevels();
+            Audio_.tap();
+            startGame(levelPickingGame);
         }
         return;
     }
