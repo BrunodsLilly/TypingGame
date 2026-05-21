@@ -34,6 +34,9 @@ const keyHintBar = document.getElementById('key-hint-bar');
 /** @type {HTMLElement} */
 const keyHintText = document.getElementById('key-hint-text');
 
+/** @type {HTMLElement} */
+const backBtn = document.getElementById('back-btn');
+
 // ── State ──
 
 /** @type {string|null} Currently active game mode name, or null when on home screen */
@@ -171,7 +174,7 @@ function updateLangUI() {
     // Update level badges on home cards
     updateHomeLevelBadges();
     // Update back button text
-    const backText = document.querySelector('.back-hint span:last-child');
+    const backText = backBtn.querySelector('span:last-child');
     if (backText) backText.textContent = t('back');
     // Restart home tips with new language
     startHomeTips();
@@ -199,6 +202,9 @@ function updateHomeLevelBadges() {
 }
 
 langBtn.addEventListener('click', toggleLang);
+
+// Back button click support (mobile)
+backBtn.addEventListener('click', goHome);
 
 // Home screen click support
 document.querySelectorAll('.game-card').forEach(card => {
@@ -242,7 +248,7 @@ updateHomeLevelBadges();
 const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
-    rhymes: '#3dc1d3', memory: '#fd79a8', elements: '#5DADE2', geometry: '#E8A0BF',
+    rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF',
 };
 
 function startGame(game) {
@@ -513,7 +519,8 @@ function nextRound() {
         case 'patterns': patternsRound(); break;
         case 'rhymes':   rhymesRound();   break;
         case 'memory':   memoryRound();   break;
-        case 'elements': elementsRound(); break;
+        case 'reading':   readingRound();   break;
+        case 'opposites': oppositesRound(); break;
         case 'geometry': geometryRound(); break;
     }
 }
@@ -530,7 +537,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'elements', 'g': 'geometry' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);

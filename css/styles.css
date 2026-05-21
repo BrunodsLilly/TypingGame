@@ -155,7 +155,8 @@ body {
 .game-card.patterns { border-color: #e056a0;      } .game-card.patterns::before { background: #e056a0; }
 .game-card.rhymes  { border-color: #3dc1d3;       } .game-card.rhymes::before  { background: #3dc1d3; }
 .game-card.memory  { border-color: #fd79a8;       } .game-card.memory::before  { background: #fd79a8; }
-.game-card.elements { border-color: #5DADE2;       } .game-card.elements::before { background: #5DADE2; }
+.game-card.opposites { border-color: #5DADE2;       } .game-card.opposites::before { background: #5DADE2; }
+.game-card.reading { border-color: #e17055;        } .game-card.reading::before { background: #e17055; }
 .game-card.geometry { border-color: #E8A0BF;       } .game-card.geometry::before { background: #E8A0BF; }
 
 /* ===== Keycap badges ===== */
@@ -231,12 +232,25 @@ body {
     justify-content: space-between;
     margin-bottom: 10px;
 }
-.back-hint {
+.back-btn {
     display: flex;
     align-items: center;
     gap: 8px;
     opacity: 0.5;
     font-size: 0.8rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: opacity 0.2s, background 0.2s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.back-btn:active {
+    opacity: 0.8;
+    background: rgba(255,255,255,0.1);
 }
 .stars-bar {
     display: flex;
@@ -777,9 +791,15 @@ body {
     transition: transform 0.2s, background 0.2s, border-color 0.2s;
     position: relative;
 }
+.memory-card[data-idx]:active {
+    transform: scale(0.95);
+}
 .memory-card.face-down {
     background: linear-gradient(135deg, var(--card), var(--card-light));
     border: 3px solid var(--card-light);
+}
+.memory-card.face-down:active {
+    border-color: rgba(255,255,255,0.4);
 }
 .memory-card.face-down::after {
     content: '?';
@@ -811,56 +831,64 @@ body {
     font-weight: 600;
 }
 
-/* ===== Elements Game ===== */
-.element-card-display {
+/* ===== Reading/Blend Game ===== */
+.blend-display {
     display: flex;
-    justify-content: center;
-    margin: 0.5rem 0 1rem;
-}
-.element-card-big {
-    position: relative;
-    width: clamp(120px, 30vw, 180px);
-    height: clamp(140px, 35vw, 210px);
-    border: 4px solid;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.05);
     gap: 4px;
+    margin: 0.5rem 0 1rem;
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
+    font-weight: 900;
+    font-family: 'Georgia', serif;
+}
+.blend-slot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(50px, 12vw, 80px);
+    height: clamp(55px, 13vw, 85px);
+    border: 3px dashed rgba(255,255,255,0.5);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.4);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+.blend-rime-text {
+    color: #f8c291;
+}
+.blend-letter-big {
+    color: #74b9ff;
     animation: popIn 0.4s ease-out;
 }
-.element-number {
-    position: absolute;
-    top: 8px;
-    left: 12px;
-    font-size: clamp(0.7rem, 2vw, 0.9rem);
-    font-weight: 700;
-    color: rgba(255,255,255,0.5);
+.blend-dot {
+    color: rgba(255,255,255,0.3);
+    font-size: 0.5em;
+    margin: 0 2px;
 }
-.element-symbol {
-    font-size: clamp(2.5rem, 10vw, 4rem);
+.blend-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: clamp(2rem, 8vw, 3.5rem);
     font-weight: 900;
-    line-height: 1;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Georgia', serif;
+    animation: popIn 0.4s ease-out;
 }
-.element-emoji {
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
+.blend-onset-big {
+    color: #74b9ff;
 }
-.element-fact {
-    text-align: center;
-    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-    color: rgba(255,255,255,0.8);
-    margin-top: 8px;
-    padding: 8px 16px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 12px;
-    animation: popIn 0.3s ease-out;
-    font-weight: 600;
+.blend-arrow {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.7em;
 }
-.element-choice .choice-label {
-    font-size: clamp(0.75rem, 2vw, 0.95rem);
+.blend-word-big {
+    color: #55efc4;
+}
+.blend-choice .choice-visual {
+    font-family: 'Georgia', serif;
+    font-weight: 900;
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
 }
 
 /* ===== Level Picker ===== */

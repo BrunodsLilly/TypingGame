@@ -29,7 +29,8 @@
         <div class="game-card patterns" data-game="patterns" data-key="8"><span class="card-icon">🔁</span><span class="card-label">Patterns</span><span class="keycap card-key">8</span></div>
         <div class="game-card rhymes"  data-game="rhymes" data-key="9"><span class="card-icon">🎵</span><span class="card-label">Rhymes</span><span class="keycap card-key">9</span></div>
         <div class="game-card memory"  data-game="memory" data-key="0"><span class="card-icon">🧠</span><span class="card-label">Memory</span><span class="keycap card-key">0</span></div>
-        <div class="game-card elements" data-game="elements" data-key="e"><span class="card-icon">⚛️</span><span class="card-label">Elements</span><span class="keycap card-key">E</span></div>
+        <div class="game-card opposites" data-game="opposites" data-key="e"><span class="card-icon">🔄</span><span class="card-label">Opposites</span><span class="keycap card-key">E</span></div>
+        <div class="game-card reading" data-game="reading" data-key="r"><span class="card-icon">📖</span><span class="card-label">Reading</span><span class="keycap card-key">R</span></div>
         <div class="game-card geometry" data-game="geometry" data-key="g"><span class="card-icon">📐</span><span class="card-label">Geometry</span><span class="keycap card-key">G</span></div>
     </div>
 </div>
@@ -37,7 +38,7 @@
 <!-- ===== GAME SCREEN (reused for all modes) ===== -->
 <div class="screen game-screen" id="game">
     <div class="top-bar">
-        <div class="back-hint"><span class="keycap" style="font-size:0.7rem; min-width:24px; height:24px;">Esc</span> <span>Back</span></div>
+        <button class="back-btn" id="back-btn"><span class="keycap" style="font-size:0.7rem; min-width:24px; height:24px;">Esc</span> <span>Back</span></button>
         <div class="stars-bar" id="stars-bar"></div>
         <div class="streak-badge" id="streak-badge">🔥 0</div>
     </div>

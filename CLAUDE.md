@@ -48,7 +48,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 11 modes — its content is rebuilt each round.
+**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 13 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
@@ -69,9 +69,10 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 8. **Patterns** — Complete the repeating pattern sequence
 9. **Rhymes** — Find the word that rhymes
 0. **Memory** — Flip cards to find matching pairs
-E. **Elements** — Identify periodic table elements from their symbol
+E. **Opposites** — Find the opposite concept (big/small, hot/cold, etc.)
+R. **Reading** — Onset-rime blending (press starting letter), then full CVC blending at 3+ stars
 
-**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, and Elements (no atomic number at 3+) get harder at 3+ stars.
+**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, and Words get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 

@@ -127,12 +127,12 @@ function colorsRound() {
  * @type {Array<{name: string, svg: string}>}
  */
 const SHAPES_DATA = [
-  { name: 'circle', pt: 'c\u00EDrculo', svg: `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" fill="#4dc9f6"/></svg>` },
+  { name: 'circle', pt: 'círculo', svg: `<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" fill="#4dc9f6"/></svg>` },
   { name: 'square', pt: 'quadrado', svg: `<svg viewBox="0 0 80 80"><rect x="8" y="8" width="64" height="64" rx="4" fill="#2ecc71"/></svg>` },
-  { name: 'triangle', pt: 'tri\u00E2ngulo', svg: `<svg viewBox="0 0 80 80"><polygon points="40,5 75,75 5,75" fill="#f1c40f"/></svg>` },
+  { name: 'triangle', pt: 'triângulo', svg: `<svg viewBox="0 0 80 80"><polygon points="40,5 75,75 5,75" fill="#f1c40f"/></svg>` },
   { name: 'star', pt: 'estrela', svg: `<svg viewBox="0 0 80 80"><polygon points="40,5 50,30 78,30 55,48 63,75 40,58 17,75 25,48 2,30 30,30" fill="#e67e22"/></svg>` },
-  { name: 'heart', pt: 'cora\u00E7\u00E3o', svg: `<svg viewBox="0 0 80 80"><path d="M40,72 C20,50 5,35 5,22 C5,12 13,4 23,4 C30,4 36,8 40,14 C44,8 50,4 57,4 C67,4 75,12 75,22 C75,35 60,50 40,72Z" fill="#e74c3c"/></svg>` },
-  { name: 'diamond', pt: 'diamante', svg: `<svg viewBox="0 0 80 80"><polygon points="40,5 75,40 40,75 5,40" fill="#9b59b6"/></svg>` },
+  { name: 'heart', pt: 'coração', svg: `<svg viewBox="0 0 80 80"><path d="M40,72 C20,50 5,35 5,22 C5,12 13,4 23,4 C30,4 36,8 40,14 C44,8 50,4 57,4 C67,4 75,12 75,22 C75,35 60,50 40,72Z" fill="#e74c3c"/></svg>` },
+  { name: 'hexagon', pt: 'hexágono', svg: `<svg viewBox="0 0 80 80"><polygon points="20,10 60,10 70,40 60,70 20,70 10,40" fill="#9b59b6"/></svg>` },
 ];
 
 /**
@@ -1450,87 +1450,227 @@ function rhymesRound() {
   setTimeout(() => Audio_.speak(`${t('whatRhymes')} ${prompt.word}?`), 300);
 }
 
+
 // ============================================
-// ELEMENTS Game — "Periodic Table" style element identification
+// READING Game — onset-rime blending for early readers
 // ============================================
 
 /**
- * Element data for the Periodic Table game. Each element has its atomic number,
- * symbol, name, a kid-friendly emoji, color category, and a fun fact.
- * @type {Array<{number: number, symbol: string, name: string, emoji: string, category: string, color: string, fact: string}>}
+ * Word families for the Reading game. Each family shares a rime (ending sound)
+ * and has 4 words with distinct onsets (starting sounds).
+ * @type {Array<{rime: string, words: Array<{onset: string, word: string, emoji: string}>}>}
  */
-const ELEMENTS_DATA = [
-  { number: 1, symbol: 'H', name: 'Hydrogen', pt: 'Hidrog\u00EAnio', emoji: '\uD83D\uDCA7', category: 'gas', color: '#5DADE2', fact: 'The lightest element! It makes water.', ptFact: 'O elemento mais leve! Ele faz \u00E1gua.' },
-  { number: 2, symbol: 'He', name: 'Helium', pt: 'H\u00E9lio', emoji: '\uD83C\uDF88', category: 'noble gas', color: '#AF7AC5', fact: 'Makes balloons float up high!', ptFact: 'Faz os bal\u00F5es flutuarem bem alto!' },
-  { number: 6, symbol: 'C', name: 'Carbon', pt: 'Carbono', emoji: '\u2666\uFE0F', category: 'nonmetal', color: '#5D6D7E', fact: 'Diamonds and pencils are made of this!', ptFact: 'Diamantes e l\u00E1pis s\u00E3o feitos disso!' },
-  { number: 7, symbol: 'N', name: 'Nitrogen', pt: 'Nitrog\u00EAnio', emoji: '\uD83C\uDF2C\uFE0F', category: 'gas', color: '#5DADE2', fact: 'Most of the air you breathe is nitrogen!', ptFact: 'A maior parte do ar que voc\u00EA respira \u00E9 nitrog\u00EAnio!' },
-  { number: 8, symbol: 'O', name: 'Oxygen', pt: 'Oxig\u00EAnio', emoji: '\uD83E\uDE7B', category: 'gas', color: '#5DADE2', fact: 'You need this to breathe!', ptFact: 'Voc\u00EA precisa disso para respirar!' },
-  { number: 10, symbol: 'Ne', name: 'Neon', pt: 'Ne\u00F4nio', emoji: '\uD83D\uDCA1', category: 'noble gas', color: '#AF7AC5', fact: 'Makes bright glowing signs!', ptFact: 'Faz placas brilhantes!' },
-  { number: 11, symbol: 'Na', name: 'Sodium', pt: 'S\u00F3dio', emoji: '\uD83E\uDDC2', category: 'metal', color: '#F5B041', fact: 'Found in table salt!', ptFact: 'Encontrado no sal de cozinha!' },
-  { number: 12, symbol: 'Mg', name: 'Magnesium', pt: 'Magn\u00E9sio', emoji: '\u2728', category: 'metal', color: '#F5B041', fact: 'Burns with a super bright sparkle!', ptFact: 'Queima com um brilho super forte!' },
-  { number: 13, symbol: 'Al', name: 'Aluminum', pt: 'Alum\u00EDnio', emoji: '\uD83E\uDD6B', category: 'metal', color: '#F5B041', fact: 'Wraps your food to keep it fresh!', ptFact: 'Embrulha sua comida para manter fresca!' },
-  { number: 14, symbol: 'Si', name: 'Silicon', pt: 'Sil\u00EDcio', emoji: '\uD83D\uDCBB', category: 'metalloid', color: '#45B39D', fact: 'Used to make computer chips!', ptFact: 'Usado para fazer chips de computador!' },
-  { number: 16, symbol: 'S', name: 'Sulfur', pt: 'Enxofre', emoji: '\uD83D\uDCA9', category: 'nonmetal', color: '#F4D03F', fact: 'Smells like rotten eggs! Stinky!', ptFact: 'Cheira a ovo podre! Que fedor!' },
-  { number: 20, symbol: 'Ca', name: 'Calcium', pt: 'C\u00E1lcio', emoji: '\uD83E\uDDB4', category: 'metal', color: '#F5B041', fact: 'Makes your bones and teeth strong!', ptFact: 'Deixa seus ossos e dentes fortes!' },
-  { number: 26, symbol: 'Fe', name: 'Iron', pt: 'Ferro', emoji: '\uD83E\uDDF2', category: 'metal', color: '#E74C3C', fact: 'Makes things magnetic and strong!', ptFact: 'Faz coisas magn\u00E9ticas e fortes!' },
-  { number: 29, symbol: 'Cu', name: 'Copper', pt: 'Cobre', emoji: '\uD83E\uDE99', category: 'metal', color: '#E67E22', fact: 'Shiny pennies are made of this!', ptFact: 'Moedas brilhantes s\u00E3o feitas disso!' },
-  { number: 47, symbol: 'Ag', name: 'Silver', pt: 'Prata', emoji: '\uD83E\uDD48', category: 'metal', color: '#BDC3C7', fact: 'Shiny and sparkly like jewelry!', ptFact: 'Brilhante como uma j\u00F3ia!' },
-  { number: 79, symbol: 'Au', name: 'Gold', pt: 'Ouro', emoji: '\uD83E\uDD47', category: 'metal', color: '#F1C40F', fact: 'The most precious yellow metal!', ptFact: 'O metal amarelo mais precioso!' },
-  { number: 80, symbol: 'Hg', name: 'Mercury', pt: 'Merc\u00FArio', emoji: '\uD83C\uDF21\uFE0F', category: 'metal', color: '#BDC3C7', fact: 'A liquid metal used in thermometers!', ptFact: 'Um metal l\u00EDquido usado em term\u00F4metros!' },
-  { number: 82, symbol: 'Pb', name: 'Lead', pt: 'Chumbo', emoji: '\u2B1B', category: 'metal', color: '#5D6D7E', fact: 'Very heavy! Used in shields.', ptFact: 'Muito pesado! Usado em escudos.' },
-  { number: 50, symbol: 'Sn', name: 'Tin', pt: 'Estanho', emoji: '\uD83E\uDD6B', category: 'metal', color: '#BDC3C7', fact: 'Used to make cans for food!', ptFact: 'Usado para fazer latas de comida!' },
-  { number: 78, symbol: 'Pt', name: 'Platinum', pt: 'Platina', emoji: '\uD83D\uDC8E', category: 'metal', color: '#D5D8DC', fact: 'Even more rare than gold!', ptFact: 'Ainda mais rara que ouro!' },
+const WORD_FAMILIES = [
+  { rime: 'at', words: [
+    { onset: 'c', word: 'cat', emoji: '🐱' },
+    { onset: 'h', word: 'hat', emoji: '🎩' },
+    { onset: 'b', word: 'bat', emoji: '🦇' },
+    { onset: 'r', word: 'rat', emoji: '🐀' },
+  ]},
+  { rime: 'an', words: [
+    { onset: 'c', word: 'can', emoji: '🥫' },
+    { onset: 'f', word: 'fan', emoji: '🪭' },
+    { onset: 'm', word: 'man', emoji: '👨' },
+    { onset: 'v', word: 'van', emoji: '🚐' },
+  ]},
+  { rime: 'og', words: [
+    { onset: 'd', word: 'dog', emoji: '🐕' },
+    { onset: 'l', word: 'log', emoji: '🪵' },
+    { onset: 'f', word: 'fog', emoji: '🌫️' },
+    { onset: 'h', word: 'hog', emoji: '🐗' },
+  ]},
+  { rime: 'ug', words: [
+    { onset: 'b', word: 'bug', emoji: '🐛' },
+    { onset: 'm', word: 'mug', emoji: '☕' },
+    { onset: 'h', word: 'hug', emoji: '🤗' },
+    { onset: 'j', word: 'jug', emoji: '🫗' },
+  ]},
+  { rime: 'un', words: [
+    { onset: 's', word: 'sun', emoji: '☀️' },
+    { onset: 'f', word: 'fun', emoji: '🎉' },
+    { onset: 'r', word: 'run', emoji: '🏃' },
+    { onset: 'b', word: 'bun', emoji: '🍞' },
+  ]},
+  { rime: 'en', words: [
+    { onset: 'h', word: 'hen', emoji: '🐔' },
+    { onset: 'p', word: 'pen', emoji: '🖊️' },
+    { onset: 't', word: 'ten', emoji: '🔟' },
+    { onset: 'd', word: 'den', emoji: '🏠' },
+  ]},
+  { rime: 'ig', words: [
+    { onset: 'p', word: 'pig', emoji: '🐷' },
+    { onset: 'b', word: 'big', emoji: '🐘' },
+    { onset: 'd', word: 'dig', emoji: '⛏️' },
+    { onset: 'w', word: 'wig', emoji: '💇' },
+  ]},
+  { rime: 'op', words: [
+    { onset: 'h', word: 'hop', emoji: '🐸' },
+    { onset: 'm', word: 'mop', emoji: '🧹' },
+    { onset: 'p', word: 'pop', emoji: '💥' },
+    { onset: 't', word: 'top', emoji: '🔝' },
+  ]},
 ];
 
 /**
- * Sets up an Elements round. Shows an element card with its symbol and atomic
- * number, then asks the child to identify the element name from 4 choices.
- * At 5+ stars, shows only the symbol (no atomic number hint).
+ * Sets up a Reading round.
+ * Stars 0-2: Onset-rime — show picture + rime, child presses the starting letter.
+ * Stars 3-4: Full CVC blending — show letters sounded out, child picks the picture.
  */
-function elementsRound() {
-  const correct = ELEMENTS_DATA[Math.floor(Math.random() * ELEMENTS_DATA.length)];
-  const options = pickN(ELEMENTS_DATA, 4, correct);
-  const correctIdx = options.indexOf(correct);
+function readingRound() {
+  const family = WORD_FAMILIES[Math.floor(Math.random() * WORD_FAMILIES.length)];
+  const target = family.words[Math.floor(Math.random() * family.words.length)];
 
-  promptEmoji.textContent = '\u269B\uFE0F';
-  promptText.innerHTML = t('whatElement');
+  if (stars < 3) {
+    // ---- Onset-rime mode ----
+    promptEmoji.textContent = target.emoji;
+    promptText.innerHTML = t('whatStarts') + ' <strong>' + target.word + '</strong>?';
 
-  // Build the element card display
-  const showNumber = stars < 3;
-  extraArea.innerHTML = `
-        <div class="element-card-display">
-            <div class="element-card-big" style="border-color:${correct.color}; background: linear-gradient(135deg, ${correct.color}22, ${correct.color}11);">
-                ${showNumber ? `<span class="element-number">${correct.number}</span>` : ''}
-                <span class="element-symbol" style="color:${correct.color}">${correct.symbol}</span>
-                <span class="element-emoji">${correct.emoji}</span>
-            </div>
-        </div>
-    `;
+    // Show the rime with a slot for the missing onset
+    extraArea.innerHTML = '<div class="blend-display">' +
+      '<span class="blend-slot">?</span>' +
+      '<span class="blend-rime-text">' + family.rime + '</span>' +
+      '</div>';
+
+    // 4 letter choices from this word family (press actual letter keys!)
+    const options = shuffle([...family.words]);
+    const correctIdx = options.indexOf(target);
+
+    activeKeyMap = {};
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+    options.forEach((w, i) => {
+      const key = w.onset.toLowerCase();
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn blend-choice';
+      btn.dataset.key = key;
+      btn.innerHTML = '<span class="choice-visual blend-letter">' + w.onset.toUpperCase() +
+        '</span><span class="choice-keycap">' + keycapHTML(key.toUpperCase()) + '</span>';
+      btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+        extraArea.innerHTML = '<div class="blend-result">' +
+          '<span class="blend-onset-big">' + target.onset + '</span>' +
+          '<span class="blend-rime-text">' + family.rime + '</span>' +
+          '<span class="blend-arrow">→</span>' +
+          '<span class="blend-word-big">' + target.word + '!</span></div>';
+        setTimeout(() => Audio_.speak(target.onset + '...' + family.rime + '...' + target.word + '!'), 200);
+      }));
+      choicesEl.appendChild(btn);
+      activeKeyMap[key] = i;
+    });
+    correctKey = target.onset.toLowerCase();
+
+    setKeyHint(t('pressLetter') + ' ' + target.onset.toUpperCase() + '!');
+    setTimeout(() => Audio_.speak(target.word + '! What sound does ' + target.word + ' start with?'), 300);
+
+  } else {
+    // ---- Full CVC blending mode ----
+    const letters = target.word.split('');
+    promptEmoji.textContent = '📖';
+    promptText.innerHTML = t('whatWordIs');
+
+    // Show individual letters being sounded out
+    extraArea.innerHTML = '<div class="blend-display">' +
+      letters.map(l => '<span class="blend-letter-big">' + l + '</span>').join('<span class="blend-dot">·</span>') +
+      '</div>';
+
+    // 4 picture choices: correct + 3 from other families
+    const otherWords = WORD_FAMILIES.filter(f => f !== family).flatMap(f => f.words);
+    const distractors = shuffle(otherWords).slice(0, 3);
+    const options = shuffle([target, ...distractors]);
+    const correctIdx = options.indexOf(target);
+
+    activeKeyMap = {};
+    choicesEl.className = 'choices';
+    choicesEl.innerHTML = '';
+    options.forEach((w, i) => {
+      const keyNum = String(i + 1);
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.dataset.key = keyNum;
+      btn.innerHTML = '<span class="choice-visual">' + w.emoji +
+        '</span><span class="choice-label">' + w.word +
+        '</span><span class="choice-keycap">' + keycapHTML(keyNum) + '</span>';
+      btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+        setTimeout(() => Audio_.speak(letters.join('...') + '...' + target.word + '!'), 200);
+      }));
+      choicesEl.appendChild(btn);
+      activeKeyMap[keyNum] = i;
+    });
+    correctKey = String(correctIdx + 1);
+
+    setKeyHint(letters.join(' · ') + ' = ?');
+    setTimeout(() => Audio_.speak(letters.join('...') + '... what word?'), 300);
+  }
+}
+
+// ============================================
+// OPPOSITES Game — find the opposite concept
+// ============================================
+
+/**
+ * Opposite pairs for the Opposites game.
+ * Each pair has two concepts with emoji visuals and bilingual names.
+ * @type {Array<{a: {emoji: string, name: string, pt: string}, b: {emoji: string, name: string, pt: string}}>}
+ */
+const OPPOSITES_DATA = [
+  { a: { emoji: '🐘', name: 'Big', pt: 'Grande' },     b: { emoji: '🐜', name: 'Small', pt: 'Pequeno' } },
+  { a: { emoji: '🔥', name: 'Hot', pt: 'Quente' },     b: { emoji: '🧊', name: 'Cold', pt: 'Frio' } },
+  { a: { emoji: '🐆', name: 'Fast', pt: 'Rápido' },    b: { emoji: '🐢', name: 'Slow', pt: 'Lento' } },
+  { a: { emoji: '😊', name: 'Happy', pt: 'Feliz' },    b: { emoji: '😢', name: 'Sad', pt: 'Triste' } },
+  { a: { emoji: '☀️', name: 'Day', pt: 'Dia' },        b: { emoji: '🌙', name: 'Night', pt: 'Noite' } },
+  { a: { emoji: '⬆️', name: 'Up', pt: 'Cima' },        b: { emoji: '⬇️', name: 'Down', pt: 'Baixo' } },
+  { a: { emoji: '🧸', name: 'Soft', pt: 'Macio' },     b: { emoji: '🪨', name: 'Hard', pt: 'Duro' } },
+  { a: { emoji: '🌞', name: 'Light', pt: 'Claro' },    b: { emoji: '🌑', name: 'Dark', pt: 'Escuro' } },
+  { a: { emoji: '📢', name: 'Loud', pt: 'Alto' },      b: { emoji: '🤫', name: 'Quiet', pt: 'Silêncio' } },
+  { a: { emoji: '🏋️', name: 'Heavy', pt: 'Pesado' },   b: { emoji: '🪶', name: 'Light', pt: 'Leve' } },
+  { a: { emoji: '🧓', name: 'Old', pt: 'Velho' },      b: { emoji: '👶', name: 'Young', pt: 'Novo' } },
+  { a: { emoji: '🏔️', name: 'Tall', pt: 'Alto' },      b: { emoji: '🍄', name: 'Short', pt: 'Baixo' } },
+  { a: { emoji: '📦', name: 'Full', pt: 'Cheio' },     b: { emoji: '🫙', name: 'Empty', pt: 'Vazio' } },
+  { a: { emoji: '🌊', name: 'Wet', pt: 'Molhado' },    b: { emoji: '🏜️', name: 'Dry', pt: 'Seco' } },
+];
+
+/**
+ * Sets up an Opposites round. Shows a concept (emoji + name spoken aloud),
+ * asks the child to find its opposite from 4 emoji choices.
+ */
+function oppositesRound() {
+  const pair = OPPOSITES_DATA[Math.floor(Math.random() * OPPOSITES_DATA.length)];
+  // Randomly pick which side is the prompt and which is the answer
+  const flip = Math.random() < 0.5;
+  const prompt = flip ? pair.a : pair.b;
+  const answer = flip ? pair.b : pair.a;
+
+  // Build 4 choices: the correct opposite + 3 random distractors
+  const otherSides = OPPOSITES_DATA
+    .filter(p => p !== pair)
+    .flatMap(p => [p.a, p.b]);
+  const distractors = shuffle(otherSides).slice(0, 3);
+  const options = shuffle([answer, ...distractors]);
+  const correctIdx = options.indexOf(answer);
+
+  // Show the prompt concept with large emoji
+  promptEmoji.textContent = prompt.emoji;
+  const promptName = lang === 'pt' ? prompt.pt : prompt.name;
+  promptText.innerHTML = t('findOpposite') + ' <strong>' + promptName + '</strong>';
+  extraArea.innerHTML = '';
 
   activeKeyMap = {};
   choicesEl.className = 'choices';
   choicesEl.innerHTML = '';
-  options.forEach((el, i) => {
+  options.forEach((opt, i) => {
     const keyNum = String(i + 1);
     const btn = document.createElement('button');
-    btn.className = 'choice-btn element-choice';
+    btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
-    btn.innerHTML = `<span class="choice-visual">${el.emoji}</span>${bilingualLabel(el.name, el.pt)}<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
-    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
-      // Show the fun fact after correct answer
-      const factDiv = document.createElement('div');
-      factDiv.className = 'element-fact';
-      factDiv.textContent = lang === 'pt' ? correct.ptFact : correct.fact;
-      extraArea.appendChild(factDiv);
-    }));
+    btn.innerHTML = '<span class="choice-visual">' + opt.emoji + '</span>' + bilingualLabel(opt.name, opt.pt) + '<span class="choice-keycap">' + keycapHTML(keyNum) + '</span>';
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
   correctKey = String(correctIdx + 1);
 
-
-  setKeyHint(`${t('whatSymbol')} ${correct.symbol}?`);
-  setTimeout(() => Audio_.speak(`${t('whatSymbol')} ${correct.symbol}?`), 300);
+  const speakName = lang === 'pt' ? prompt.pt : prompt.name;
+  setKeyHint(t('findOpposite') + ' ' + speakName);
+  setTimeout(() => Audio_.speak(t('oppositeOf') + ' ' + speakName + '?'), 300);
 }
 
 // ============================================
@@ -1599,7 +1739,7 @@ function renderMemoryGrid() {
     } else if (memoryState.revealed[i]) {
       html += `<div class="memory-card face-up"><span>${memoryState.cards[i]}</span><span class="memory-keycap">${keycapHTML(keyNum)}</span></div>`;
     } else {
-      html += `<div class="memory-card face-down"><span class="memory-keycap">${keycapHTML(keyNum, 'active-key')}</span></div>`;
+      html += `<div class="memory-card face-down" data-idx="${i}"><span class="memory-keycap">${keycapHTML(keyNum, 'active-key')}</span></div>`;
     }
   }
   html += '</div>';
@@ -1608,6 +1748,13 @@ function renderMemoryGrid() {
     : `${memoryState.pairsLeft} pair${memoryState.pairsLeft !== 1 ? 's' : ''} left`;
   html += `<div class="memory-pairs-left">${pairsText}</div>`;
   extraArea.innerHTML = html;
+
+  // Add click handlers to cards
+  extraArea.querySelectorAll('.memory-card[data-idx]').forEach(card => {
+    card.addEventListener('click', () => {
+      handleMemoryKeyPress(String(parseInt(card.dataset.idx) + 1));
+    });
+  });
 }
 
 /**
@@ -1645,7 +1792,6 @@ function handleMemoryKeyPress(key) {
 
         Audio_.correct();
         showCelebration();
-        earnStar();
 
         const matchEnc = t('match');
         setTimeout(() => Audio_.speak(matchEnc[Math.floor(Math.random() * matchEnc.length)]), 400);
@@ -1653,8 +1799,8 @@ function handleMemoryKeyPress(key) {
         setTimeout(() => {
           inputLocked = false;
           if (memoryState.pairsLeft <= 0) {
-            // All pairs found — this counts as extra celebration
-            // Stars are already given per pair, move to next round
+            // All pairs found — award one star for completing the minigame
+            earnStar();
             if (stars < MAX_STARS) {
               nextRound();
             }
