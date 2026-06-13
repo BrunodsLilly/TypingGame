@@ -29,6 +29,9 @@ const Audio_ = (() => {
     /** @type {SpeechSynthesisVoice|null} */
     let speechVoicePt = null;
 
+    /** @type {SpeechSynthesisVoice|null} */
+    let speechVoiceKo = null;
+
     /**
      * Lazily creates (or resumes) the shared AudioContext.
      * @returns {AudioContext}
@@ -103,6 +106,9 @@ const Audio_ = (() => {
                             voices.find(v => v.lang === 'pt-BR') ||
                             voices.find(v => v.lang.startsWith('pt')) ||
                             null;
+            speechVoiceKo = voices.find(v => v.lang === 'ko-KR') ||
+                            voices.find(v => v.lang.startsWith('ko')) ||
+                            null;
         };
         if (speechSynthesis.getVoices().length > 0) pick();
         else speechSynthesis.onvoiceschanged = pick;
@@ -112,7 +118,7 @@ const Audio_ = (() => {
      * Speaks text aloud using SpeechSynthesis.
      * @param {string} text - Text to speak
      * @param {number} [rate=0.85] - Speech rate (0.1 - 10)
-     * @param {string} [language] - Language code ('en' or 'pt'). Defaults to global `lang`.
+     * @param {string} [language] - Language code ('en', 'pt', or 'ko'). Defaults to global `lang`.
      */
     function speak(text, rate = 0.85, language) {
         if (!soundEnabled) return;
@@ -125,6 +131,10 @@ const Audio_ = (() => {
         if (useLang === 'pt') {
             u.lang = 'pt-BR';
             if (speechVoicePt) u.voice = speechVoicePt;
+        } else if (useLang === 'ko') {
+            u.lang = 'ko-KR';
+            u.rate = rate * 0.9; // slightly slower for Korean
+            if (speechVoiceKo) u.voice = speechVoiceKo;
         } else {
             if (speechVoice) u.voice = speechVoice;
         }

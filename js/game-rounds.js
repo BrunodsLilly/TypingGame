@@ -1824,3 +1824,138 @@ function handleMemoryKeyPress(key) {
     }
   }
 }
+
+// ── KOREAN ──
+
+/**
+ * Korean vocabulary: each entry has an emoji picture, English name,
+ * Korean word (Hangul), and romanization for display hints.
+ */
+const KOREAN_WORDS = [
+  { emoji: '🍎', en: 'apple',     kr: '사과',   rom: 'sagwa' },
+  { emoji: '🍌', en: 'banana',    kr: '바나나',  rom: 'banana' },
+  { emoji: '🐱', en: 'cat',       kr: '고양이',  rom: 'goyangi' },
+  { emoji: '🐶', en: 'dog',       kr: '강아지',  rom: 'gangaji' },
+  { emoji: '🐰', en: 'rabbit',    kr: '토끼',   rom: 'tokki' },
+  { emoji: '🐟', en: 'fish',      kr: '물고기',  rom: 'mulgogi' },
+  { emoji: '🦋', en: 'butterfly', kr: '나비',   rom: 'nabi' },
+  { emoji: '⭐', en: 'star',      kr: '별',    rom: 'byeol' },
+  { emoji: '🌙', en: 'moon',      kr: '달',    rom: 'dal' },
+  { emoji: '☀️', en: 'sun',       kr: '해',    rom: 'hae' },
+  { emoji: '🌸', en: 'flower',    kr: '꽃',    rom: 'kkot' },
+  { emoji: '💧', en: 'water',     kr: '물',    rom: 'mul' },
+  { emoji: '📚', en: 'book',      kr: '책',    rom: 'chaek' },
+  { emoji: '⚽', en: 'ball',      kr: '공',    rom: 'gong' },
+  { emoji: '🏠', en: 'house',     kr: '집',    rom: 'jip' },
+  { emoji: '🐦', en: 'bird',      kr: '새',    rom: 'sae' },
+];
+
+/** Dispatches to the correct Korean sub-round based on current level. */
+function koreanRound() {
+  const level = getLevel('korean');
+  if (level === 0) return koreanLevel0();
+  if (level === 1) return koreanLevel1();
+  return koreanLevel2();
+}
+
+/**
+ * Korean Level 0 – "Find the Word!"
+ * Shows a big emoji + English name in the prompt.
+ * Player picks the matching Korean word from 4 buttons (keys 1–4).
+ * Audio speaks the Korean word after a correct answer prompt.
+ */
+function koreanLevel0() {
+  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
+  const options = pickN(KOREAN_WORDS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = correct.emoji;
+  promptText.innerHTML = `Find the Korean word for <b>${correct.en}</b>!`;
+  extraArea.innerHTML = '';
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML = `<span class="choice-visual" style="font-size:1.6em;">${w.kr}</span><span class="choice-subtext" style="font-size:0.7em;color:#888;">${w.rom}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+  correctKey = String(correctIdx + 1);
+
+  setKeyHint(`Find: ${correct.en} → ${correct.kr}`);
+  setTimeout(() => Audio_.speak(`Find the Korean word for ${correct.en}`, 0.85, 'en'), 300);
+}
+
+/**
+ * Korean Level 1 – "Match the Picture!"
+ * Shows the Korean word in the prompt and speaks it aloud in Korean.
+ * Player picks the matching emoji from 4 choices (keys 1–4).
+ */
+function koreanLevel1() {
+  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
+  const options = pickN(KOREAN_WORDS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🇰🇷';
+  promptText.innerHTML = `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span><br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
+  extraArea.innerHTML = '';
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML = `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span><span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+  correctKey = String(correctIdx + 1);
+
+  setKeyHint(`${correct.kr} (${correct.rom}) — find the picture!`);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1600);
+}
+
+/**
+ * Korean Level 2 – "Korean Expert!"
+ * Shows only the Korean word — no English hint, no romanization.
+ * Player picks the matching emoji from 4 choices (keys 1–4).
+ * Audio speaks the Korean word once at the start.
+ */
+function koreanLevel2() {
+  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
+  const options = pickN(KOREAN_WORDS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🇰🇷';
+  promptText.innerHTML = `<span style="font-size:2.2em;font-weight:bold;">${correct.kr}</span>`;
+  extraArea.innerHTML = '';
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML = `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+  correctKey = String(correctIdx + 1);
+
+  setKeyHint(`${correct.kr} — 어느 그림?`);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
+}

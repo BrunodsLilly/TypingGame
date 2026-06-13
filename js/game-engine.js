@@ -87,6 +87,11 @@ const GAME_LEVELS = {
         { name: 'More Colors', ptName: 'Mais Cores', desc: '24 colors', ptDesc: '24 cores', emoji: '🎨' },
         { name: 'Color Expert', ptName: 'Expert', desc: '24 + name the color', ptDesc: '24 + nomeie a cor', emoji: '🌈' },
     ],
+    korean: [
+        { name: 'Find the Word', ptName: 'Achar Palavra', desc: 'See picture, pick Korean', ptDesc: 'Veja figura, escolha coreano', emoji: '🔤' },
+        { name: 'Match Picture', ptName: 'Combinar Figura', desc: 'See Korean, pick picture', ptDesc: 'Veja coreano, escolha figura', emoji: '🖼️' },
+        { name: 'Korean Expert', ptName: 'Expert Coreano', desc: 'Korean only, no English hint', ptDesc: 'Só coreano, sem dica inglês', emoji: '🏆' },
+    ],
 };
 
 /**
@@ -248,7 +253,7 @@ updateHomeLevelBadges();
 const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
-    rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF',
+    rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
 };
 
 function startGame(game) {
@@ -522,6 +527,7 @@ function nextRound() {
         case 'reading':   readingRound();   break;
         case 'opposites': oppositesRound(); break;
         case 'geometry': geometryRound(); break;
+        case 'korean':   koreanRound();   break;
     }
 }
 
@@ -537,7 +543,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
