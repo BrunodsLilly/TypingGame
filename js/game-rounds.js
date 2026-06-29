@@ -1885,7 +1885,7 @@ const KOREAN_PHRASES = [
  * and the app speaks the full polite request.
  */
 const KOREAN_REQUEST_ITEMS = [
-  { emoji: '💧', en: 'water',  kr: '물',    rom: 'mul',    wiki: 'Water' },
+  { emoji: '💧', en: 'water',  kr: '물',    rom: 'mul',    wiki: 'Bottled_water' },
   { emoji: '🥛', en: 'milk',   kr: '우유',   rom: 'uyu',    wiki: 'Milk' },
   { emoji: '🍚', en: 'rice',   kr: '밥',    rom: 'bap',    wiki: 'Cooked_rice' },
   { emoji: '🍪', en: 'snack',  kr: '과자',   rom: 'gwaja',  wiki: 'Cookie' },
