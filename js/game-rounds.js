@@ -1885,14 +1885,14 @@ const KOREAN_PHRASES = [
  * and the app speaks the full polite request.
  */
 const KOREAN_REQUEST_ITEMS = [
-  { emoji: '💧', en: 'water',  kr: '물',    rom: 'mul' },
-  { emoji: '🥛', en: 'milk',   kr: '우유',   rom: 'uyu' },
-  { emoji: '🍚', en: 'rice',   kr: '밥',    rom: 'bap' },
-  { emoji: '🍪', en: 'snack',  kr: '과자',   rom: 'gwaja' },
-  { emoji: '🍞', en: 'bread',  kr: '빵',    rom: 'ppang' },
-  { emoji: '🍎', en: 'apple',  kr: '사과',   rom: 'sagwa' },
-  { emoji: '🍌', en: 'banana', kr: '바나나',  rom: 'banana' },
-  { emoji: '🧃', en: 'juice',  kr: '주스',   rom: 'juseu' },
+  { emoji: '💧', en: 'water',  kr: '물',    rom: 'mul',    wiki: 'Water' },
+  { emoji: '🥛', en: 'milk',   kr: '우유',   rom: 'uyu',    wiki: 'Milk' },
+  { emoji: '🍚', en: 'rice',   kr: '밥',    rom: 'bap',    wiki: 'Cooked_rice' },
+  { emoji: '🍪', en: 'snack',  kr: '과자',   rom: 'gwaja',  wiki: 'Cookie' },
+  { emoji: '🍞', en: 'bread',  kr: '빵',    rom: 'ppang',  wiki: 'Bread' },
+  { emoji: '🍎', en: 'apple',  kr: '사과',   rom: 'sagwa',  wiki: 'Apple' },
+  { emoji: '🍌', en: 'banana', kr: '바나나',  rom: 'banana', wiki: 'Banana' },
+  { emoji: '🧃', en: 'juice',  kr: '주스',   rom: 'juseu',  wiki: 'Juice' },
 ];
 
 /**
@@ -1919,9 +1919,15 @@ async function fetchKoreanImage(word) {
   }
 }
 
-/** Pre-warm the image cache for all vocabulary words (fire-and-forget). */
+/** Pre-warm the image cache for a list of items that have a `wiki` field
+ * (fire-and-forget). */
+function preloadKoreanImagesFor(items) {
+  items.forEach(w => fetchKoreanImage(w));
+}
+
+/** Pre-warm the image cache for all Match Picture vocabulary words. */
 function preloadKoreanImages() {
-  KOREAN_WORDS.forEach(w => fetchKoreanImage(w));
+  preloadKoreanImagesFor(KOREAN_WORDS);
 }
 
 /** Dispatches to the correct Korean sub-round based on current level. */
@@ -2027,6 +2033,8 @@ function koreanPhraseRound() {
  * polite request "<word> 주세요" is spoken back in Korean.
  */
 function koreanAskRound() {
+  preloadKoreanImagesFor(KOREAN_REQUEST_ITEMS);
+
   const correct = KOREAN_REQUEST_ITEMS[Math.floor(Math.random() * KOREAN_REQUEST_ITEMS.length)];
   const options = pickN(KOREAN_REQUEST_ITEMS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -2047,8 +2055,15 @@ function koreanAskRound() {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
+
+    const imgUrl = KOREAN_IMAGE_CACHE[item.wiki];
+    const visualHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${item.en}"
+             style="width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
+      : `<span style="font-size:1.5em;">${item.emoji}</span>`;
+
     btn.innerHTML =
-      `<span class="choice-visual" style="font-size:1.5em;">${item.emoji}</span>` +
+      `<span class="choice-visual">${visualHTML}</span>` +
       `<span class="choice-visual" style="font-size:1.4em;font-weight:bold;">${item.kr}</span>` +
       `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${item.rom}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
