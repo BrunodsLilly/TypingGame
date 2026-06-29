@@ -1859,21 +1859,21 @@ const KOREAN_WORDS = [
 const KOREAN_PHRASES = [
   { emoji: '🥰❤️', en: 'I love you',      kr: '사랑해요',         rom: 'saranghaeyo' },
   { emoji: '🙏😊', en: 'thank you',       kr: '고마워요',         rom: 'gomawoyo' },
-  { emoji: '😋🍚', en: "I'm hungry",      kr: '배고파요',         rom: 'baegopayo', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Family_Style_Meal_Service_With_Children_in_the_CACFP_%2820221214-USDA-FNS-UNK-027%29.jpg/330px-Family_Style_Meal_Service_With_Children_in_the_CACFP_%2820221214-USDA-FNS-UNK-027%29.jpg' },
+  { emoji: '😋🍚', en: "I'm hungry",      kr: '배고파요',         rom: 'baegopayo', img: 'img/korean/hungry.jpg' },
   { emoji: '😴💤', en: "I'm sleepy",      kr: '졸려요',          rom: 'jollyeoyo' },
   { emoji: '🤗',   en: 'hug me please',   kr: '안아 주세요',       rom: 'ana juseyo' },
   { emoji: '😋👍', en: "it's yummy",      kr: '맛있어요',         rom: 'masisseoyo' },
   { emoji: '😨',   en: "I'm scared",      kr: '무서워요',         rom: 'museowoyo' },
-  { emoji: '🤕',   en: 'it hurts / ouch', kr: '아파요',          rom: 'apayo', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Child_gets_a_bandage_on_their_knee_after_a_small_injury_closeup.jpg/330px-Child_gets_a_bandage_on_their_knee_after_a_small_injury_closeup.jpg' },
+  { emoji: '🤕',   en: 'it hurts / ouch', kr: '아파요',          rom: 'apayo', img: 'img/korean/hurts.jpg' },
   { emoji: '👋😊', en: 'hello',           kr: '안녕하세요',       rom: 'annyeonghaseyo' },
   { emoji: '👋🚪', en: 'goodbye',         kr: '안녕히 가세요',    rom: 'annyeonghi gaseyo' },
   { emoji: '😔🙏', en: "I'm sorry",       kr: '미안해요',         rom: 'mianhaeyo' },
   { emoji: '🚽',   en: 'I need potty',    kr: '화장실 가고 싶어요', rom: 'hwajangsil gago sipeoyo' },
-  { emoji: '🧸😄', en: 'I want to play',  kr: '놀고 싶어요',       rom: 'nolgo sipeoyo', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Children_Playing_-_Kigali_2007.jpg/330px-Children_Playing_-_Kigali_2007.jpg' },
+  { emoji: '🧸😄', en: 'I want to play',  kr: '놀고 싶어요',       rom: 'nolgo sipeoyo', img: 'img/korean/play.jpg' },
   { emoji: '🚶‍♀️🚶', en: "let's go together", kr: '같이 가요', rom: 'gachi gayo' },
   { emoji: '🤝',   en: 'hold my hand',    kr: '손 잡아요',        rom: 'son jabayo' },
-  { emoji: '👩‍👧', en: 'mommy',           kr: '엄마',           rom: 'eomma', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Young_mother_smiling_while_holding_her_baby_in_Laos.jpg/330px-Young_mother_smiling_while_holding_her_baby_in_Laos.jpg' },
-  { emoji: '👨‍👧', en: 'daddy',           kr: '아빠',           rom: 'appa', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Father_and_son_27.jpg/330px-Father_and_son_27.jpg' },
+  { emoji: '👩‍👧', en: 'mommy',           kr: '엄마',           rom: 'eomma', img: 'img/korean/mommy.jpg' },
+  { emoji: '👨‍👧', en: 'daddy',           kr: '아빠',           rom: 'appa', img: 'img/korean/daddy.jpg' },
   { emoji: '➕🍽️', en: 'more please',     kr: '더 주세요',        rom: 'deo juseyo' },
   { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo' },
   { emoji: '🆘🙏', en: 'help me',         kr: '도와주세요',       rom: 'dowajuseyo' },
@@ -1930,6 +1930,23 @@ function preloadKoreanImages() {
   preloadKoreanImagesFor(KOREAN_WORDS);
 }
 
+/** Builds a big tappable 🔊 button that re-speaks the prompt. Essential on
+ * iPad/touch devices, where the auto-spoken prompt may be suppressed and
+ * there is no keyboard. Speaking happens directly inside the tap handler so
+ * iOS allows it. Returns the element; caller appends it to extraArea. */
+function koreanSpeakerButton(text, langCode) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'text-align:center;margin:6px 0 2px;';
+  const b = document.createElement('button');
+  b.className = 'choice-btn';
+  b.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:8px;padding:10px 20px;min-width:0;';
+  b.innerHTML = '<span style="font-size:1.6em;">🔊</span><span style="font-size:0.8em;color:#666;">tap to hear</span>';
+  const replay = () => Audio_.speak(text, 0.75, langCode);
+  b.addEventListener('click', replay);
+  wrap.appendChild(b);
+  return wrap;
+}
+
 /** Dispatches to the correct Korean sub-round based on current level. */
 function koreanRound() {
   const level = getLevel('korean');
@@ -1955,6 +1972,7 @@ function koreanMatchPicture() {
     `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span>` +
     `<br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
   extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.kr, 'ko'));
 
   activeKeyMap = {};
   choicesEl.className = 'choices';
@@ -2002,6 +2020,7 @@ function koreanPhraseRound() {
     `<span style="font-size:1.6em;font-weight:bold;">${correct.kr}</span>` +
     `<br><span style="font-size:0.8em;color:#888;">${correct.rom}</span>`;
   extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.kr, 'ko'));
 
   activeKeyMap = {};
   choicesEl.className = 'choices';
@@ -2049,6 +2068,7 @@ function koreanAskRound() {
     `Ask for <b>${correct.en}</b> nicely!` +
     `<br><span style="font-size:0.9em;color:#888;">___ 주세요 (please)</span>`;
   extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(`Ask for ${correct.en}`, 'en'));
 
   activeKeyMap = {};
   choicesEl.className = 'choices';

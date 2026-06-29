@@ -150,7 +150,26 @@ const Audio_ = (() => {
         return soundEnabled;
     }
 
+    /**
+     * Unlocks audio on iOS/iPad. SpeechSynthesis and the AudioContext stay
+     * blocked until first triggered inside a user gesture, so we prime both
+     * on the first touch/click/keypress anywhere in the document.
+     */
+    let unlocked = false;
+    function unlockAudio() {
+        if (unlocked) return;
+        unlocked = true;
+        try { getCtx(); } catch (e) {}
+        try {
+            const u = new SpeechSynthesisUtterance(' ');
+            u.volume = 0;
+            speechSynthesis.speak(u);
+        } catch (e) {}
+    }
+
     initVoice();
+    ['pointerdown', 'touchend', 'mousedown', 'keydown'].forEach(ev =>
+        window.addEventListener(ev, unlockAudio, { passive: true }));
     return { correct, wrong, celebration, tap, speak, toggle, get enabled() { return soundEnabled; } };
 })();
 
