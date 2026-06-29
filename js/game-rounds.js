@@ -1828,134 +1828,241 @@ function handleMemoryKeyPress(key) {
 // ── KOREAN ──
 
 /**
- * Korean vocabulary: each entry has an emoji picture, English name,
- * Korean word (Hangul), and romanization for display hints.
+ * Korean vocabulary: each entry has an emoji fallback, English name,
+ * Korean word (Hangul), romanization, and optional Wikipedia article title
+ * used to fetch a real photo thumbnail.
  */
 const KOREAN_WORDS = [
-  { emoji: '🍎', en: 'apple',     kr: '사과',   rom: 'sagwa' },
-  { emoji: '🍌', en: 'banana',    kr: '바나나',  rom: 'banana' },
-  { emoji: '🐱', en: 'cat',       kr: '고양이',  rom: 'goyangi' },
-  { emoji: '🐶', en: 'dog',       kr: '강아지',  rom: 'gangaji' },
-  { emoji: '🐰', en: 'rabbit',    kr: '토끼',   rom: 'tokki' },
-  { emoji: '🐟', en: 'fish',      kr: '물고기',  rom: 'mulgogi' },
-  { emoji: '🦋', en: 'butterfly', kr: '나비',   rom: 'nabi' },
-  { emoji: '⭐', en: 'star',      kr: '별',    rom: 'byeol' },
-  { emoji: '🌙', en: 'moon',      kr: '달',    rom: 'dal' },
-  { emoji: '☀️', en: 'sun',       kr: '해',    rom: 'hae' },
-  { emoji: '🌸', en: 'flower',    kr: '꽃',    rom: 'kkot' },
-  { emoji: '💧', en: 'water',     kr: '물',    rom: 'mul' },
-  { emoji: '📚', en: 'book',      kr: '책',    rom: 'chaek' },
-  { emoji: '⚽', en: 'ball',      kr: '공',    rom: 'gong' },
-  { emoji: '🏠', en: 'house',     kr: '집',    rom: 'jip' },
-  { emoji: '🐦', en: 'bird',      kr: '새',    rom: 'sae' },
+  { emoji: '🍎', en: 'apple',     kr: '사과',   rom: 'sagwa',   wiki: 'Apple' },
+  { emoji: '🍌', en: 'banana',    kr: '바나나',  rom: 'banana',  wiki: 'Banana' },
+  { emoji: '🐱', en: 'cat',       kr: '고양이',  rom: 'goyangi', wiki: 'Cat' },
+  { emoji: '🐶', en: 'dog',       kr: '강아지',  rom: 'gangaji', wiki: 'Dog' },
+  { emoji: '🐰', en: 'rabbit',    kr: '토끼',   rom: 'tokki',   wiki: 'Rabbit' },
+  { emoji: '🐟', en: 'fish',      kr: '물고기',  rom: 'mulgogi', wiki: 'Fish' },
+  { emoji: '🦋', en: 'butterfly', kr: '나비',   rom: 'nabi',    wiki: 'Butterfly' },
+  { emoji: '⭐', en: 'star',      kr: '별',    rom: 'byeol',   wiki: 'Star' },
+  { emoji: '🌙', en: 'moon',      kr: '달',    rom: 'dal',     wiki: 'Moon' },
+  { emoji: '☀️', en: 'sun',       kr: '해',    rom: 'hae',     wiki: 'Sun' },
+  { emoji: '🌸', en: 'flower',    kr: '꽃',    rom: 'kkot',    wiki: 'Flower' },
+  { emoji: '💧', en: 'water',     kr: '물',    rom: 'mul',     wiki: 'Water' },
+  { emoji: '📚', en: 'book',      kr: '책',    rom: 'chaek',   wiki: 'Book' },
+  { emoji: '⚽', en: 'ball',      kr: '공',    rom: 'gong',    wiki: 'Ball_(association_football)' },
+  { emoji: '🏠', en: 'house',     kr: '집',    rom: 'jip',     wiki: 'House' },
+  { emoji: '🐦', en: 'bird',      kr: '새',    rom: 'sae',     wiki: 'Bird' },
 ];
+
+/**
+ * Daily family phrases a toddler uses when talking to family.
+ * Each: composite-emoji "scene", English meaning, Korean (Hangul),
+ * and romanization. Used by the "What It Means" comprehension level.
+ */
+const KOREAN_PHRASES = [
+  { emoji: '🥰❤️', en: 'I love you',      kr: '사랑해요',         rom: 'saranghaeyo' },
+  { emoji: '🙏😊', en: 'thank you',       kr: '고마워요',         rom: 'gomawoyo' },
+  { emoji: '😋🍚', en: "I'm hungry",      kr: '배고파요',         rom: 'baegopayo' },
+  { emoji: '😴💤', en: "I'm sleepy",      kr: '졸려요',          rom: 'jollyeoyo' },
+  { emoji: '🤗',   en: 'hug me please',   kr: '안아 주세요',       rom: 'ana juseyo' },
+  { emoji: '😋👍', en: "it's yummy",      kr: '맛있어요',         rom: 'masisseoyo' },
+  { emoji: '😨',   en: "I'm scared",      kr: '무서워요',         rom: 'museowoyo' },
+  { emoji: '🤕',   en: 'it hurts / ouch', kr: '아파요',          rom: 'apayo' },
+  { emoji: '👋😊', en: 'hello',           kr: '안녕하세요',       rom: 'annyeonghaseyo' },
+  { emoji: '👋🚪', en: 'goodbye',         kr: '안녕히 가세요',    rom: 'annyeonghi gaseyo' },
+  { emoji: '😔🙏', en: "I'm sorry",       kr: '미안해요',         rom: 'mianhaeyo' },
+  { emoji: '🚽',   en: 'I need potty',    kr: '화장실 가고 싶어요', rom: 'hwajangsil gago sipeoyo' },
+  { emoji: '🧸😄', en: 'I want to play',  kr: '놀고 싶어요',       rom: 'nolgo sipeoyo' },
+  { emoji: '🚶‍♀️🚶', en: "let's go together", kr: '같이 가요', rom: 'gachi gayo' },
+  { emoji: '🤝',   en: 'hold my hand',    kr: '손 잡아요',        rom: 'son jabayo' },
+  { emoji: '👩‍👧', en: 'mommy',           kr: '엄마',           rom: 'eomma' },
+  { emoji: '👨‍👧', en: 'daddy',           kr: '아빠',           rom: 'appa' },
+  { emoji: '➕🍽️', en: 'more please',     kr: '더 주세요',        rom: 'deo juseyo' },
+  { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo' },
+  { emoji: '🆘🙏', en: 'help me',         kr: '도와주세요',       rom: 'dowajuseyo' },
+];
+
+/**
+ * Things a toddler can politely ask for with the "___ 주세요" frame.
+ * Used by the "Ask Nicely" build level. The child picks the right word
+ * and the app speaks the full polite request.
+ */
+const KOREAN_REQUEST_ITEMS = [
+  { emoji: '💧', en: 'water',  kr: '물',    rom: 'mul' },
+  { emoji: '🥛', en: 'milk',   kr: '우유',   rom: 'uyu' },
+  { emoji: '🍚', en: 'rice',   kr: '밥',    rom: 'bap' },
+  { emoji: '🍪', en: 'snack',  kr: '과자',   rom: 'gwaja' },
+  { emoji: '🍞', en: 'bread',  kr: '빵',    rom: 'ppang' },
+  { emoji: '🍎', en: 'apple',  kr: '사과',   rom: 'sagwa' },
+  { emoji: '🍌', en: 'banana', kr: '바나나',  rom: 'banana' },
+  { emoji: '🧃', en: 'juice',  kr: '주스',   rom: 'juseu' },
+];
+
+/**
+ * Image cache: wiki title → URL string, or null if the fetch failed.
+ * @type {Object<string, string|null>}
+ */
+const KOREAN_IMAGE_CACHE = {};
+
+/**
+ * Fetch a Wikipedia thumbnail for a single KOREAN_WORDS entry and
+ * store the result in KOREAN_IMAGE_CACHE keyed by wiki title.
+ */
+async function fetchKoreanImage(word) {
+  if (word.wiki in KOREAN_IMAGE_CACHE) return;
+  try {
+    const res = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.wiki)}`
+    );
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    KOREAN_IMAGE_CACHE[word.wiki] = data.thumbnail?.source ?? null;
+  } catch {
+    KOREAN_IMAGE_CACHE[word.wiki] = null;
+  }
+}
+
+/** Pre-warm the image cache for all vocabulary words (fire-and-forget). */
+function preloadKoreanImages() {
+  KOREAN_WORDS.forEach(w => fetchKoreanImage(w));
+}
 
 /** Dispatches to the correct Korean sub-round based on current level. */
 function koreanRound() {
   const level = getLevel('korean');
-  if (level === 0) return koreanLevel0();
-  if (level === 1) return koreanLevel1();
-  return koreanLevel2();
+  if (level === 1) return koreanPhraseRound();
+  if (level === 2) return koreanAskRound();
+  return koreanMatchPicture();
 }
 
-/**
- * Korean Level 0 – "Find the Word!"
- * Shows a big emoji + English name in the prompt.
- * Player picks the matching Korean word from 4 buttons (keys 1–4).
- * Audio speaks the Korean word after a correct answer prompt.
+/** Korean Level 0 – "Match the Picture!"
+ * Speaks the Korean word aloud; player picks the matching real-photo
+ * choice from 4 buttons (keys 1–4). Falls back to emoji when no image
+ * has been cached yet.
  */
-function koreanLevel0() {
-  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
-  const options = pickN(KOREAN_WORDS, 4, correct);
-  const correctIdx = options.indexOf(correct);
+function koreanMatchPicture() {
+  preloadKoreanImages();
 
-  promptEmoji.textContent = correct.emoji;
-  promptText.innerHTML = `Find the Korean word for <b>${correct.en}</b>!`;
-  extraArea.innerHTML = '';
-
-  activeKeyMap = {};
-  choicesEl.className = 'choices';
-  choicesEl.innerHTML = '';
-  options.forEach((w, i) => {
-    const keyNum = String(i + 1);
-    const btn = document.createElement('button');
-    btn.className = 'choice-btn';
-    btn.dataset.key = keyNum;
-    btn.innerHTML = `<span class="choice-visual" style="font-size:1.6em;">${w.kr}</span><span class="choice-subtext" style="font-size:0.7em;color:#888;">${w.rom}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
-    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
-    choicesEl.appendChild(btn);
-    activeKeyMap[keyNum] = i;
-  });
-  correctKey = String(correctIdx + 1);
-
-  setKeyHint(`Find: ${correct.en} → ${correct.kr}`);
-  setTimeout(() => Audio_.speak(`Find the Korean word for ${correct.en}`, 0.85, 'en'), 300);
-}
-
-/**
- * Korean Level 1 – "Match the Picture!"
- * Shows the Korean word in the prompt and speaks it aloud in Korean.
- * Player picks the matching emoji from 4 choices (keys 1–4).
- */
-function koreanLevel1() {
   const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
   const options = pickN(KOREAN_WORDS, 4, correct);
   const correctIdx = options.indexOf(correct);
 
   promptEmoji.textContent = '🇰🇷';
-  promptText.innerHTML = `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span><br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span>` +
+    `<br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
   extraArea.innerHTML = '';
 
   activeKeyMap = {};
   choicesEl.className = 'choices';
   choicesEl.innerHTML = '';
+
   options.forEach((w, i) => {
     const keyNum = String(i + 1);
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
-    btn.innerHTML = `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span><span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+
+    const imgUrl = KOREAN_IMAGE_CACHE[w.wiki];
+    const visualHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${w.en}"
+             style="width:90px;height:90px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
+      : `<span style="font-size:2em;">${w.emoji}</span>`;
+
+    btn.innerHTML =
+      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+
     btn.addEventListener('click', () => handleAnswer(i, correctIdx));
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
-  correctKey = String(correctIdx + 1);
 
+  correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.kr} (${correct.rom}) — find the picture!`);
   setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
   setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1600);
 }
 
-/**
- * Korean Level 2 – "Korean Expert!"
- * Shows only the Korean word — no English hint, no romanization.
- * Player picks the matching emoji from 4 choices (keys 1–4).
- * Audio speaks the Korean word once at the start.
+/** Korean Level 1 – "What It Means!"
+ * Speaks a daily family phrase in Korean; player picks the emoji scene
+ * that matches its meaning (keys 1–4). English meaning shown as subtext.
  */
-function koreanLevel2() {
-  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
-  const options = pickN(KOREAN_WORDS, 4, correct);
+function koreanPhraseRound() {
+  const correct = KOREAN_PHRASES[Math.floor(Math.random() * KOREAN_PHRASES.length)];
+  const options = pickN(KOREAN_PHRASES, 4, correct);
   const correctIdx = options.indexOf(correct);
 
   promptEmoji.textContent = '🇰🇷';
-  promptText.innerHTML = `<span style="font-size:2.2em;font-weight:bold;">${correct.kr}</span>`;
+  promptText.innerHTML =
+    `<span style="font-size:1.6em;font-weight:bold;">${correct.kr}</span>` +
+    `<br><span style="font-size:0.8em;color:#888;">${correct.rom}</span>`;
   extraArea.innerHTML = '';
 
   activeKeyMap = {};
   choicesEl.className = 'choices';
   choicesEl.innerHTML = '';
-  options.forEach((w, i) => {
+
+  options.forEach((p, i) => {
     const keyNum = String(i + 1);
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
-    btn.innerHTML = `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span><span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.innerHTML =
+      `<span class="choice-visual" style="font-size:2em;">${p.emoji}</span>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${p.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
     btn.addEventListener('click', () => handleAnswer(i, correctIdx));
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
-  correctKey = String(correctIdx + 1);
 
-  setKeyHint(`${correct.kr} — 어느 그림?`);
-  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.kr} (${correct.rom}) = “${correct.en}”`);
+  setTimeout(() => Audio_.speak(correct.kr, 0.8, 'ko'), 300);
+  setTimeout(() => Audio_.speak(correct.kr, 0.8, 'ko'), 1800);
+}
+
+/** Korean Level 2 – "Ask Nicely!"
+ * Shows what the toddler wants (emoji) and the polite frame "___ 주세요".
+ * Player picks the right Korean word (keys 1–4); on success the full
+ * polite request "<word> 주세요" is spoken back in Korean.
+ */
+function koreanAskRound() {
+  const correct = KOREAN_REQUEST_ITEMS[Math.floor(Math.random() * KOREAN_REQUEST_ITEMS.length)];
+  const options = pickN(KOREAN_REQUEST_ITEMS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+  const fullSentence = `${correct.kr} 주세요`;
+
+  promptEmoji.textContent = correct.emoji;
+  promptText.innerHTML =
+    `Ask for <b>${correct.en}</b> nicely!` +
+    `<br><span style="font-size:0.9em;color:#888;">___ 주세요 (please)</span>`;
+  extraArea.innerHTML = '';
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+
+  options.forEach((item, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<span class="choice-visual" style="font-size:1.5em;">${item.emoji}</span>` +
+      `<span class="choice-visual" style="font-size:1.4em;font-weight:bold;">${item.kr}</span>` +
+      `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${item.rom}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, speakReward));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.en} → ${fullSentence} (${correct.rom} juseyo)`);
+  setTimeout(() => Audio_.speak(`Ask for ${correct.en}`, 0.85, 'en'), 300);
+  // On a correct pick, speak the whole polite sentence so the child hears
+  // it assembled: "<word> 주세요".
+  function speakReward() {
+    setTimeout(() => Audio_.speak(fullSentence, 0.75, 'ko'), 1100);
+  }
 }

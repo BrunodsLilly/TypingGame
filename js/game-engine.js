@@ -88,9 +88,9 @@ const GAME_LEVELS = {
         { name: 'Color Expert', ptName: 'Expert', desc: '24 + name the color', ptDesc: '24 + nomeie a cor', emoji: '🌈' },
     ],
     korean: [
-        { name: 'Find the Word', ptName: 'Achar Palavra', desc: 'See picture, pick Korean', ptDesc: 'Veja figura, escolha coreano', emoji: '🔤' },
         { name: 'Match Picture', ptName: 'Combinar Figura', desc: 'See Korean, pick picture', ptDesc: 'Veja coreano, escolha figura', emoji: '🖼️' },
-        { name: 'Korean Expert', ptName: 'Expert Coreano', desc: 'Korean only, no English hint', ptDesc: 'Só coreano, sem dica inglês', emoji: '🏆' },
+        { name: 'What It Means', ptName: 'O Que Significa', desc: 'Hear a phrase, pick the meaning', ptDesc: 'Ouça a frase, escolha o sentido', emoji: '💬' },
+        { name: 'Ask Nicely', ptName: 'Peça Com Jeito', desc: 'Build a "___ please" sentence', ptDesc: 'Monte uma frase "___ por favor"', emoji: '🙏' },
     ],
 };
 
