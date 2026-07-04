@@ -158,6 +158,8 @@ body {
 .game-card.opposites { border-color: #5DADE2;       } .game-card.opposites::before { background: #5DADE2; }
 .game-card.reading { border-color: #e17055;        } .game-card.reading::before { background: #e17055; }
 .game-card.geometry { border-color: #E8A0BF;       } .game-card.geometry::before { background: #E8A0BF; }
+.game-card.numberfun { border-color: #6c5ce7;      } .game-card.numberfun::before { background: #6c5ce7; }
+.game-card.takeaway { border-color: #16a085;       } .game-card.takeaway::before { background: #16a085; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -505,6 +507,125 @@ body {
     font-size: clamp(1.5rem, 5vw, 2rem);
     font-weight: 800;
     color: var(--orange);
+}
+
+/* More & Less: comparison groups inside choice buttons */
+.compare-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    max-width: 190px;
+    margin-bottom: 6px;
+}
+.compare-item {
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+    animation: popIn 0.3s ease-out backwards;
+}
+.compare-count {
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    font-weight: 800;
+    color: var(--green);
+    margin-bottom: 4px;
+}
+
+/* More & Less: number line for one more / one less */
+.number-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin: 12px 0;
+}
+.number-line span {
+    width: clamp(30px, 8vw, 38px);
+    height: clamp(30px, 8vw, 38px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    font-weight: 700;
+    font-size: clamp(0.9rem, 3vw, 1.15rem);
+    transition: transform 0.2s, background 0.2s;
+}
+.number-line .nl-current {
+    background: #6c5ce7;
+    border-color: #6c5ce7;
+    transform: scale(1.15);
+}
+.number-line .nl-answer {
+    background: var(--green);
+    border-color: var(--green);
+    transform: scale(1.15);
+}
+
+/* More & Less: five/ten frame for number bonds */
+.bond-frame {
+    display: grid;
+    grid-template-columns: repeat(5, clamp(40px, 10vw, 52px));
+    gap: 6px;
+    justify-content: center;
+    margin: 10px 0;
+}
+.bond-cell {
+    width: clamp(40px, 10vw, 52px);
+    height: clamp(40px, 10vw, 52px);
+    border-radius: 12px;
+    border: 3px solid var(--card-light);
+    background: var(--card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s ease-out backwards;
+}
+.bond-cell.filled::after,
+.bond-cell.answer-fill::after {
+    content: '';
+    width: 55%;
+    height: 55%;
+    border-radius: 50%;
+    background: var(--yellow);
+}
+.bond-cell.answer-fill::after {
+    background: var(--green);
+    animation: popIn 0.4s ease-out backwards;
+}
+
+/* Take Away: hungry muncher scene + crossed-out items */
+.munch-scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.muncher {
+    font-size: clamp(2.5rem, 9vw, 3.5rem);
+    animation: muncherWiggle 1.2s ease-in-out infinite;
+}
+@keyframes muncherWiggle {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(8deg) scale(1.08); }
+}
+.ta-eaten {
+    position: relative;
+    display: inline-flex;
+}
+.ta-eaten .ta-food {
+    opacity: 0.3;
+    filter: grayscale(1);
+}
+.ta-x {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--red);
+    font-size: 0.8em;
+    font-weight: 800;
 }
 
 /* ===== Keyboard hint bar at bottom ===== */

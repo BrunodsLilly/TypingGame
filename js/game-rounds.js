@@ -893,6 +893,338 @@ function mathRound() {
   setTimeout(() => Audio_.speak(`${n1} ${t('plus')} ${n2} ${t('equalsWhat')}`), 300);
 }
 
+// ── MORE & LESS ──
+
+/**
+ * Emoji sets shared by the More & Less game modes.
+ * @type {Array<{emoji: string, name: string, pt: string}>}
+ */
+const COMPARE_SETS = [
+  { emoji: '🍎', name: 'apples', pt: 'maçãs' },
+  { emoji: '🐱', name: 'cats', pt: 'gatos' },
+  { emoji: '⭐', name: 'stars', pt: 'estrelas' },
+  { emoji: '🌸', name: 'flowers', pt: 'flores' },
+  { emoji: '🎈', name: 'balloons', pt: 'balões' },
+  { emoji: '🍪', name: 'cookies', pt: 'biscoitos' },
+];
+
+/** More & Less round dispatcher. */
+function numberfunRound() {
+  const level = getLevel('numberfun');
+  if (level === 0) return compareRound();
+  if (level === 1) return oneMoreLessRound();
+  return makeFrameRound();
+}
+
+/**
+ * More & Less Level 0: two groups side by side — which has more (or fewer)?
+ * Builds the comparison sense that addition/subtraction grow from.
+ */
+function compareRound() {
+  const set = COMPARE_SETS[Math.floor(Math.random() * COMPARE_SETS.length)];
+  const max = stars < 3 ? 5 : 8;
+  const a = Math.floor(Math.random() * max) + 1;
+  let b;
+  do { b = Math.floor(Math.random() * max) + 1; } while (b === a);
+  const counts = [a, b];
+  const askMore = Math.random() < 0.5;
+  const correctIdx = askMore ? (a > b ? 0 : 1) : (a < b ? 0 : 1);
+
+  const itemName = lang === 'pt' ? set.pt : set.name;
+  const promptStr = t(askMore ? 'whichMore' : 'whichFewer').replace('%s', itemName);
+  promptEmoji.textContent = '⚖️';
+  promptText.innerHTML = promptStr;
+  extraArea.innerHTML = '';
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  counts.forEach((n, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    let group = '<div class="compare-group">';
+    for (let j = 0; j < n; j++) group += `<span class="compare-item" style="animation-delay:${(j * 0.06).toFixed(2)}s">${set.emoji}</span>`;
+    group += '</div>';
+    btn.innerHTML = `${group}<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      // Reveal the counts so the child links the groups to numerals
+      choicesEl.querySelectorAll('.compare-group').forEach((g, gi) => {
+        const label = document.createElement('div');
+        label.className = 'compare-count';
+        label.textContent = counts[gi];
+        g.parentElement.insertBefore(label, g.nextSibling);
+      });
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+  correctKey = String(correctIdx + 1);
+
+  setKeyHint(promptStr);
+  setTimeout(() => Audio_.speak(promptStr), 300);
+}
+
+/**
+ * More & Less Level 1: one more / one less on a number line.
+ * Counting on and counting back — the first real addition/subtraction strategy.
+ */
+function oneMoreLessRound() {
+  const more = Math.random() < 0.5;
+  const n = more
+    ? Math.floor(Math.random() * 7) + 1   // 1-7, answer 2-8
+    : Math.floor(Math.random() * 7) + 2;  // 2-8, answer 1-7
+  const answer = more ? n + 1 : n - 1;
+  const set = COMPARE_SETS[Math.floor(Math.random() * COMPARE_SETS.length)];
+
+  const promptStr = t(more ? 'oneMoreQ' : 'oneLessQ').replace('%d', n);
+  promptEmoji.textContent = more ? '⬆️' : '⬇️';
+  promptText.innerHTML = promptStr;
+
+  let itemsHTML = '<div class="count-items">';
+  for (let i = 0; i < n; i++) {
+    itemsHTML += `<span class="count-item count-item-small" style="animation-delay:${(i * 0.05).toFixed(2)}s">${set.emoji}</span>`;
+  }
+  itemsHTML += '</div>';
+  let lineHTML = '<div class="number-line" id="number-line">';
+  for (let i = 1; i <= 9; i++) {
+    lineHTML += `<span class="${i === n ? 'nl-current' : ''}" data-num="${i}">${i}</span>`;
+  }
+  lineHTML += '</div>';
+  extraArea.innerHTML = itemsHTML + lineHTML;
+
+  const allNums = [];
+  const lo = Math.max(1, answer - 2);
+  const hi = Math.min(9, answer + 2);
+  for (let i = lo; i <= hi; i++) allNums.push(i);
+  const options = pickN(allNums, 4, answer);
+  const correctIdx = options.indexOf(answer);
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      const cell = extraArea.querySelector(`.number-line span[data-num="${answer}"]`);
+      if (cell) cell.classList.add('nl-answer');
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+  correctKey = String(answer);
+
+  setKeyHint(promptStr);
+  setTimeout(() => Audio_.speak(promptStr), 300);
+}
+
+/**
+ * More & Less Level 2: number bonds on a five-frame (ten-frame at 3+ stars).
+ * "3 dots — how many more to make 5?" teaches part + part = whole.
+ */
+function makeFrameRound() {
+  const total = stars < 3 ? 5 : 10;
+  const filled = Math.floor(Math.random() * (total - 1)) + 1; // 1..total-1
+  const answer = total - filled;
+
+  const promptStr = t('makeN').replace('%d', total);
+  promptEmoji.textContent = total === 5 ? '🖐️' : '🙌';
+  promptText.innerHTML = promptStr;
+
+  let frameHTML = '<div class="bond-frame" id="bond-frame">';
+  for (let i = 0; i < total; i++) {
+    frameHTML += `<span class="bond-cell${i < filled ? ' filled' : ''}"></span>`;
+  }
+  frameHTML += '</div>';
+  extraArea.innerHTML = frameHTML;
+
+  const allNums = [];
+  const lo = Math.max(1, answer - 2);
+  const hi = Math.min(9, answer + 2);
+  for (let i = lo; i <= hi; i++) allNums.push(i);
+  const options = pickN(allNums, 4, answer);
+  const correctIdx = options.indexOf(answer);
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      // Fill the empty cells green and show the bond fact
+      extraArea.querySelectorAll('.bond-cell:not(.filled)').forEach(cell => cell.classList.add('answer-fill'));
+      const fact = document.createElement('div');
+      fact.className = 'geometry-info';
+      fact.textContent = t('bondFact').replace('%d', filled).replace('%d', answer).replace('%d', total);
+      extraArea.appendChild(fact);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+  correctKey = String(answer);
+
+  setKeyHint(promptStr);
+  setTimeout(() => Audio_.speak(t('makeNSpeak').replace('%d', filled).replace('%d', total)), 300);
+}
+
+// ── TAKE AWAY ──
+
+/**
+ * Food + eater pairs for the Take Away story mode.
+ * @type {Array<{food: string, name: string, pt: string, eater: string, eaterName: string, eaterPt: string}>}
+ */
+const MUNCH_SETS = [
+  { food: '🍪', name: 'cookies', pt: 'biscoitos', eater: '🦖', eaterName: 'dinosaur', eaterPt: 'dinossauro' },
+  { food: '🍎', name: 'apples', pt: 'maçãs', eater: '🐻', eaterName: 'bear', eaterPt: 'urso' },
+  { food: '🐟', name: 'fish', pt: 'peixes', eater: '🐱', eaterName: 'cat', eaterPt: 'gato' },
+  { food: '🍌', name: 'bananas', pt: 'bananas', eater: '🐵', eaterName: 'monkey', eaterPt: 'macaco' },
+  { food: '🍓', name: 'strawberries', pt: 'morangos', eater: '👾', eaterName: 'monster', eaterPt: 'monstrinho' },
+  { food: '🥕', name: 'carrots', pt: 'cenouras', eater: '🐰', eaterName: 'bunny', eaterPt: 'coelho' },
+];
+
+/** Take Away round dispatcher. */
+function takeawayRound() {
+  const level = getLevel('takeaway');
+  if (level === 0) return munchRound();
+  if (level === 1) return minusRound();
+  return plusMinusRound();
+}
+
+/**
+ * Take Away Level 0: story subtraction. A hungry animal eats some treats
+ * (shown faded with an X) and the child counts how many are left.
+ */
+function munchRound() {
+  const set = MUNCH_SETS[Math.floor(Math.random() * MUNCH_SETS.length)];
+  const total = stars < 3
+    ? Math.floor(Math.random() * 4) + 2   // 2-5
+    : Math.floor(Math.random() * 5) + 3;  // 3-7
+  const eaten = Math.floor(Math.random() * (total - 1)) + 1; // 1..total-1
+  const left = total - eaten;
+
+  const foodName = lang === 'pt' ? set.pt : set.name;
+  const eaterName = lang === 'pt' ? set.eaterPt : set.eaterName;
+  promptEmoji.textContent = set.eater;
+  promptText.innerHTML = t('munchStory').replace('%s', eaterName).replace('%d', eaten);
+
+  let itemsHTML = '<div class="munch-scene"><span class="muncher">' + set.eater + '</span><div class="count-items">';
+  for (let i = 0; i < total; i++) {
+    // Eaten treats sit next to the muncher; remaining ones stay bright for counting
+    const isEaten = i < eaten;
+    itemsHTML += `<span class="count-item count-item-small${isEaten ? ' ta-eaten' : ''}" style="animation-delay:${(i * 0.05).toFixed(2)}s">` +
+      `<span class="ta-food">${set.food}</span>${isEaten ? '<span class="ta-x">✖</span>' : ''}</span>`;
+  }
+  itemsHTML += '</div></div>';
+  extraArea.innerHTML = itemsHTML;
+
+  const allNums = [];
+  const lo = Math.max(1, left - 2);
+  const hi = Math.min(9, left + 2);
+  for (let i = lo; i <= hi; i++) allNums.push(i);
+  const options = pickN(allNums, 4, left);
+  const correctIdx = options.indexOf(left);
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+  correctKey = String(left);
+
+  setKeyHint(t('howManyLeft'));
+  const speech = t('munchSpeak').replace('%d', total).replace('%s', foodName).replace('%s', eaterName).replace('%d', eaten);
+  setTimeout(() => Audio_.speak(speech), 300);
+}
+
+/**
+ * Take Away Level 1: visual subtraction equation. Shows n1 items with n2
+ * crossed out, plus the equation n1 − n2 = ?, mirroring the Math game.
+ */
+function minusRound() {
+  const maxN = stars < 3 ? 5 : 9;
+  const n1 = Math.floor(Math.random() * (maxN - 1)) + 2; // 2..maxN
+  const n2 = Math.floor(Math.random() * (n1 - 1)) + 1;   // 1..n1-1
+  const answer = n1 - n2;
+  const emoji = MATH_EMOJIS[Math.floor(Math.random() * MATH_EMOJIS.length)];
+
+  const allNums = [];
+  for (let i = Math.max(1, answer - 2); i <= Math.min(9, answer + 2); i++) allNums.push(i);
+  const options = pickN(allNums, 4, answer);
+  const correctIdx = options.indexOf(answer);
+
+  promptEmoji.textContent = '➖';
+  promptText.innerHTML = '';
+
+  let groupHTML = '<div class="math-items"><div class="math-group">';
+  for (let i = 0; i < n1; i++) {
+    // The last n2 items are the ones taken away
+    const crossed = i >= answer;
+    groupHTML += `<span class="math-group-item${crossed ? ' ta-eaten' : ''}" style="animation-delay:${(i * 0.08).toFixed(2)}s">` +
+      `<span class="ta-food">${emoji}</span>${crossed ? '<span class="ta-x">✖</span>' : ''}</span>`;
+  }
+  groupHTML += '</div></div>';
+  extraArea.innerHTML = groupHTML + `
+        <div class="math-equation">
+            <span class="math-num">${n1}</span>
+            <span class="math-op">−</span>
+            <span class="math-num">${n2}</span>
+            <span class="math-eq">=</span>
+            <span class="math-answer-slot" id="math-answer-slot">?</span>
+        </div>
+    `;
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      const slot = document.getElementById('math-answer-slot');
+      if (slot) {
+        slot.textContent = answer;
+        slot.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+        slot.style.animation = 'none';
+      }
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+  correctKey = String(answer);
+
+  setKeyHint(t('takeHint').replace('%d', n1).replace('%d', n2));
+  setTimeout(() => Audio_.speak(`${n1} ${t('minus')} ${n2} ${t('equalsWhat')}`), 300);
+}
+
+/**
+ * Take Away Level 2: mixed practice — randomly an addition round (from the
+ * Math game) or a subtraction round, so + and − must be told apart.
+ */
+function plusMinusRound() {
+  if (Math.random() < 0.5) return mathRound();
+  return minusRound();
+}
+
 // ── WORDS ──
 
 /**

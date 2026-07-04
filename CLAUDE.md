@@ -58,7 +58,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - Words mode uses `handleWordKeyPress(key)` for letter-by-letter typing
 - Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 
-**11 Game Modes** (keys 1-9, 0, E):
+**16 Game Modes** (keys 1-9, 0, E, R, G, K, N, T):
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
@@ -71,8 +71,12 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 0. **Memory** — Flip cards to find matching pairs
 E. **Opposites** — Find the opposite concept (big/small, hot/cold, etc.)
 R. **Reading** — Onset-rime blending (press starting letter), then full CVC blending at 3+ stars
+G. **Geometry** — Sides, corners, and shape names (3 levels)
+K. **Korean** — Korean words and phrases (3 levels)
+N. **More & Less** — Pre-addition number sense (3 levels): compare which group has more/fewer, one more/one less on a number line, number bonds on a five-frame (ten-frame at 3+ stars)
+T. **Take Away** — Subtraction (3 levels): story mode where an animal eats treats and the child counts what's left, visual `n − k = ?` equations with crossed-out items, and mixed +/− practice
 
-**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, and Words get harder at 3+ stars.
+**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, and Take Away get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 
