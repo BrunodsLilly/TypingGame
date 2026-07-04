@@ -72,7 +72,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 E. **Opposites** — Find the opposite concept (big/small, hot/cold, etc.)
 R. **Reading** — Onset-rime blending (press starting letter), then full CVC blending at 3+ stars
 G. **Geometry** — Sides, corners, and shape names (3 levels)
-K. **Korean** — Korean words and phrases (3 levels)
+K. **Korean** — Korean words and phrases (6 levels): match pictures to spoken vocabulary, phrase comprehension, polite "___ 주세요" requests, colors & native numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Hangul word)
 N. **More & Less** — Pre-addition number sense (3 levels): compare which group has more/fewer, one more/one less on a number line, number bonds on a five-frame (ten-frame at 3+ stars)
 T. **Take Away** — Subtraction (3 levels): story mode where an animal eats treats and the child counts what's left, visual `n − k = ?` equations with crossed-out items, and mixed +/− practice
 

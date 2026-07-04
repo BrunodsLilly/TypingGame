@@ -2181,6 +2181,14 @@ const KOREAN_WORDS = [
   { emoji: '⚽', en: 'ball',      kr: '공',    rom: 'gong',    wiki: 'Ball_(association_football)' },
   { emoji: '🏠', en: 'house',     kr: '집',    rom: 'jip',     wiki: 'House' },
   { emoji: '🐦', en: 'bird',      kr: '새',    rom: 'sae',     wiki: 'Bird' },
+  { emoji: '🐻', en: 'bear',      kr: '곰',    rom: 'gom',     wiki: 'Bear' },
+  { emoji: '🌳', en: 'tree',      kr: '나무',   rom: 'namu',    wiki: 'Tree' },
+  { emoji: '🚗', en: 'car',       kr: '자동차',  rom: 'jadongcha', wiki: 'Car' },
+  { emoji: '👟', en: 'shoes',     kr: '신발',   rom: 'sinbal',  wiki: 'Shoe' },
+  { emoji: '🧢', en: 'hat',       kr: '모자',   rom: 'moja',    wiki: 'Hat' },
+  { emoji: '☂️', en: 'umbrella',  kr: '우산',   rom: 'usan',    wiki: 'Umbrella' },
+  { emoji: '🍓', en: 'strawberry', kr: '딸기',  rom: 'ttalgi',  wiki: 'Strawberry' },
+  { emoji: '🍇', en: 'grapes',    kr: '포도',   rom: 'podo',    wiki: 'Grape' },
 ];
 
 /**
@@ -2225,6 +2233,66 @@ const KOREAN_REQUEST_ITEMS = [
   { emoji: '🍎', en: 'apple',  kr: '사과',   rom: 'sagwa',  wiki: 'Apple' },
   { emoji: '🍌', en: 'banana', kr: '바나나',  rom: 'banana', wiki: 'Banana' },
   { emoji: '🧃', en: 'juice',  kr: '주스',   rom: 'juseu',  wiki: 'Juice' },
+];
+
+/**
+ * Korean color words for the "Colors & Numbers" level.
+ * @type {Array<{en: string, kr: string, rom: string, hex: string}>}
+ */
+const KOREAN_COLORS = [
+  { en: 'red',    kr: '빨간색', rom: 'ppalgansaek',  hex: '#e74c3c' },
+  { en: 'blue',   kr: '파란색', rom: 'paransaek',    hex: '#3498db' },
+  { en: 'yellow', kr: '노란색', rom: 'noransaek',    hex: '#f1c40f' },
+  { en: 'green',  kr: '초록색', rom: 'choroksaek',   hex: '#2ecc71' },
+  { en: 'purple', kr: '보라색', rom: 'borasaek',     hex: '#9b59b6' },
+  { en: 'pink',   kr: '분홍색', rom: 'bunhongsaek',  hex: '#ff6b9d' },
+  { en: 'orange', kr: '주황색', rom: 'juhwangsaek',  hex: '#e67e22' },
+  { en: 'white',  kr: '하얀색', rom: 'hayansaek',    hex: '#f5f5f5' },
+  { en: 'black',  kr: '검은색', rom: 'geomeunsaek',  hex: '#111111' },
+  { en: 'brown',  kr: '갈색',  rom: 'galsaek',      hex: '#8B4513' },
+];
+
+/**
+ * Native Korean numbers 1-5 (the ones used for counting things).
+ * Index i holds the word for i+1.
+ * @type {Array<{kr: string, rom: string}>}
+ */
+const KOREAN_NUMBERS = [
+  { kr: '하나', rom: 'hana' },
+  { kr: '둘',  rom: 'dul' },
+  { kr: '셋',  rom: 'set' },
+  { kr: '넷',  rom: 'net' },
+  { kr: '다섯', rom: 'daseot' },
+];
+
+/**
+ * Body-part words for the "My Body & Actions" level.
+ * @type {Array<{emoji: string, en: string, kr: string, rom: string}>}
+ */
+const KOREAN_BODY = [
+  { emoji: '👀', en: 'eyes',  kr: '눈',  rom: 'nun' },
+  { emoji: '👃', en: 'nose',  kr: '코',  rom: 'ko' },
+  { emoji: '👄', en: 'mouth', kr: '입',  rom: 'ip' },
+  { emoji: '👂', en: 'ears',  kr: '귀',  rom: 'gwi' },
+  { emoji: '✋', en: 'hand',  kr: '손',  rom: 'son' },
+  { emoji: '🦶', en: 'foot',  kr: '발',  rom: 'bal' },
+  { emoji: '🦵', en: 'leg',   kr: '다리', rom: 'dari' },
+  { emoji: '🦷', en: 'teeth', kr: '이',  rom: 'i' },
+];
+
+/**
+ * Everyday action verbs (polite -요 form) for "My Body & Actions".
+ * @type {Array<{emoji: string, en: string, kr: string, rom: string}>}
+ */
+const KOREAN_ACTIONS = [
+  { emoji: '😋🍚', en: 'eat',   kr: '먹어요', rom: 'meogeoyo' },
+  { emoji: '🥤',   en: 'drink', kr: '마셔요', rom: 'masyeoyo' },
+  { emoji: '😴',   en: 'sleep', kr: '자요',  rom: 'jayo' },
+  { emoji: '🏃',   en: 'run',   kr: '뛰어요', rom: 'ttwieoyo' },
+  { emoji: '💃',   en: 'dance', kr: '춤춰요', rom: 'chumchwoyo' },
+  { emoji: '😄',   en: 'laugh', kr: '웃어요', rom: 'useoyo' },
+  { emoji: '😢',   en: 'cry',   kr: '울어요', rom: 'ureoyo' },
+  { emoji: '🛁',   en: 'wash',  kr: '씻어요', rom: 'ssiseoyo' },
 ];
 
 /**
@@ -2284,6 +2352,9 @@ function koreanRound() {
   const level = getLevel('korean');
   if (level === 1) return koreanPhraseRound();
   if (level === 2) return koreanAskRound();
+  if (level === 3) return koreanColorNumberRound();
+  if (level === 4) return koreanBodyActionRound();
+  if (level === 5) return koreanSayItRound();
   return koreanMatchPicture();
 }
 
@@ -2436,4 +2507,194 @@ function koreanAskRound() {
   function speakReward() {
     setTimeout(() => Audio_.speak(fullSentence, 0.75, 'ko'), 1100);
   }
+}
+
+/** Korean Level 3 – "Colors & Numbers!"
+ * Alternates between color rounds (hear the Korean color, pick the
+ * swatch) and number rounds (hear a native Korean number 1-5, press it).
+ */
+function koreanColorNumberRound() {
+  if (Math.random() < 0.5) return koreanColorRound();
+  return koreanNumberRound();
+}
+
+/** Colors half of Level 3: Korean color word → pick the color swatch. */
+function koreanColorRound() {
+  const correct = KOREAN_COLORS[Math.floor(Math.random() * KOREAN_COLORS.length)];
+  const options = pickN(KOREAN_COLORS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🎨';
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span>` +
+    `<br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.kr, 'ko'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((c, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<div class="color-swatch" style="background:${c.hex}; border:2px solid rgba(255,255,255,0.35);"></div>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${c.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.kr} (${correct.rom}) = ${correct.en} — find the color!`);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1600);
+}
+
+/** Numbers half of Level 3: hear a native Korean number, press 1-5.
+ * On success a matching group of emoji pops in so the child sees the
+ * quantity the word names.
+ */
+function koreanNumberRound() {
+  const n = Math.floor(Math.random() * 5) + 1; // 1-5
+  const word = KOREAN_NUMBERS[n - 1];
+  const emoji = COUNT_EMOJIS[Math.floor(Math.random() * COUNT_EMOJIS.length)];
+
+  promptEmoji.textContent = '🔢';
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${word.kr}</span>` +
+    `<br><span style="font-size:0.85em;color:#888;">${word.rom}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(word.kr, 'ko'));
+
+  const options = pickN([1, 2, 3, 4, 5], 4, n);
+  const correctIdx = options.indexOf(n);
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      // Show the quantity the word names, then re-speak the word
+      let itemsHTML = '<div class="count-items">';
+      for (let j = 0; j < n; j++) {
+        itemsHTML += `<span class="count-item count-item-small" style="animation-delay:${(j * 0.08).toFixed(2)}s">${emoji}</span>`;
+      }
+      itemsHTML += '</div>';
+      const div = document.createElement('div');
+      div.innerHTML = itemsHTML;
+      extraArea.appendChild(div);
+      setTimeout(() => Audio_.speak(word.kr, 0.75, 'ko'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+
+  correctKey = String(n);
+  setKeyHint(`${word.kr} (${word.rom}) — press the number!`);
+  setTimeout(() => Audio_.speak(word.kr, 0.75, 'ko'), 300);
+  setTimeout(() => Audio_.speak(word.kr, 0.75, 'ko'), 1600);
+}
+
+/** Korean Level 4 – "My Body & Actions!"
+ * Alternates between body parts and everyday action verbs: hear the
+ * Korean word, pick the matching emoji (keys 1-4).
+ */
+function koreanBodyActionRound() {
+  const pool = Math.random() < 0.5 ? KOREAN_BODY : KOREAN_ACTIONS;
+  const correct = pool[Math.floor(Math.random() * pool.length)];
+  const options = pickN(pool, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🇰🇷';
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${correct.kr}</span>` +
+    `<br><span style="font-size:0.85em;color:#888;">${correct.rom}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.kr, 'ko'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.kr} (${correct.rom}) = ${correct.en}`);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 300);
+  setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1600);
+}
+
+/** Korean Level 5 – "Say It in Korean!"
+ * The reverse of Match Picture and the hardest level: shows a picture
+ * and its English name; player picks the Korean word (Hangul, keys 1-4).
+ * Recognition of the written word, production direction.
+ */
+function koreanSayItRound() {
+  preloadKoreanImages();
+
+  const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
+  const options = pickN(KOREAN_WORDS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = correct.emoji;
+  promptText.innerHTML =
+    `How do you say <b>${correct.en}</b> in Korean?`;
+  extraArea.innerHTML = '';
+  const imgUrl = KOREAN_IMAGE_CACHE[correct.wiki];
+  if (imgUrl) {
+    const pic = document.createElement('div');
+    pic.style.cssText = 'text-align:center;margin:4px 0;';
+    pic.innerHTML = `<img src="${imgUrl}" alt="${correct.en}"
+        style="width:110px;height:110px;object-fit:cover;border-radius:14px;">`;
+    extraArea.appendChild(pic);
+  }
+  extraArea.appendChild(koreanSpeakerButton(`How do you say ${correct.en} in Korean?`, 'en'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<span class="choice-visual" style="font-size:1.5em;font-weight:bold;">${w.kr}</span>` +
+      `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${w.rom}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      // Reward: hear the word she just "said"
+      setTimeout(() => Audio_.speak(correct.kr, 0.75, 'ko'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.en} = ${correct.kr} (${correct.rom})`);
+  setTimeout(() => Audio_.speak(`How do you say ${correct.en} in Korean?`, 0.85, 'en'), 300);
 }

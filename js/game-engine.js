@@ -67,7 +67,8 @@ let correctKey = null;
 // ── Level System ──
 
 /**
- * Level definitions per game. Each game can have up to 3 levels.
+ * Level definitions per game. The level picker maps keys 1-N to the
+ * entries, so a game can have any number of levels (9 max).
  * Games without entries here have no level selection (single difficulty).
  * @type {Object<string, Array<{name: string, ptName: string, desc: string, ptDesc: string, emoji: string}>>}
  */
@@ -91,6 +92,9 @@ const GAME_LEVELS = {
         { name: 'Match Picture', ptName: 'Combinar Figura', desc: 'See Korean, pick picture', ptDesc: 'Veja coreano, escolha figura', emoji: '🖼️' },
         { name: 'What It Means', ptName: 'O Que Significa', desc: 'Hear a phrase, pick the meaning', ptDesc: 'Ouça a frase, escolha o sentido', emoji: '💬' },
         { name: 'Ask Nicely', ptName: 'Peça Com Jeito', desc: 'Build a "___ please" sentence', ptDesc: 'Monte uma frase "___ por favor"', emoji: '🙏' },
+        { name: 'Colors & Numbers', ptName: 'Cores e Números', desc: 'Colors + counting 1-5', ptDesc: 'Cores + contar 1-5', emoji: '🌈' },
+        { name: 'My Body & Actions', ptName: 'Corpo e Ações', desc: 'Body parts + doing words', ptDesc: 'Partes do corpo + ações', emoji: '🙆' },
+        { name: 'Say It in Korean', ptName: 'Fale em Coreano', desc: 'Pick the Korean word', ptDesc: 'Escolha a palavra coreana', emoji: '🗣️' },
     ],
     numberfun: [
         { name: 'More or Fewer', ptName: 'Mais ou Menos', desc: 'Which side has more?', ptDesc: 'Qual lado tem mais?', emoji: '⚖️' },
