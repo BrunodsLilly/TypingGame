@@ -777,7 +777,9 @@ body {
     padding: 14px 28px;
     animation: keyPulse 1.2s ease-in-out infinite;
     white-space: nowrap;
+    cursor: pointer;
 }
+.carousel-current:active { transform: scale(0.95); }
 .carousel-controls {
     display: flex;
     align-items: center;
@@ -807,7 +809,9 @@ body {
     border-radius: 10px;
     padding: 4px 10px;
     white-space: nowrap;
+    cursor: pointer;
 }
+.fav-word:active { transform: scale(0.93); background: rgba(255,255,255,0.15); }
 
 /* ===== Word spelling game ===== */
 .word-display {
@@ -850,6 +854,52 @@ body {
     color: white;
     border: 2px solid var(--card-light);
 }
+
+/* ===== On-screen tap keyboard (touch devices) ===== */
+.touch-kb {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 8px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(15, 20, 40, 0.97);
+    border-top: 2px solid var(--card-light);
+}
+.touch-kb.show { display: flex; }
+.touch-kb-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+.touch-kb-key {
+    width: clamp(28px, 8.6vw, 62px);
+    height: clamp(44px, 7vh, 58px);
+    border: none;
+    border-radius: 10px;
+    background: var(--card-light);
+    color: white;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.08s ease;
+}
+.touch-kb-key:active {
+    transform: scale(0.88);
+    background: var(--blue);
+}
+/* While the keyboard is open: hide the bottom hint bar (they share the
+   bottom edge) and give the game screen room so nothing is covered */
+body.kb-open .key-hint-bar { display: none !important; }
+body.kb-open .screen.game-screen { padding-bottom: 240px; }
 .word-key-hint {
     display: flex;
     align-items: center;

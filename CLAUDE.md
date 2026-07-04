@@ -26,20 +26,22 @@ TypingGame/
   js/
     audio.js            Audio_ IIFE (Web Audio API + SpeechSynthesis) + sound button
     celebration.js      Celebration overlay, CHEERS data, particle burst, grand finale
+    touch-keyboard.js   TouchKB IIFE — on-screen QWERTY for touch devices (typing games)
     i18n.js             Language state (lang), I18N translations dict, t() helper
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
-    game-rounds.js      All game data constants + all 11 round functions + helpers
+    game-rounds.js      All game data constants + all round functions + helpers
   CLAUDE.md             This file
 ```
 
 ### Script Load Order
 
 ```html
-<script src="js/audio.js"></script>        <!-- no deps, defines Audio_ -->
-<script src="js/celebration.js"></script>   <!-- no deps besides DOM -->
-<script src="js/i18n.js"></script>          <!-- defines lang, I18N, t() -->
-<script src="js/game-engine.js"></script>   <!-- needs Audio_, showCelebration, t() -->
-<script src="js/game-rounds.js"></script>   <!-- needs everything above -->
+<script src="js/audio.js"></script>          <!-- no deps, defines Audio_ -->
+<script src="js/celebration.js"></script>    <!-- no deps besides DOM -->
+<script src="js/touch-keyboard.js"></script> <!-- no deps, defines TouchKB -->
+<script src="js/i18n.js"></script>           <!-- defines lang, I18N, t() -->
+<script src="js/game-engine.js"></script>    <!-- needs Audio_, showCelebration, t() -->
+<script src="js/game-rounds.js"></script>    <!-- needs everything above -->
 ```
 
 All scripts share the global scope (no modules, no bundler). The load order matters because later scripts reference globals defined by earlier ones.
@@ -50,7 +52,9 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 **Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 13 modes — its content is rebuilt each round.
 
-**Keyboard-First Input**: All interaction is keyboard-driven (critical constraint — the target user can only use a keyboard, not a mouse). Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
+**Keyboard-First Input**: All interaction is keyboard-driven. Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
+
+**Touch/iPad Support**: Every keyboard interaction has a touch equivalent. Choice buttons, memory cards, level-picker buttons, and the Words picker (carousel + favorites) are tappable. The free-typing games (Words spelling phase, Fix the Word) show `TouchKB` — an on-screen QWERTY (`touch-keyboard.js`) that appears only on touch-capable devices and routes taps through synthetic `keydown` events, so the master keyboard handler processes them identically to physical keys. Rounds call `TouchKB.show()`/`TouchKB.hide()`; `goHome()` always hides it.
 
 **Game Mode Pattern**: Each mode follows the same structure:
 - A `*Round()` function (e.g., `colorsRound()`, `wordsRound()`) in `game-rounds.js` that sets up the prompt, choices, `activeKeyMap`, `correctKey`, hint timer, and voice prompt
@@ -92,7 +96,7 @@ F. **Fix the Word** — Free-typing spelling recall (3 levels): a word from `WOR
 
 ## Design Constraints
 
-- **Keyboard-only**: Never introduce mouse/touch-dependent interactions. Every game must work via keyboard keys with visual keycap badges showing which key to press.
+- **Keyboard-first, touch-supported**: Every game must work via keyboard keys with visual keycap badges showing which key to press. Every interaction must ALSO work by tapping (iPad support): give buttons click handlers, and use `TouchKB` for any free-typing input.
 - **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
 - **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
 - **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback. No auto-hints — adult supervision provides contextual scaffolding.

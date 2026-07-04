@@ -1478,6 +1478,7 @@ function wordsRound() {
   choicesEl.innerHTML = '';
   activeKeyMap = {};
 
+  TouchKB.hide(); // keyboard only appears in the spelling phase
   renderWordPicker();
   startWordCarouselTimer();
 
@@ -1485,7 +1486,8 @@ function wordsRound() {
   setTimeout(() => Audio_.speak(t('pickWord')), 300);
 }
 
-/** Renders the word picker: rotating random word + quick-pick favorites. */
+/** Renders the word picker: rotating random word + quick-pick favorites.
+ * The rotating word and each favorite are tappable (touch support). */
 function renderWordPicker() {
   const cur = wordCarouselPool[wordCarouselIdx];
 
@@ -1503,6 +1505,16 @@ function renderWordPicker() {
 
   html += '</div>';
   extraArea.innerHTML = html;
+
+  // Tap the rotating word to pick it, or tap a favorite
+  const curEl = extraArea.querySelector('.carousel-current');
+  if (curEl) curEl.addEventListener('click', () => selectWord(wordCarouselPool[wordCarouselIdx]));
+  extraArea.querySelectorAll('.fav-word').forEach((favEl, i) => {
+    favEl.addEventListener('click', () => {
+      const wordObj = WORDS_DATA.find(w => w.word === WORD_FAVORITES[i].word);
+      if (wordObj) selectWord(wordObj);
+    });
+  });
 }
 
 /** Starts the auto-scroll timer for the random word display. */
@@ -1541,6 +1553,7 @@ function selectWord(wordObj) {
   choicesEl.innerHTML = '';
 
   updateWordKeyMap();
+  TouchKB.show(); // spelling needs letters — show the tap keyboard on touch devices
 
   setTimeout(() => Audio_.speak(`${t('spell')} ${currentWordData.word}! ${t('press')} ${currentWordData.word[0]}!`), 300);
 }
@@ -1700,6 +1713,7 @@ function fixwordRound() {
   activeKeyMap = {};
   correctKey = word[fixBlanks[0]].toLowerCase();
 
+  TouchKB.show(); // free typing — show the tap keyboard on touch devices
   setKeyHint(t('fixHint'));
   setTimeout(() => Audio_.speak(`${word}! ${t('fixPrompt')}`), 300);
 }

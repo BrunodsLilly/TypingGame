@@ -163,6 +163,7 @@ function goHome() {
     levelPickingGame = null;
     activeKeyMap = {};
     correctKey = null;
+    TouchKB.hide();
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
     updateHomeLevelBadges();
     startHomeTips();
