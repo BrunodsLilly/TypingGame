@@ -83,10 +83,13 @@ const I18N = {
         howManyLeft: 'How many are left?',
         minus: 'minus',
         takeHint: '%d − %d = ? Press the number!',
+        fixPrompt: 'What letter is missing?',
+        fixHint: 'Type the missing letter!',
         homeTips: [
             'Press a key to play!',
-            '16 games to explore!',
+            '17 games to explore!',
             'Practice adding & taking away!',
+            'Fix the missing letters!',
             'Learn colors, shapes & more!',
             'Spell words letter by letter!',
             'Find patterns & rhymes!',
@@ -99,7 +102,7 @@ const I18N = {
             colors: 'Colors', shapes: 'Shapes', count: 'Count', letters: 'ABCs',
             animals: 'Animals', math: 'Math', words: 'Words', patterns: 'Patterns',
             rhymes: 'Rhymes', memory: 'Memory', opposites: 'Opposites', reading: 'Reading', geometry: 'Geometry',
-            korean: 'Korean', numberfun: 'More & Less', takeaway: 'Take Away',
+            korean: 'Korean', numberfun: 'More & Less', takeaway: 'Take Away', fixword: 'Fix the Word',
         },
     },
     pt: {
@@ -171,10 +174,13 @@ const I18N = {
         howManyLeft: 'Quantos sobraram?',
         minus: 'menos',
         takeHint: '%d \u2212 %d = ? Aperte o n\u00FAmero!',
+        fixPrompt: 'Que letra est\u00E1 faltando?',
+        fixHint: 'Digite a letra que falta!',
         homeTips: [
             'Aperte uma tecla para jogar!',
-            '16 jogos para explorar!',
+            '17 jogos para explorar!',
             'Pratique somar e tirar!',
+            'Complete as letras que faltam!',
             'Aprenda cores, formas e mais!',
             'Soletre palavras letra por letra!',
             'Encontre padr\u00F5es e rimas!',
@@ -187,7 +193,7 @@ const I18N = {
             colors: 'Cores', shapes: 'Formas', count: 'Contar', letters: 'ABC',
             animals: 'Animais', math: 'Matem\u00E1tica', words: 'Palavras', patterns: 'Padr\u00F5es',
             rhymes: 'Rimas', memory: 'Mem\u00F3ria', opposites: 'Opostos', reading: 'Leitura', geometry: 'Geometria',
-            korean: 'Coreano', numberfun: 'Mais e Menos', takeaway: 'Tirar',
+            korean: 'Coreano', numberfun: 'Mais e Menos', takeaway: 'Tirar', fixword: 'Consertar',
         },
     }
 };

@@ -160,6 +160,7 @@ body {
 .game-card.geometry { border-color: #E8A0BF;       } .game-card.geometry::before { background: #E8A0BF; }
 .game-card.numberfun { border-color: #6c5ce7;      } .game-card.numberfun::before { background: #6c5ce7; }
 .game-card.takeaway { border-color: #16a085;       } .game-card.takeaway::before { background: #16a085; }
+.game-card.fixword { border-color: #a29bfe;        } .game-card.fixword::before { background: #a29bfe; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -843,6 +844,11 @@ body {
     background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(46, 204, 113, 0.1));
     color: var(--green);
     border: 2px solid var(--green);
+}
+.word-letter.given {
+    background: var(--card);
+    color: white;
+    border: 2px solid var(--card-light);
 }
 .word-key-hint {
     display: flex;

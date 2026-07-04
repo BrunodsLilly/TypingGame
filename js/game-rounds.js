@@ -1364,6 +1364,40 @@ const WORDS_DATA = [
   { word: 'BLANKET', emoji: '\uD83D\uDECC', category: 'house' },
   { word: 'FRIDGE', emoji: '\uD83E\uDDCA', category: 'house' },
   { word: 'OVEN', emoji: '\uD83C\uDF73', category: 'house' },
+
+  // Nature
+  { word: 'CLOUD', emoji: '\u2601\uFE0F', category: 'nature' },
+  { word: 'SNOW', emoji: '\u2744\uFE0F', category: 'nature' },
+  { word: 'LEAF', emoji: '\uD83C\uDF43', category: 'nature' },
+  { word: 'ROCK', emoji: '\uD83E\uDEA8', category: 'nature' },
+  { word: 'WAVE', emoji: '\uD83C\uDF0A', category: 'nature' },
+  { word: 'FIRE', emoji: '\uD83D\uDD25', category: 'nature' },
+  { word: 'GRASS', emoji: '\uD83C\uDF31', category: 'nature' },
+  { word: 'BEACH', emoji: '\uD83C\uDFD6\uFE0F', category: 'nature' },
+  { word: 'RAINBOW', emoji: '\uD83C\uDF08', category: 'nature' },
+
+  // Body
+  { word: 'HAND', emoji: '\u270B', category: 'body' },
+  { word: 'FOOT', emoji: '\uD83E\uDDB6', category: 'body' },
+  { word: 'NOSE', emoji: '\uD83D\uDC43', category: 'body' },
+  { word: 'EAR', emoji: '\uD83D\uDC42', category: 'body' },
+  { word: 'EYE', emoji: '\uD83D\uDC41\uFE0F', category: 'body' },
+  { word: 'MOUTH', emoji: '\uD83D\uDC44', category: 'body' },
+  { word: 'KNEE', emoji: '\uD83E\uDDB5', category: 'body' },
+  { word: 'TOOTH', emoji: '\uD83E\uDDB7', category: 'body' },
+
+  // Actions
+  { word: 'RUN', emoji: '\uD83C\uDFC3', category: 'action' },
+  { word: 'JUMP', emoji: '\uD83E\uDD38', category: 'action' },
+  { word: 'HUG', emoji: '\uD83E\uDD17', category: 'action' },
+  { word: 'KISS', emoji: '\uD83D\uDE18', category: 'action' },
+  { word: 'CLAP', emoji: '\uD83D\uDC4F', category: 'action' },
+  { word: 'SING', emoji: '\uD83C\uDFA4', category: 'action' },
+  { word: 'DANCE', emoji: '\uD83D\uDC83', category: 'action' },
+  { word: 'SWIM', emoji: '\uD83C\uDFCA', category: 'action' },
+  { word: 'SLEEP', emoji: '\uD83D\uDE34', category: 'action' },
+  { word: 'WALK', emoji: '\uD83D\uDEB6', category: 'action' },
+  { word: 'EAT', emoji: '\uD83D\uDE0B', category: 'action' },
 ];
 
 /**
@@ -1608,6 +1642,144 @@ function handleWordKeyPress(key) {
     }
     // Speak the expected letter to help the child learn
     setTimeout(() => Audio_.speak(`${t('press')} ${expected.toUpperCase()}!`, 1.0), 500);
+  }
+}
+
+// ============================================
+// FIX THE WORD Game — type the missing letter(s)
+// ============================================
+
+/** @type {{word: string, emoji: string, category: string}|null} Word for the current Fix the Word round */
+let fixWordData = null;
+
+/** @type {number[]} Sorted indices of the blank (missing) letters */
+let fixBlanks = [];
+
+/** @type {number} How many blanks have been filled so far */
+let fixFilledCount = 0;
+
+/** @type {number} Wrong guesses on the current blank (drives escalating hints) */
+let fixWrongCount = 0;
+
+/**
+ * Sets up a Fix the Word round: shows a word with one or two letters
+ * hidden (per level) plus its emoji, and the child types what's missing.
+ * Unlike the Words game there is no on-screen key hint — she has to
+ * recall the letter from hearing the word.
+ * Level 0: first letter hidden. Level 1: any one letter. Level 2: two letters.
+ */
+function fixwordRound() {
+  const level = getLevel('fixword');
+  // Progressive: short words first, longer words at 3+ stars
+  const maxLen = stars < 3 ? 4 : 6;
+  const minLen = level === 2 ? 4 : 3; // two blanks need at least 4 letters
+  const pool = WORDS_DATA.filter(w => w.word.length >= minLen && w.word.length <= maxLen);
+  fixWordData = pool[Math.floor(Math.random() * pool.length)];
+  const word = fixWordData.word;
+
+  if (level === 0) {
+    fixBlanks = [0];
+  } else if (level === 1) {
+    fixBlanks = [Math.floor(Math.random() * word.length)];
+  } else {
+    const a = Math.floor(Math.random() * word.length);
+    let b;
+    do { b = Math.floor(Math.random() * word.length); } while (b === a);
+    fixBlanks = [a, b].sort((x, y) => x - y);
+  }
+  fixFilledCount = 0;
+  fixWrongCount = 0;
+
+  promptEmoji.textContent = fixWordData.emoji;
+  promptText.innerHTML = t('fixPrompt');
+
+  renderFixWord();
+
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  activeKeyMap = {};
+  correctKey = word[fixBlanks[0]].toLowerCase();
+
+  setKeyHint(t('fixHint'));
+  setTimeout(() => Audio_.speak(`${word}! ${t('fixPrompt')}`), 300);
+}
+
+/**
+ * Renders the Fix the Word tiles: given letters are shown, filled blanks
+ * turn green, the current blank pulses with a "?", later blanks show "?".
+ */
+function renderFixWord() {
+  const word = fixWordData.word;
+  let html = '<div class="word-display">';
+  for (let i = 0; i < word.length; i++) {
+    const blankPos = fixBlanks.indexOf(i);
+    if (blankPos === -1) {
+      html += `<span class="word-letter given">${word[i]}</span>`;
+    } else if (blankPos < fixFilledCount) {
+      html += `<span class="word-letter completed">${word[i]}</span>`;
+    } else if (blankPos === fixFilledCount) {
+      html += `<span class="word-letter current">?</span>`;
+    } else {
+      html += `<span class="word-letter pending">?</span>`;
+    }
+  }
+  html += '</div>';
+  extraArea.innerHTML = html;
+}
+
+/**
+ * Handles a letter keypress in Fix the Word mode. Correct letter fills
+ * the blank (round completes when all blanks are filled). Wrong letters
+ * shake the tile; the word is re-spoken, and after two misses on the
+ * same blank the expected letter is spoken as a rescue hint.
+ * @param {string} key - Lowercase letter key pressed
+ */
+function handleFixWordKeyPress(key) {
+  if (inputLocked || !fixWordData) return;
+  const word = fixWordData.word;
+  const expected = word[fixBlanks[fixFilledCount]].toLowerCase();
+
+  if (key === expected) {
+    Audio_.correct();
+    fixFilledCount++;
+    fixWrongCount = 0;
+    renderFixWord();
+
+    if (fixFilledCount >= fixBlanks.length) {
+      // Word fixed!
+      inputLocked = true;
+      Audio_.celebration();
+      showCelebration();
+      earnStar();
+
+      const enc = t('encouragements');
+      setTimeout(() => Audio_.speak(`${enc[Math.floor(Math.random() * enc.length)]} ${word}!`), 400);
+
+      setTimeout(() => {
+        if (stars < MAX_STARS) {
+          inputLocked = false;
+          nextRound();
+        }
+      }, 1600);
+    } else {
+      correctKey = word[fixBlanks[fixFilledCount]].toLowerCase();
+      setTimeout(() => Audio_.speak(word, 0.9), 500);
+    }
+  } else {
+    Audio_.wrong();
+    resetStreak();
+    fixWrongCount++;
+    const currentEl = extraArea.querySelector('.word-letter.current');
+    if (currentEl) {
+      currentEl.style.animation = 'wrongShake 0.4s ease-out';
+      setTimeout(() => currentEl.style.animation = '', 400);
+    }
+    // First miss: re-speak the word. Two or more: rescue hint with the letter.
+    if (fixWrongCount >= 2) {
+      setTimeout(() => Audio_.speak(`${t('press')} ${expected.toUpperCase()}!`, 1.0), 500);
+    } else {
+      setTimeout(() => Audio_.speak(word, 0.85), 500);
+    }
   }
 }
 

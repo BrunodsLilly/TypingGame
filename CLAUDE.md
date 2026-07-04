@@ -56,9 +56,10 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - A `*Round()` function (e.g., `colorsRound()`, `wordsRound()`) in `game-rounds.js` that sets up the prompt, choices, `activeKeyMap`, `correctKey`, hint timer, and voice prompt
 - `handleAnswer(selectedIdx, correctIdx)` in `game-engine.js` is the shared handler for choice-based games
 - Words mode uses `handleWordKeyPress(key)` for letter-by-letter typing
+- Fix the Word mode uses `handleFixWordKeyPress(key)` for free letter typing
 - Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 
-**16 Game Modes** (keys 1-9, 0, E, R, G, K, N, T):
+**17 Game Modes** (keys 1-9, 0, E, R, G, K, N, T, F):
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
@@ -75,8 +76,9 @@ G. **Geometry** — Sides, corners, and shape names (3 levels)
 K. **Korean** — Korean words and phrases (6 levels): match pictures to spoken vocabulary, phrase comprehension, polite "___ 주세요" requests, colors & native numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Hangul word)
 N. **More & Less** — Pre-addition number sense (3 levels): compare which group has more/fewer, one more/one less on a number line, number bonds on a five-frame (ten-frame at 3+ stars)
 T. **Take Away** — Subtraction (3 levels): story mode where an animal eats treats and the child counts what's left, visual `n − k = ?` equations with crossed-out items, and mixed +/− practice
+F. **Fix the Word** — Free-typing spelling recall (3 levels): a word from `WORDS_DATA` appears with hidden letters and the child types what's missing — first letter, any one letter, or two letters. Uses `handleFixWordKeyPress(key)`; no on-screen key hint (the word is spoken instead; the letter is spoken as a rescue hint after two misses)
 
-**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, and Take Away get harder at 3+ stars.
+**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, Take Away, and Fix the Word get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 
@@ -86,7 +88,7 @@ T. **Take Away** — Subtraction (3 levels): story mode where an animal eats tre
 
 **Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
 
-**Bilingual Mode (EN/PT)**: A language toggle button (bottom-left, or `L` key on home screen) switches between English and Portuguese. When PT is active: voice prompts speak Portuguese (pt-BR), choice labels show both languages (e.g. "vermelho" with "red" below), home card labels switch to Portuguese names. The `lang` global ('en'|'pt') is defined in `i18n.js`. All UI strings go through the `t()` helper. Words and Rhymes games remain English-only (spelling/rhyming is language-specific). Game data objects have `pt` fields for Portuguese names (Colors, Shapes, Animals, Elements).
+**Bilingual Mode (EN/PT)**: A language toggle button (bottom-left, or `L` key on home screen) switches between English and Portuguese. When PT is active: voice prompts speak Portuguese (pt-BR), choice labels show both languages (e.g. "vermelho" with "red" below), home card labels switch to Portuguese names. The `lang` global ('en'|'pt') is defined in `i18n.js`. All UI strings go through the `t()` helper. Words, Fix the Word, and Rhymes games remain English-only (spelling/rhyming is language-specific). Game data objects have `pt` fields for Portuguese names (Colors, Shapes, Animals, Elements).
 
 ## Design Constraints
 

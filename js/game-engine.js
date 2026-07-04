@@ -106,6 +106,11 @@ const GAME_LEVELS = {
         { name: 'Minus', ptName: 'Menos', desc: '5 − 2 = ?', ptDesc: '5 − 2 = ?', emoji: '➖' },
         { name: 'Plus or Minus', ptName: 'Mais ou Menos', desc: 'Mixed + and −', ptDesc: '+ e − misturados', emoji: '🎲' },
     ],
+    fixword: [
+        { name: 'First Letter', ptName: 'Primeira Letra', desc: 'Type the starting letter', ptDesc: 'Digite a primeira letra', emoji: '🅰️' },
+        { name: 'Any Letter', ptName: 'Qualquer Letra', desc: 'One letter is hiding', ptDesc: 'Uma letra sumiu', emoji: '🔍' },
+        { name: 'Two Letters', ptName: 'Duas Letras', desc: 'Two letters are hiding', ptDesc: 'Duas letras sumiram', emoji: '🧩' },
+    ],
 };
 
 /**
@@ -268,7 +273,7 @@ const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
     rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
-    numberfun: '#6c5ce7', takeaway: '#16a085',
+    numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe',
 };
 
 function startGame(game) {
@@ -545,6 +550,7 @@ function nextRound() {
         case 'korean':   koreanRound();   break;
         case 'numberfun': numberfunRound(); break;
         case 'takeaway':  takeawayRound();  break;
+        case 'fixword':   fixwordRound();   break;
     }
 }
 
@@ -560,7 +566,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -636,6 +642,12 @@ document.addEventListener('keydown', (e) => {
             }
             handleWordKeyPress(key);
         }
+        return;
+    }
+
+    // Fix the Word mode: free letter typing, no on-screen choices
+    if (currentGame === 'fixword') {
+        if (/^[a-z]$/.test(key)) handleFixWordKeyPress(key);
         return;
     }
 
