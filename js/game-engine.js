@@ -111,6 +111,14 @@ const GAME_LEVELS = {
         { name: 'Any Letter', ptName: 'Qualquer Letra', desc: 'One letter is hiding', ptDesc: 'Uma letra sumiu', emoji: '🔍' },
         { name: 'Two Letters', ptName: 'Duas Letras', desc: 'Two letters are hiding', ptDesc: 'Duas letras sumiram', emoji: '🧩' },
     ],
+    portuguese: [
+        { name: 'Match Picture', ptName: 'Combinar Figura', desc: 'Hear Portuguese, pick picture', ptDesc: 'Ouça e escolha a figura', emoji: '🖼️' },
+        { name: 'What It Means', ptName: 'O Que Significa', desc: 'Hear a phrase, pick the meaning', ptDesc: 'Ouça a frase, escolha o sentido', emoji: '💬' },
+        { name: 'Ask Nicely', ptName: 'Peça Com Jeito', desc: 'Build a "___ por favor" request', ptDesc: 'Monte "___ por favor"', emoji: '🙏' },
+        { name: 'Colors & Numbers', ptName: 'Cores e Números', desc: 'Colors + counting 1-5', ptDesc: 'Cores + contar 1-5', emoji: '🌈' },
+        { name: 'My Body & Actions', ptName: 'Corpo e Ações', desc: 'Body parts + doing words', ptDesc: 'Partes do corpo + ações', emoji: '🙆' },
+        { name: 'Say It in Portuguese', ptName: 'Fale em Português', desc: 'Pick the Portuguese word', ptDesc: 'Escolha a palavra', emoji: '🗣️' },
+    ],
 };
 
 /**
@@ -274,7 +282,7 @@ const GAME_TINTS = {
     colors: '#ff6b9d', shapes: '#c44dff', count: '#4dc9f6', letters: '#2ecc71',
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
     rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
-    numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe',
+    numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe', portuguese: '#009c3b',
 };
 
 function startGame(game) {
@@ -552,6 +560,7 @@ function nextRound() {
         case 'numberfun': numberfunRound(); break;
         case 'takeaway':  takeawayRound();  break;
         case 'fixword':   fixwordRound();   break;
+        case 'portuguese': portugueseRound(); break;
     }
 }
 
@@ -567,7 +576,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);

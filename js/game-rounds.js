@@ -2884,3 +2884,398 @@ function koreanSayItRound() {
   setKeyHint(`${correct.en} = ${correct.kr} (${correct.rom})`);
   setTimeout(() => Audio_.speak(`How do you say ${correct.en} in Korean?`, 0.85, 'en'), 300);
 }
+
+// ── PORTUGUESE ──
+
+/**
+ * Portuguese vocabulary for the Match Picture / Say It levels.
+ * Mirrors KOREAN_WORDS (same wiki titles, so photo thumbnails are
+ * shared via KOREAN_IMAGE_CACHE, which is keyed by wiki title).
+ * @type {Array<{emoji: string, en: string, pt: string, wiki: string}>}
+ */
+const PT_WORDS = [
+  { emoji: '🍎', en: 'apple',      pt: 'maçã',         wiki: 'Apple' },
+  { emoji: '🍌', en: 'banana',     pt: 'banana',       wiki: 'Banana' },
+  { emoji: '🐱', en: 'cat',        pt: 'gato',         wiki: 'Cat' },
+  { emoji: '🐶', en: 'dog',        pt: 'cachorro',     wiki: 'Dog' },
+  { emoji: '🐰', en: 'rabbit',     pt: 'coelho',       wiki: 'Rabbit' },
+  { emoji: '🐟', en: 'fish',       pt: 'peixe',        wiki: 'Fish' },
+  { emoji: '🦋', en: 'butterfly',  pt: 'borboleta',    wiki: 'Butterfly' },
+  { emoji: '⭐', en: 'star',       pt: 'estrela',      wiki: 'Star' },
+  { emoji: '🌙', en: 'moon',       pt: 'lua',          wiki: 'Moon' },
+  { emoji: '☀️', en: 'sun',        pt: 'sol',          wiki: 'Sun' },
+  { emoji: '🌸', en: 'flower',     pt: 'flor',         wiki: 'Flower' },
+  { emoji: '💧', en: 'water',      pt: 'água',         wiki: 'Water' },
+  { emoji: '📚', en: 'book',       pt: 'livro',        wiki: 'Book' },
+  { emoji: '⚽', en: 'ball',       pt: 'bola',         wiki: 'Ball_(association_football)' },
+  { emoji: '🏠', en: 'house',      pt: 'casa',         wiki: 'House' },
+  { emoji: '🐦', en: 'bird',       pt: 'pássaro',      wiki: 'Bird' },
+  { emoji: '🐻', en: 'bear',       pt: 'urso',         wiki: 'Bear' },
+  { emoji: '🌳', en: 'tree',       pt: 'árvore',       wiki: 'Tree' },
+  { emoji: '🚗', en: 'car',        pt: 'carro',        wiki: 'Car' },
+  { emoji: '👟', en: 'shoes',      pt: 'sapatos',      wiki: 'Shoe' },
+  { emoji: '🧢', en: 'hat',        pt: 'chapéu',       wiki: 'Hat' },
+  { emoji: '☂️', en: 'umbrella',   pt: 'guarda-chuva', wiki: 'Umbrella' },
+  { emoji: '🍓', en: 'strawberry', pt: 'morango',      wiki: 'Strawberry' },
+  { emoji: '🍇', en: 'grapes',     pt: 'uvas',         wiki: 'Grape' },
+];
+
+/**
+ * Daily family phrases in Brazilian Portuguese (toddler register).
+ * @type {Array<{emoji: string, en: string, pt: string}>}
+ */
+const PT_PHRASES = [
+  { emoji: '🥰❤️', en: 'I love you',        pt: 'eu te amo' },
+  { emoji: '🙏😊', en: 'thank you',         pt: 'obrigada' },
+  { emoji: '😋🍚', en: "I'm hungry",        pt: 'estou com fome' },
+  { emoji: '😴💤', en: "I'm sleepy",        pt: 'estou com sono' },
+  { emoji: '🤗',   en: 'hug me please',     pt: 'me abraça' },
+  { emoji: '😋👍', en: "it's yummy",        pt: 'que gostoso' },
+  { emoji: '😨',   en: "I'm scared",        pt: 'estou com medo' },
+  { emoji: '🤕',   en: 'it hurts / ouch',   pt: 'está doendo' },
+  { emoji: '👋😊', en: 'hello',             pt: 'oi' },
+  { emoji: '👋🚪', en: 'goodbye',           pt: 'tchau' },
+  { emoji: '😔🙏', en: "I'm sorry",         pt: 'desculpa' },
+  { emoji: '🚽',   en: 'I need potty',      pt: 'quero fazer xixi' },
+  { emoji: '🧸😄', en: 'I want to play',    pt: 'quero brincar' },
+  { emoji: '🚶‍♀️🚶', en: "let's go together", pt: 'vamos juntos' },
+  { emoji: '🤝',   en: 'hold my hand',      pt: 'me dá a mão' },
+  { emoji: '👩‍👧', en: 'mommy',             pt: 'mamãe' },
+  { emoji: '👨‍👧', en: 'daddy',             pt: 'papai' },
+  { emoji: '➕🍽️', en: 'more please',       pt: 'mais, por favor' },
+  { emoji: '💧🥤', en: 'water please',      pt: 'água, por favor' },
+  { emoji: '🆘🙏', en: 'help me',           pt: 'me ajuda' },
+];
+
+/**
+ * Things to politely ask for with the "___, por favor" frame.
+ * @type {Array<{emoji: string, en: string, pt: string, wiki: string}>}
+ */
+const PT_REQUEST_ITEMS = [
+  { emoji: '💧', en: 'water',  pt: 'água',     wiki: 'Bottled_water' },
+  { emoji: '🥛', en: 'milk',   pt: 'leite',    wiki: 'Milk' },
+  { emoji: '🍚', en: 'rice',   pt: 'arroz',    wiki: 'Cooked_rice' },
+  { emoji: '🍪', en: 'snack',  pt: 'biscoito', wiki: 'Cookie' },
+  { emoji: '🍞', en: 'bread',  pt: 'pão',      wiki: 'Bread' },
+  { emoji: '🍎', en: 'apple',  pt: 'maçã',     wiki: 'Apple' },
+  { emoji: '🍌', en: 'banana', pt: 'banana',   wiki: 'Banana' },
+  { emoji: '🧃', en: 'juice',  pt: 'suco',     wiki: 'Juice' },
+];
+
+/**
+ * Portuguese color words.
+ * @type {Array<{en: string, pt: string, hex: string}>}
+ */
+const PT_COLORS = [
+  { en: 'red',    pt: 'vermelho', hex: '#e74c3c' },
+  { en: 'blue',   pt: 'azul',     hex: '#3498db' },
+  { en: 'yellow', pt: 'amarelo',  hex: '#f1c40f' },
+  { en: 'green',  pt: 'verde',    hex: '#2ecc71' },
+  { en: 'purple', pt: 'roxo',     hex: '#9b59b6' },
+  { en: 'pink',   pt: 'rosa',     hex: '#ff6b9d' },
+  { en: 'orange', pt: 'laranja',  hex: '#e67e22' },
+  { en: 'white',  pt: 'branco',   hex: '#f5f5f5' },
+  { en: 'black',  pt: 'preto',    hex: '#111111' },
+  { en: 'brown',  pt: 'marrom',   hex: '#8B4513' },
+];
+
+/**
+ * Portuguese numbers 1-5. Index i holds the word for i+1.
+ * @type {string[]}
+ */
+const PT_NUMBERS = ['um', 'dois', 'três', 'quatro', 'cinco'];
+
+/**
+ * Body-part words for "My Body & Actions".
+ * @type {Array<{emoji: string, en: string, pt: string}>}
+ */
+const PT_BODY = [
+  { emoji: '👀', en: 'eyes',  pt: 'olhos' },
+  { emoji: '👃', en: 'nose',  pt: 'nariz' },
+  { emoji: '👄', en: 'mouth', pt: 'boca' },
+  { emoji: '👂', en: 'ear',   pt: 'orelha' },
+  { emoji: '✋', en: 'hand',  pt: 'mão' },
+  { emoji: '🦶', en: 'foot',  pt: 'pé' },
+  { emoji: '🦵', en: 'leg',   pt: 'perna' },
+  { emoji: '🦷', en: 'tooth', pt: 'dente' },
+];
+
+/**
+ * Everyday action verbs for "My Body & Actions".
+ * @type {Array<{emoji: string, en: string, pt: string}>}
+ */
+const PT_ACTIONS = [
+  { emoji: '😋🍚', en: 'eat',   pt: 'comer' },
+  { emoji: '🥤',   en: 'drink', pt: 'beber' },
+  { emoji: '😴',   en: 'sleep', pt: 'dormir' },
+  { emoji: '🏃',   en: 'run',   pt: 'correr' },
+  { emoji: '💃',   en: 'dance', pt: 'dançar' },
+  { emoji: '😄',   en: 'laugh', pt: 'rir' },
+  { emoji: '😢',   en: 'cry',   pt: 'chorar' },
+  { emoji: '🛁',   en: 'bathe', pt: 'tomar banho' },
+];
+
+/** Dispatches to the correct Portuguese sub-round based on current level. */
+function portugueseRound() {
+  const level = getLevel('portuguese');
+  if (level === 1) return ptPhraseRound();
+  if (level === 2) return ptAskRound();
+  if (level === 3) return ptColorNumberRound();
+  if (level === 4) return ptBodyActionRound();
+  if (level === 5) return ptSayItRound();
+  return ptMatchPicture();
+}
+
+/**
+ * Shared "hear Portuguese, pick the picture" round used by the Match
+ * Picture, What It Means, and My Body & Actions levels. Speaks the
+ * Portuguese word/phrase; the child picks the matching visual (keys 1-4).
+ * @param {Array<{emoji: string, en: string, pt: string, wiki?: string}>} pool
+ * @param {boolean} useImages - Whether to try wiki photos for choices
+ */
+function ptHearPickRound(pool, useImages) {
+  if (useImages) preloadKoreanImagesFor(pool);
+
+  const correct = pool[Math.floor(Math.random() * pool.length)];
+  const options = pickN(pool, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🇧🇷';
+  promptText.innerHTML =
+    `<span style="font-size:1.7em;font-weight:bold;">${correct.pt}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.pt, 'pt'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+
+    const imgUrl = useImages && w.wiki ? KOREAN_IMAGE_CACHE[w.wiki] : null;
+    const visualHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${w.en}"
+             style="width:90px;height:90px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
+      : `<span style="font-size:2em;">${w.emoji}</span>`;
+
+    btn.innerHTML =
+      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.pt} = "${correct.en}"`);
+  setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 300);
+  setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 1700);
+}
+
+/** Portuguese Level 0 – "Match the Picture!" (vocabulary, real photos). */
+function ptMatchPicture() {
+  ptHearPickRound(PT_WORDS, true);
+}
+
+/** Portuguese Level 1 – "What It Means!" (daily family phrases). */
+function ptPhraseRound() {
+  ptHearPickRound(PT_PHRASES, false);
+}
+
+/** Portuguese Level 2 – "Ask Nicely!" — build a "___, por favor" request.
+ * Shows what she wants; player picks the Portuguese word (keys 1-4); on
+ * success the full polite request is spoken back in Portuguese.
+ */
+function ptAskRound() {
+  preloadKoreanImagesFor(PT_REQUEST_ITEMS);
+
+  const correct = PT_REQUEST_ITEMS[Math.floor(Math.random() * PT_REQUEST_ITEMS.length)];
+  const options = pickN(PT_REQUEST_ITEMS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+  const fullSentence = `${correct.pt}, por favor`;
+
+  promptEmoji.textContent = correct.emoji;
+  promptText.innerHTML =
+    `Ask for <b>${correct.en}</b> nicely!` +
+    `<br><span style="font-size:0.9em;color:#888;">___, por favor (please)</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(`Ask for ${correct.en}`, 'en'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((item, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+
+    const imgUrl = KOREAN_IMAGE_CACHE[item.wiki];
+    const visualHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${item.en}"
+             style="width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
+      : `<span style="font-size:1.5em;">${item.emoji}</span>`;
+
+    btn.innerHTML =
+      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual" style="font-size:1.3em;font-weight:bold;">${item.pt}</span>` +
+      `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${item.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(fullSentence, 0.8, 'pt'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.en} → ${fullSentence}`);
+  setTimeout(() => Audio_.speak(`Ask for ${correct.en}`, 0.85, 'en'), 300);
+}
+
+/** Portuguese Level 3 – "Colors & Numbers!" (50/50 mix). */
+function ptColorNumberRound() {
+  if (Math.random() < 0.5) return ptColorRound();
+  return ptNumberRound();
+}
+
+/** Colors half of Level 3: Portuguese color word → pick the swatch. */
+function ptColorRound() {
+  const correct = PT_COLORS[Math.floor(Math.random() * PT_COLORS.length)];
+  const options = pickN(PT_COLORS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = '🎨';
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${correct.pt}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(correct.pt, 'pt'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((c, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<div class="color-swatch" style="background:${c.hex}; border:2px solid rgba(255,255,255,0.35);"></div>` +
+      `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${c.en}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.pt} = ${correct.en} — find the color!`);
+  setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 300);
+  setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 1600);
+}
+
+/** Numbers half of Level 3: hear a Portuguese number, press 1-5. */
+function ptNumberRound() {
+  const n = Math.floor(Math.random() * 5) + 1; // 1-5
+  const word = PT_NUMBERS[n - 1];
+  const emoji = COUNT_EMOJIS[Math.floor(Math.random() * COUNT_EMOJIS.length)];
+
+  promptEmoji.textContent = '🔢';
+  promptText.innerHTML =
+    `<span style="font-size:1.8em;font-weight:bold;">${word}</span>`;
+  extraArea.innerHTML = '';
+  extraArea.appendChild(koreanSpeakerButton(word, 'pt'));
+
+  const options = pickN([1, 2, 3, 4, 5], 4, n);
+  const correctIdx = options.indexOf(n);
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices number-choices';
+  choicesEl.innerHTML = '';
+  options.forEach((num, i) => {
+    const keyStr = String(num);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn number-btn';
+    btn.dataset.key = keyStr;
+    btn.innerHTML = `<span class="choice-visual">${num}</span><span class="choice-keycap">${keycapHTML(keyStr)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      let itemsHTML = '<div class="count-items">';
+      for (let j = 0; j < n; j++) {
+        itemsHTML += `<span class="count-item count-item-small" style="animation-delay:${(j * 0.08).toFixed(2)}s">${emoji}</span>`;
+      }
+      itemsHTML += '</div>';
+      const div = document.createElement('div');
+      div.innerHTML = itemsHTML;
+      extraArea.appendChild(div);
+      setTimeout(() => Audio_.speak(word, 0.8, 'pt'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyStr] = i;
+  });
+
+  correctKey = String(n);
+  setKeyHint(`${word} — press the number!`);
+  setTimeout(() => Audio_.speak(word, 0.8, 'pt'), 300);
+  setTimeout(() => Audio_.speak(word, 0.8, 'pt'), 1600);
+}
+
+/** Portuguese Level 4 – "My Body & Actions!" (50/50 mix). */
+function ptBodyActionRound() {
+  const pool = Math.random() < 0.5 ? PT_BODY : PT_ACTIONS;
+  ptHearPickRound(pool, false);
+}
+
+/** Portuguese Level 5 – "Say It in Portuguese!" — reverse mode: see a
+ * picture and its English name, pick the written Portuguese word.
+ */
+function ptSayItRound() {
+  preloadKoreanImagesFor(PT_WORDS);
+
+  const correct = PT_WORDS[Math.floor(Math.random() * PT_WORDS.length)];
+  const options = pickN(PT_WORDS, 4, correct);
+  const correctIdx = options.indexOf(correct);
+
+  promptEmoji.textContent = correct.emoji;
+  promptText.innerHTML =
+    `How do you say <b>${correct.en}</b> in Portuguese?`;
+  extraArea.innerHTML = '';
+  const imgUrl = KOREAN_IMAGE_CACHE[correct.wiki];
+  if (imgUrl) {
+    const pic = document.createElement('div');
+    pic.style.cssText = 'text-align:center;margin:4px 0;';
+    pic.innerHTML = `<img src="${imgUrl}" alt="${correct.en}"
+        style="width:110px;height:110px;object-fit:cover;border-radius:14px;">`;
+    extraArea.appendChild(pic);
+  }
+  extraArea.appendChild(koreanSpeakerButton(`How do you say ${correct.en} in Portuguese?`, 'en'));
+
+  activeKeyMap = {};
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  options.forEach((w, i) => {
+    const keyNum = String(i + 1);
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.dataset.key = keyNum;
+    btn.innerHTML =
+      `<span class="choice-visual" style="font-size:1.4em;font-weight:bold;">${w.pt}</span>` +
+      `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(correct.pt, 0.8, 'pt'), 1100);
+    }));
+    choicesEl.appendChild(btn);
+    activeKeyMap[keyNum] = i;
+  });
+
+  correctKey = String(correctIdx + 1);
+  setKeyHint(`${correct.en} = ${correct.pt}`);
+  setTimeout(() => Audio_.speak(`How do you say ${correct.en} in Portuguese?`, 0.85, 'en'), 300);
+}

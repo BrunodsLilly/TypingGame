@@ -161,6 +161,7 @@ body {
 .game-card.numberfun { border-color: #6c5ce7;      } .game-card.numberfun::before { background: #6c5ce7; }
 .game-card.takeaway { border-color: #16a085;       } .game-card.takeaway::before { background: #16a085; }
 .game-card.fixword { border-color: #a29bfe;        } .game-card.fixword::before { background: #a29bfe; }
+.game-card.portuguese { border-color: #009c3b;     } .game-card.portuguese::before { background: #009c3b; }
 
 /* ===== Keycap badges ===== */
 .keycap {

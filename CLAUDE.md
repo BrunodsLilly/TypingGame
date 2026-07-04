@@ -63,7 +63,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - Fix the Word mode uses `handleFixWordKeyPress(key)` for free letter typing
 - Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 
-**17 Game Modes** (keys 1-9, 0, E, R, G, K, N, T, F):
+**18 Game Modes** (keys 1-9, 0, E, R, G, K, N, T, F, P):
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
@@ -81,6 +81,7 @@ K. **Korean** — Korean words and phrases (6 levels): match pictures to spoken 
 N. **More & Less** — Pre-addition number sense (3 levels): compare which group has more/fewer, one more/one less on a number line, number bonds on a five-frame (ten-frame at 3+ stars)
 T. **Take Away** — Subtraction (3 levels): story mode where an animal eats treats and the child counts what's left, visual `n − k = ?` equations with crossed-out items, and mixed +/− practice
 F. **Fix the Word** — Free-typing spelling recall (3 levels): a word from `WORDS_DATA` appears with hidden letters and the child types what's missing — first letter, any one letter, or two letters. Uses `handleFixWordKeyPress(key)`; no on-screen key hint (the word is spoken instead; the letter is spoken as a rescue hint after two misses)
+P. **Portuguese** — Brazilian Portuguese words and phrases (6 levels), mirroring the Korean game's structure: match pictures to spoken vocabulary, phrase comprehension, polite "___, por favor" requests, colors & numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Portuguese word). Shares Wikipedia photo thumbnails with the Korean game via `KOREAN_IMAGE_CACHE` (keyed by wiki title)
 
 **Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, Take Away, and Fix the Word get harder at 3+ stars.
 

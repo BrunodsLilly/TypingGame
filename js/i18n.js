@@ -87,7 +87,8 @@ const I18N = {
         fixHint: 'Type the missing letter!',
         homeTips: [
             'Press a key to play!',
-            '17 games to explore!',
+            '18 games to explore!',
+            'Learn Korean & Portuguese!',
             'Practice adding & taking away!',
             'Fix the missing letters!',
             'Learn colors, shapes & more!',
@@ -103,6 +104,7 @@ const I18N = {
             animals: 'Animals', math: 'Math', words: 'Words', patterns: 'Patterns',
             rhymes: 'Rhymes', memory: 'Memory', opposites: 'Opposites', reading: 'Reading', geometry: 'Geometry',
             korean: 'Korean', numberfun: 'More & Less', takeaway: 'Take Away', fixword: 'Fix the Word',
+            portuguese: 'Portuguese',
         },
     },
     pt: {
@@ -178,7 +180,8 @@ const I18N = {
         fixHint: 'Digite a letra que falta!',
         homeTips: [
             'Aperte uma tecla para jogar!',
-            '17 jogos para explorar!',
+            '18 jogos para explorar!',
+            'Aprenda coreano e português!',
             'Pratique somar e tirar!',
             'Complete as letras que faltam!',
             'Aprenda cores, formas e mais!',
@@ -194,6 +197,7 @@ const I18N = {
             animals: 'Animais', math: 'Matem\u00E1tica', words: 'Palavras', patterns: 'Padr\u00F5es',
             rhymes: 'Rimas', memory: 'Mem\u00F3ria', opposites: 'Opostos', reading: 'Leitura', geometry: 'Geometria',
             korean: 'Coreano', numberfun: 'Mais e Menos', takeaway: 'Tirar', fixword: 'Consertar',
+            portuguese: 'Português',
         },
     }
 };
