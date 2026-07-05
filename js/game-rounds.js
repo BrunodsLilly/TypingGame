@@ -714,8 +714,9 @@ const LETTER_WORDS = {
 };
 
 /**
- * Sets up a Letters round: picks a target letter, shows 4 letter choices
- * where the key is the letter itself, and speaks the prompt.
+ * Sets up a Letters round: picks a target letter, shows its mnemonic word's
+ * emoji, and asks what letter it starts with — the 4 letter choices double
+ * as the physical keys to press (the correct letter is never named aloud).
  */
 function lettersRound() {
   const correct = LETTERS[Math.floor(Math.random() * LETTERS.length)];
@@ -723,8 +724,9 @@ function lettersRound() {
   const correctIdx = options.indexOf(correct);
 
   const wordHint = LETTER_WORDS[correct] || '';
+  const wordName = wordHint.split(' ').slice(1).join(' ');
   promptEmoji.textContent = wordHint.split(' ')[0] || '\uD83D\uDD24';
-  promptText.innerHTML = `${t('pressLetter')} <b style="font-size:1.3em;">${correct}</b>!`;
+  promptText.innerHTML = `${t('whatStarts')} <b>${wordName}</b>?`;
   extraArea.innerHTML = '';
 
   // For letters, the key IS the letter itself
@@ -737,16 +739,16 @@ function lettersRound() {
     btn.className = 'choice-btn letter-btn';
     btn.dataset.key = keyStr;
     btn.innerHTML = `<span class="choice-visual">${l}</span><span class="choice-keycap">${keycapHTML(l)}</span>`;
-    btn.addEventListener('click', () => handleAnswer(i, correctIdx));
+    btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
+      setTimeout(() => Audio_.speak(`${t('letterFor').replace('%s', correct).replace('%s', wordName)}!`), 200);
+    }));
     choicesEl.appendChild(btn);
     activeKeyMap[keyStr] = i;
   });
   correctKey = correct.toLowerCase();
 
-
-  setKeyHint(t('pressOn').replace('%s', correct));
-  const wordName = (LETTER_WORDS[correct] || '').split(' ').slice(1).join(' ');
-  setTimeout(() => Audio_.speak(`${t('pressLetter')} ${correct}! ${t('letterFor').replace('%s', correct).replace('%s', wordName)}`), 300);
+  setKeyHint(`${t('whatStarts')} ${wordName}?`);
+  setTimeout(() => Audio_.speak(`${t('whatStarts')} ${wordName}?`), 300);
 }
 
 // ── ANIMALS ──

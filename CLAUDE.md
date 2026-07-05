@@ -67,7 +67,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
-4. **Letters/ABCs** — Press the shown letter on keyboard
+4. **Letters/ABCs** — See a picture (e.g. a kite), guess what letter it starts with, and press that key
 5. **Animals** — Match animal to its sound
 6. **Math** — Addition problems with visual emoji groups
 7. **Words** — Pick a word from 3 choices (keys 1/2/3), then spell it letter-by-letter
