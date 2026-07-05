@@ -28,8 +28,16 @@ TypingGame/
     celebration.js      Celebration overlay, CHEERS data, particle burst, grand finale
     touch-keyboard.js   TouchKB IIFE — on-screen QWERTY for touch devices (typing games)
     i18n.js             Language state (lang), I18N translations dict, t() helper
+    media.js            Curated real-photo layer: MEDIA_PHOTOS manifest, MEDIA_CACHE,
+                        resolveMedia() cascade, mediaVisualHTML(), hydrateMedia()
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
     game-rounds.js      All game data constants + all round functions + helpers
+  img/
+    korean/             Hand-reviewed local photos for family phrases
+    vocab/              Optional vendored photos (created by tools/download-media.js)
+  tools/
+    download-media.js   Node script: downloads all curated photos into img/vocab/
+                        for offline use and parental review (no dependencies)
   CLAUDE.md             This file
 ```
 
@@ -40,6 +48,7 @@ TypingGame/
 <script src="js/celebration.js"></script>    <!-- no deps besides DOM -->
 <script src="js/touch-keyboard.js"></script> <!-- no deps, defines TouchKB -->
 <script src="js/i18n.js"></script>           <!-- defines lang, I18N, t() -->
+<script src="js/media.js"></script>          <!-- defines MEDIA_PHOTOS, mediaVisualHTML(), hydrateMedia() -->
 <script src="js/game-engine.js"></script>    <!-- needs Audio_, showCelebration, t() -->
 <script src="js/game-rounds.js"></script>    <!-- needs everything above -->
 ```
@@ -81,11 +90,13 @@ K. **Korean** — Korean words and phrases (6 levels): match pictures to spoken 
 N. **More & Less** — Pre-addition number sense (3 levels): compare which group has more/fewer, one more/one less on a number line, number bonds on a five-frame (ten-frame at 3+ stars)
 T. **Take Away** — Subtraction (3 levels): story mode where an animal eats treats and the child counts what's left, visual `n − k = ?` equations with crossed-out items, and mixed +/− practice
 F. **Fix the Word** — Free-typing spelling recall (3 levels): a word from `WORDS_DATA` appears with hidden letters and the child types what's missing — first letter, any one letter, or two letters. Uses `handleFixWordKeyPress(key)`; no on-screen key hint (the word is spoken instead; the letter is spoken as a rescue hint after two misses)
-P. **Portuguese** — Brazilian Portuguese words and phrases (6 levels), mirroring the Korean game's structure: match pictures to spoken vocabulary, phrase comprehension, polite "___, por favor" requests, colors & numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Portuguese word). Shares Wikipedia photo thumbnails with the Korean game via `KOREAN_IMAGE_CACHE` (keyed by wiki title)
+P. **Portuguese** — Brazilian Portuguese words and phrases (6 levels), mirroring the Korean game's structure: match pictures to spoken vocabulary, phrase comprehension, polite "___, por favor" requests, colors & numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Portuguese word). Shares real photos with the Korean game via the media layer in `js/media.js` (keyed by `wiki` field)
 
 **Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, Take Away, and Fix the Word get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
+
+**Real Photos (media layer)**: `js/media.js` gives vocabulary entries real, kid-safe photos instead of emoji. Any game-data entry with a `wiki` key (a Wikipedia article title, e.g. `'Apple'`, `'Human_eye'`, `'Cattle'`) resolves a photo through a cascade: vendored local file (`img/vocab/<slug>.jpg`) → hand-pinned Wikimedia Commons photos (the `MEDIA_PHOTOS` manifest — community-vetted pictures chosen for a toddler) → the Wikipedia article's lead-image thumbnail → the entry's emoji. Rounds render choices with `mediaVisualHTML(item, px)` and call `hydrateMedia(items)` after building the DOM; photos resolve asynchronously and upgrade the emoji in place when they load. Results are memoized in `MEDIA_CACHE` and shared across the Korean, Portuguese, and Animals games. An entry with a local `img` path (e.g. `img/korean/*.jpg`) uses it directly. SAFETY RULES: every pinned Commons file must be appropriate for a 3-year-old; concepts a photo source could illustrate badly (e.g. bathing) get NO `wiki` key and stay emoji-only; `node tools/download-media.js` vendors all photos into `img/vocab/` so a parent can review them — deleting a picture makes the game fall back to the next source or the emoji.
 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
@@ -99,6 +110,6 @@ P. **Portuguese** — Brazilian Portuguese words and phrases (6 levels), mirrori
 
 - **Keyboard-first, touch-supported**: Every game must work via keyboard keys with visual keycap badges showing which key to press. Every interaction must ALSO work by tapping (iPad support): give buttons click handlers, and use `TouchKB` for any free-typing input.
 - **No build tools**: Plain `<script>` tags sharing global scope. No modules, no bundler, no transpiler.
-- **No external dependencies**: Everything is self-contained. No CDN links, no npm packages.
+- **No external dependencies**: All code is self-contained. No CDN links, no npm packages, no API keys. The one external touchpoint is the media layer fetching freely-licensed photos from Wikimedia at runtime — and even that is optional (vendor them with `node tools/download-media.js` for a fully offline game).
 - **3-year-old audience**: Large visuals, simple choices (max 4 options), encouraging voice feedback. No auto-hints — adult supervision provides contextual scaffolding.
 - **Voice**: Questions are spoken aloud. Wrong answers get encouraging "try again" speech. The correct key is NOT revealed in voice prompts — the 5-second auto-hint provides help when needed.

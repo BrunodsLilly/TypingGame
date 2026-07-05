@@ -756,18 +756,18 @@ function lettersRound() {
  * @type {Array<{name: string, emoji: string, sound: string}>}
  */
 const ANIMALS_DATA = [
-  { name: 'cat', pt: 'gato', emoji: '\uD83D\uDC31', sound: 'meow', ptSound: 'miau' },
-  { name: 'dog', pt: 'cachorro', emoji: '\uD83D\uDC15', sound: 'woof woof', ptSound: 'au au' },
-  { name: 'cow', pt: 'vaca', emoji: '\uD83D\uDC04', sound: 'moo', ptSound: 'mu' },
-  { name: 'pig', pt: 'porco', emoji: '\uD83D\uDC37', sound: 'oink oink', ptSound: 'oinc oinc' },
-  { name: 'duck', pt: 'pato', emoji: '\uD83E\uDD86', sound: 'quack quack', ptSound: 'qu\u00E1 qu\u00E1' },
-  { name: 'frog', pt: 'sapo', emoji: '\uD83D\uDC38', sound: 'ribbit', ptSound: 'croac' },
-  { name: 'bird', pt: 'p\u00E1ssaro', emoji: '\uD83D\uDC26', sound: 'tweet tweet', ptSound: 'piu piu' },
-  { name: 'bee', pt: 'abelha', emoji: '\uD83D\uDC1D', sound: 'buzz buzz', ptSound: 'bzz bzz' },
-  { name: 'lion', pt: 'le\u00E3o', emoji: '\uD83E\uDD81', sound: 'roar', ptSound: 'roar' },
-  { name: 'snake', pt: 'cobra', emoji: '\uD83D\uDC0D', sound: 'hiss', ptSound: 'sss' },
-  { name: 'horse', pt: 'cavalo', emoji: '\uD83D\uDC34', sound: 'neigh', ptSound: 'irrr' },
-  { name: 'sheep', pt: 'ovelha', emoji: '\uD83D\uDC11', sound: 'baa baa', ptSound: 'b\u00E9 b\u00E9' },
+  { name: 'cat', pt: 'gato', emoji: '\uD83D\uDC31', sound: 'meow', ptSound: 'miau', wiki: 'Cat' },
+  { name: 'dog', pt: 'cachorro', emoji: '\uD83D\uDC15', sound: 'woof woof', ptSound: 'au au', wiki: 'Dog' },
+  { name: 'cow', pt: 'vaca', emoji: '\uD83D\uDC04', sound: 'moo', ptSound: 'mu', wiki: 'Cattle' },
+  { name: 'pig', pt: 'porco', emoji: '\uD83D\uDC37', sound: 'oink oink', ptSound: 'oinc oinc', wiki: 'Pig' },
+  { name: 'duck', pt: 'pato', emoji: '\uD83E\uDD86', sound: 'quack quack', ptSound: 'qu\u00E1 qu\u00E1', wiki: 'Duck' },
+  { name: 'frog', pt: 'sapo', emoji: '\uD83D\uDC38', sound: 'ribbit', ptSound: 'croac', wiki: 'Frog' },
+  { name: 'bird', pt: 'p\u00E1ssaro', emoji: '\uD83D\uDC26', sound: 'tweet tweet', ptSound: 'piu piu', wiki: 'Bird' },
+  { name: 'bee', pt: 'abelha', emoji: '\uD83D\uDC1D', sound: 'buzz buzz', ptSound: 'bzz bzz', wiki: 'Bee' },
+  { name: 'lion', pt: 'le\u00E3o', emoji: '\uD83E\uDD81', sound: 'roar', ptSound: 'roar', wiki: 'Lion' },
+  { name: 'snake', pt: 'cobra', emoji: '\uD83D\uDC0D', sound: 'hiss', ptSound: 'sss', wiki: 'Snake' },
+  { name: 'horse', pt: 'cavalo', emoji: '\uD83D\uDC34', sound: 'neigh', ptSound: 'irrr', wiki: 'Horse' },
+  { name: 'sheep', pt: 'ovelha', emoji: '\uD83D\uDC11', sound: 'baa baa', ptSound: 'b\u00E9 b\u00E9', wiki: 'Sheep' },
 ];
 
 /**
@@ -792,11 +792,12 @@ function animalsRound() {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
-    btn.innerHTML = `<span class="choice-visual">${a.emoji}</span>${bilingualLabel(a.name, a.pt)}<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
+    btn.innerHTML = `<span class="choice-visual">${mediaVisualHTML(a, 84)}</span>${bilingualLabel(a.name, a.pt)}<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
     btn.addEventListener('click', () => handleAnswer(i, correctIdx));
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
   correctKey = String(correctIdx + 1);
 
   setKeyHint(`${t('whoSays')} "${animalSound}"?`);
@@ -2386,22 +2387,22 @@ const KOREAN_PHRASES = [
   { emoji: '🥰❤️', en: 'I love you',      kr: '사랑해요',         rom: 'saranghaeyo' },
   { emoji: '🙏😊', en: 'thank you',       kr: '고마워요',         rom: 'gomawoyo' },
   { emoji: '😋🍚', en: "I'm hungry",      kr: '배고파요',         rom: 'baegopayo', img: 'img/korean/hungry.jpg' },
-  { emoji: '😴💤', en: "I'm sleepy",      kr: '졸려요',          rom: 'jollyeoyo' },
-  { emoji: '🤗',   en: 'hug me please',   kr: '안아 주세요',       rom: 'ana juseyo' },
+  { emoji: '😴💤', en: "I'm sleepy",      kr: '졸려요',          rom: 'jollyeoyo', wiki: 'Sleep' },
+  { emoji: '🤗',   en: 'hug me please',   kr: '안아 주세요',       rom: 'ana juseyo', wiki: 'Hug' },
   { emoji: '😋👍', en: "it's yummy",      kr: '맛있어요',         rom: 'masisseoyo' },
   { emoji: '😨',   en: "I'm scared",      kr: '무서워요',         rom: 'museowoyo' },
   { emoji: '🤕',   en: 'it hurts / ouch', kr: '아파요',          rom: 'apayo', img: 'img/korean/hurts.jpg' },
   { emoji: '👋😊', en: 'hello',           kr: '안녕하세요',       rom: 'annyeonghaseyo' },
   { emoji: '👋🚪', en: 'goodbye',         kr: '안녕히 가세요',    rom: 'annyeonghi gaseyo' },
   { emoji: '😔🙏', en: "I'm sorry",       kr: '미안해요',         rom: 'mianhaeyo' },
-  { emoji: '🚽',   en: 'I need potty',    kr: '화장실 가고 싶어요', rom: 'hwajangsil gago sipeoyo' },
+  { emoji: '🚽',   en: 'I need potty',    kr: '화장실 가고 싶어요', rom: 'hwajangsil gago sipeoyo', wiki: 'Toilet' },
   { emoji: '🧸😄', en: 'I want to play',  kr: '놀고 싶어요',       rom: 'nolgo sipeoyo', img: 'img/korean/play.jpg' },
   { emoji: '🚶‍♀️🚶', en: "let's go together", kr: '같이 가요', rom: 'gachi gayo' },
-  { emoji: '🤝',   en: 'hold my hand',    kr: '손 잡아요',        rom: 'son jabayo' },
+  { emoji: '🤝',   en: 'hold my hand',    kr: '손 잡아요',        rom: 'son jabayo', wiki: 'Holding_hands' },
   { emoji: '👩‍👧', en: 'mommy',           kr: '엄마',           rom: 'eomma', img: 'img/korean/mommy.jpg' },
   { emoji: '👨‍👧', en: 'daddy',           kr: '아빠',           rom: 'appa', img: 'img/korean/daddy.jpg' },
   { emoji: '➕🍽️', en: 'more please',     kr: '더 주세요',        rom: 'deo juseyo' },
-  { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo' },
+  { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo', wiki: 'Water' },
   { emoji: '🆘🙏', en: 'help me',         kr: '도와주세요',       rom: 'dowajuseyo' },
 ];
 
@@ -2456,14 +2457,14 @@ const KOREAN_NUMBERS = [
  * @type {Array<{emoji: string, en: string, kr: string, rom: string}>}
  */
 const KOREAN_BODY = [
-  { emoji: '👀', en: 'eyes',  kr: '눈',  rom: 'nun' },
-  { emoji: '👃', en: 'nose',  kr: '코',  rom: 'ko' },
-  { emoji: '👄', en: 'mouth', kr: '입',  rom: 'ip' },
-  { emoji: '👂', en: 'ears',  kr: '귀',  rom: 'gwi' },
-  { emoji: '✋', en: 'hand',  kr: '손',  rom: 'son' },
-  { emoji: '🦶', en: 'foot',  kr: '발',  rom: 'bal' },
-  { emoji: '🦵', en: 'leg',   kr: '다리', rom: 'dari' },
-  { emoji: '🦷', en: 'teeth', kr: '이',  rom: 'i' },
+  { emoji: '👀', en: 'eyes',  kr: '눈',  rom: 'nun',  wiki: 'Human_eye' },
+  { emoji: '👃', en: 'nose',  kr: '코',  rom: 'ko',   wiki: 'Human_nose' },
+  { emoji: '👄', en: 'mouth', kr: '입',  rom: 'ip',   wiki: 'Human_mouth' },
+  { emoji: '👂', en: 'ears',  kr: '귀',  rom: 'gwi',  wiki: 'Ear' },
+  { emoji: '✋', en: 'hand',  kr: '손',  rom: 'son',  wiki: 'Hand' },
+  { emoji: '🦶', en: 'foot',  kr: '발',  rom: 'bal',  wiki: 'Foot' },
+  { emoji: '🦵', en: 'leg',   kr: '다리', rom: 'dari', wiki: 'Human_leg' },
+  { emoji: '🦷', en: 'teeth', kr: '이',  rom: 'i',    wiki: 'Human_tooth' },
 ];
 
 /**
@@ -2471,50 +2472,17 @@ const KOREAN_BODY = [
  * @type {Array<{emoji: string, en: string, kr: string, rom: string}>}
  */
 const KOREAN_ACTIONS = [
-  { emoji: '😋🍚', en: 'eat',   kr: '먹어요', rom: 'meogeoyo' },
-  { emoji: '🥤',   en: 'drink', kr: '마셔요', rom: 'masyeoyo' },
-  { emoji: '😴',   en: 'sleep', kr: '자요',  rom: 'jayo' },
-  { emoji: '🏃',   en: 'run',   kr: '뛰어요', rom: 'ttwieoyo' },
-  { emoji: '💃',   en: 'dance', kr: '춤춰요', rom: 'chumchwoyo' },
-  { emoji: '😄',   en: 'laugh', kr: '웃어요', rom: 'useoyo' },
-  { emoji: '😢',   en: 'cry',   kr: '울어요', rom: 'ureoyo' },
+  { emoji: '😋🍚', en: 'eat',   kr: '먹어요', rom: 'meogeoyo',  wiki: 'Eating' },
+  { emoji: '🥤',   en: 'drink', kr: '마셔요', rom: 'masyeoyo',  wiki: 'Drinking' },
+  { emoji: '😴',   en: 'sleep', kr: '자요',  rom: 'jayo',      wiki: 'Sleep' },
+  { emoji: '🏃',   en: 'run',   kr: '뛰어요', rom: 'ttwieoyo',  wiki: 'Running' },
+  { emoji: '💃',   en: 'dance', kr: '춤춰요', rom: 'chumchwoyo', wiki: 'Dance' },
+  { emoji: '😄',   en: 'laugh', kr: '웃어요', rom: 'useoyo',    wiki: 'Laughter' },
+  { emoji: '😢',   en: 'cry',   kr: '울어요', rom: 'ureoyo',    wiki: 'Crying' },
+  // "wash" deliberately has no photo key: bathing imagery is not
+  // something we want a photo source to pick for us. Emoji only.
   { emoji: '🛁',   en: 'wash',  kr: '씻어요', rom: 'ssiseoyo' },
 ];
-
-/**
- * Image cache: wiki title → URL string, or null if the fetch failed.
- * @type {Object<string, string|null>}
- */
-const KOREAN_IMAGE_CACHE = {};
-
-/**
- * Fetch a Wikipedia thumbnail for a single KOREAN_WORDS entry and
- * store the result in KOREAN_IMAGE_CACHE keyed by wiki title.
- */
-async function fetchKoreanImage(word) {
-  if (word.wiki in KOREAN_IMAGE_CACHE) return;
-  try {
-    const res = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word.wiki)}`
-    );
-    if (!res.ok) throw new Error('bad response');
-    const data = await res.json();
-    KOREAN_IMAGE_CACHE[word.wiki] = data.thumbnail?.source ?? null;
-  } catch {
-    KOREAN_IMAGE_CACHE[word.wiki] = null;
-  }
-}
-
-/** Pre-warm the image cache for a list of items that have a `wiki` field
- * (fire-and-forget). */
-function preloadKoreanImagesFor(items) {
-  items.forEach(w => fetchKoreanImage(w));
-}
-
-/** Pre-warm the image cache for all Match Picture vocabulary words. */
-function preloadKoreanImages() {
-  preloadKoreanImagesFor(KOREAN_WORDS);
-}
 
 /** Builds a big tappable 🔊 button that re-speaks the prompt. Essential on
  * iPad/touch devices, where the auto-spoken prompt may be suppressed and
@@ -2550,8 +2518,6 @@ function koreanRound() {
  * has been cached yet.
  */
 function koreanMatchPicture() {
-  preloadKoreanImages();
-
   const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
   const options = pickN(KOREAN_WORDS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -2573,14 +2539,8 @@ function koreanMatchPicture() {
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
 
-    const imgUrl = KOREAN_IMAGE_CACHE[w.wiki];
-    const visualHTML = imgUrl
-      ? `<img src="${imgUrl}" alt="${w.en}"
-             style="width:90px;height:90px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
-      : `<span style="font-size:2em;">${w.emoji}</span>`;
-
     btn.innerHTML =
-      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(w, 90)}</span>` +
       `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
 
@@ -2588,6 +2548,7 @@ function koreanMatchPicture() {
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.kr} (${correct.rom}) — find the picture!`);
@@ -2620,18 +2581,15 @@ function koreanPhraseRound() {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
-    const visualHTML = p.img
-      ? `<img src="${p.img}" alt="${p.en}"
-             style="width:84px;height:84px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
-      : `<span style="font-size:2em;">${p.emoji}</span>`;
     btn.innerHTML =
-      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(p, 84)}</span>` +
       `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${p.en}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
     btn.addEventListener('click', () => handleAnswer(i, correctIdx));
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.kr} (${correct.rom}) = “${correct.en}”`);
@@ -2645,8 +2603,6 @@ function koreanPhraseRound() {
  * polite request "<word> 주세요" is spoken back in Korean.
  */
 function koreanAskRound() {
-  preloadKoreanImagesFor(KOREAN_REQUEST_ITEMS);
-
   const correct = KOREAN_REQUEST_ITEMS[Math.floor(Math.random() * KOREAN_REQUEST_ITEMS.length)];
   const options = pickN(KOREAN_REQUEST_ITEMS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -2669,14 +2625,8 @@ function koreanAskRound() {
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
 
-    const imgUrl = KOREAN_IMAGE_CACHE[item.wiki];
-    const visualHTML = imgUrl
-      ? `<img src="${imgUrl}" alt="${item.en}"
-             style="width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
-      : `<span style="font-size:1.5em;">${item.emoji}</span>`;
-
     btn.innerHTML =
-      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(item, 72)}</span>` +
       `<span class="choice-visual" style="font-size:1.4em;font-weight:bold;">${item.kr}</span>` +
       `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${item.rom}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
@@ -2684,6 +2634,7 @@ function koreanAskRound() {
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.en} → ${fullSentence} (${correct.rom} juseyo)`);
@@ -2818,7 +2769,7 @@ function koreanBodyActionRound() {
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
     btn.innerHTML =
-      `<span class="choice-visual" style="font-size:2em;">${w.emoji}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(w, 84)}</span>` +
       `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
     btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
@@ -2827,6 +2778,7 @@ function koreanBodyActionRound() {
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.kr} (${correct.rom}) = ${correct.en}`);
@@ -2840,8 +2792,6 @@ function koreanBodyActionRound() {
  * Recognition of the written word, production direction.
  */
 function koreanSayItRound() {
-  preloadKoreanImages();
-
   const correct = KOREAN_WORDS[Math.floor(Math.random() * KOREAN_WORDS.length)];
   const options = pickN(KOREAN_WORDS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -2850,14 +2800,11 @@ function koreanSayItRound() {
   promptText.innerHTML =
     `How do you say <b>${correct.en}</b> in Korean?`;
   extraArea.innerHTML = '';
-  const imgUrl = KOREAN_IMAGE_CACHE[correct.wiki];
-  if (imgUrl) {
-    const pic = document.createElement('div');
-    pic.style.cssText = 'text-align:center;margin:4px 0;';
-    pic.innerHTML = `<img src="${imgUrl}" alt="${correct.en}"
-        style="width:110px;height:110px;object-fit:cover;border-radius:14px;">`;
-    extraArea.appendChild(pic);
-  }
+  const pic = document.createElement('div');
+  pic.style.cssText = 'text-align:center;margin:4px 0;';
+  pic.innerHTML = mediaVisualHTML(correct, 110, true);
+  extraArea.appendChild(pic);
+  hydrateMedia([correct]);
   extraArea.appendChild(koreanSpeakerButton(`How do you say ${correct.en} in Korean?`, 'en'));
 
   activeKeyMap = {};
@@ -2889,8 +2836,8 @@ function koreanSayItRound() {
 
 /**
  * Portuguese vocabulary for the Match Picture / Say It levels.
- * Mirrors KOREAN_WORDS (same wiki titles, so photo thumbnails are
- * shared via KOREAN_IMAGE_CACHE, which is keyed by wiki title).
+ * Mirrors KOREAN_WORDS (same wiki keys, so photos are shared via
+ * the media layer's MEDIA_CACHE in js/media.js).
  * @type {Array<{emoji: string, en: string, pt: string, wiki: string}>}
  */
 const PT_WORDS = [
@@ -2922,28 +2869,30 @@ const PT_WORDS = [
 
 /**
  * Daily family phrases in Brazilian Portuguese (toddler register).
- * @type {Array<{emoji: string, en: string, pt: string}>}
+ * Shares the Korean game's local photos and photo keys, so both
+ * languages show the same picture for the same concept.
+ * @type {Array<{emoji: string, en: string, pt: string, img?: string, wiki?: string}>}
  */
 const PT_PHRASES = [
   { emoji: '🥰❤️', en: 'I love you',        pt: 'eu te amo' },
   { emoji: '🙏😊', en: 'thank you',         pt: 'obrigada' },
-  { emoji: '😋🍚', en: "I'm hungry",        pt: 'estou com fome' },
-  { emoji: '😴💤', en: "I'm sleepy",        pt: 'estou com sono' },
-  { emoji: '🤗',   en: 'hug me please',     pt: 'me abraça' },
+  { emoji: '😋🍚', en: "I'm hungry",        pt: 'estou com fome', img: 'img/korean/hungry.jpg' },
+  { emoji: '😴💤', en: "I'm sleepy",        pt: 'estou com sono', wiki: 'Sleep' },
+  { emoji: '🤗',   en: 'hug me please',     pt: 'me abraça', wiki: 'Hug' },
   { emoji: '😋👍', en: "it's yummy",        pt: 'que gostoso' },
   { emoji: '😨',   en: "I'm scared",        pt: 'estou com medo' },
-  { emoji: '🤕',   en: 'it hurts / ouch',   pt: 'está doendo' },
+  { emoji: '🤕',   en: 'it hurts / ouch',   pt: 'está doendo', img: 'img/korean/hurts.jpg' },
   { emoji: '👋😊', en: 'hello',             pt: 'oi' },
   { emoji: '👋🚪', en: 'goodbye',           pt: 'tchau' },
   { emoji: '😔🙏', en: "I'm sorry",         pt: 'desculpa' },
-  { emoji: '🚽',   en: 'I need potty',      pt: 'quero fazer xixi' },
-  { emoji: '🧸😄', en: 'I want to play',    pt: 'quero brincar' },
+  { emoji: '🚽',   en: 'I need potty',      pt: 'quero fazer xixi', wiki: 'Toilet' },
+  { emoji: '🧸😄', en: 'I want to play',    pt: 'quero brincar', img: 'img/korean/play.jpg' },
   { emoji: '🚶‍♀️🚶', en: "let's go together", pt: 'vamos juntos' },
-  { emoji: '🤝',   en: 'hold my hand',      pt: 'me dá a mão' },
-  { emoji: '👩‍👧', en: 'mommy',             pt: 'mamãe' },
-  { emoji: '👨‍👧', en: 'daddy',             pt: 'papai' },
+  { emoji: '🤝',   en: 'hold my hand',      pt: 'me dá a mão', wiki: 'Holding_hands' },
+  { emoji: '👩‍👧', en: 'mommy',             pt: 'mamãe', img: 'img/korean/mommy.jpg' },
+  { emoji: '👨‍👧', en: 'daddy',             pt: 'papai', img: 'img/korean/daddy.jpg' },
   { emoji: '➕🍽️', en: 'more please',       pt: 'mais, por favor' },
-  { emoji: '💧🥤', en: 'water please',      pt: 'água, por favor' },
+  { emoji: '💧🥤', en: 'water please',      pt: 'água, por favor', wiki: 'Water' },
   { emoji: '🆘🙏', en: 'help me',           pt: 'me ajuda' },
 ];
 
@@ -2990,14 +2939,14 @@ const PT_NUMBERS = ['um', 'dois', 'três', 'quatro', 'cinco'];
  * @type {Array<{emoji: string, en: string, pt: string}>}
  */
 const PT_BODY = [
-  { emoji: '👀', en: 'eyes',  pt: 'olhos' },
-  { emoji: '👃', en: 'nose',  pt: 'nariz' },
-  { emoji: '👄', en: 'mouth', pt: 'boca' },
-  { emoji: '👂', en: 'ear',   pt: 'orelha' },
-  { emoji: '✋', en: 'hand',  pt: 'mão' },
-  { emoji: '🦶', en: 'foot',  pt: 'pé' },
-  { emoji: '🦵', en: 'leg',   pt: 'perna' },
-  { emoji: '🦷', en: 'tooth', pt: 'dente' },
+  { emoji: '👀', en: 'eyes',  pt: 'olhos',  wiki: 'Human_eye' },
+  { emoji: '👃', en: 'nose',  pt: 'nariz',  wiki: 'Human_nose' },
+  { emoji: '👄', en: 'mouth', pt: 'boca',   wiki: 'Human_mouth' },
+  { emoji: '👂', en: 'ear',   pt: 'orelha', wiki: 'Ear' },
+  { emoji: '✋', en: 'hand',  pt: 'mão',    wiki: 'Hand' },
+  { emoji: '🦶', en: 'foot',  pt: 'pé',     wiki: 'Foot' },
+  { emoji: '🦵', en: 'leg',   pt: 'perna',  wiki: 'Human_leg' },
+  { emoji: '🦷', en: 'tooth', pt: 'dente',  wiki: 'Human_tooth' },
 ];
 
 /**
@@ -3005,13 +2954,14 @@ const PT_BODY = [
  * @type {Array<{emoji: string, en: string, pt: string}>}
  */
 const PT_ACTIONS = [
-  { emoji: '😋🍚', en: 'eat',   pt: 'comer' },
-  { emoji: '🥤',   en: 'drink', pt: 'beber' },
-  { emoji: '😴',   en: 'sleep', pt: 'dormir' },
-  { emoji: '🏃',   en: 'run',   pt: 'correr' },
-  { emoji: '💃',   en: 'dance', pt: 'dançar' },
-  { emoji: '😄',   en: 'laugh', pt: 'rir' },
-  { emoji: '😢',   en: 'cry',   pt: 'chorar' },
+  { emoji: '😋🍚', en: 'eat',   pt: 'comer',  wiki: 'Eating' },
+  { emoji: '🥤',   en: 'drink', pt: 'beber',  wiki: 'Drinking' },
+  { emoji: '😴',   en: 'sleep', pt: 'dormir', wiki: 'Sleep' },
+  { emoji: '🏃',   en: 'run',   pt: 'correr', wiki: 'Running' },
+  { emoji: '💃',   en: 'dance', pt: 'dançar', wiki: 'Dance' },
+  { emoji: '😄',   en: 'laugh', pt: 'rir',    wiki: 'Laughter' },
+  { emoji: '😢',   en: 'cry',   pt: 'chorar', wiki: 'Crying' },
+  // "bathe" deliberately has no photo key (same safety rule as Korean).
   { emoji: '🛁',   en: 'bathe', pt: 'tomar banho' },
 ];
 
@@ -3030,12 +2980,10 @@ function portugueseRound() {
  * Shared "hear Portuguese, pick the picture" round used by the Match
  * Picture, What It Means, and My Body & Actions levels. Speaks the
  * Portuguese word/phrase; the child picks the matching visual (keys 1-4).
- * @param {Array<{emoji: string, en: string, pt: string, wiki?: string}>} pool
- * @param {boolean} useImages - Whether to try wiki photos for choices
+ * Entries with a photo (img or wiki key) show it; the rest show emoji.
+ * @param {Array<{emoji: string, en: string, pt: string, img?: string, wiki?: string}>} pool
  */
-function ptHearPickRound(pool, useImages) {
-  if (useImages) preloadKoreanImagesFor(pool);
-
+function ptHearPickRound(pool) {
   const correct = pool[Math.floor(Math.random() * pool.length)];
   const options = pickN(pool, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -3055,14 +3003,8 @@ function ptHearPickRound(pool, useImages) {
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
 
-    const imgUrl = useImages && w.wiki ? KOREAN_IMAGE_CACHE[w.wiki] : null;
-    const visualHTML = imgUrl
-      ? `<img src="${imgUrl}" alt="${w.en}"
-             style="width:90px;height:90px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
-      : `<span style="font-size:2em;">${w.emoji}</span>`;
-
     btn.innerHTML =
-      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(w, 90)}</span>` +
       `<span class="choice-subtext" style="font-size:0.75em;color:#888;">${w.en}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
     btn.addEventListener('click', () => handleAnswer(i, correctIdx, () => {
@@ -3071,6 +3013,7 @@ function ptHearPickRound(pool, useImages) {
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.pt} = "${correct.en}"`);
@@ -3080,12 +3023,12 @@ function ptHearPickRound(pool, useImages) {
 
 /** Portuguese Level 0 – "Match the Picture!" (vocabulary, real photos). */
 function ptMatchPicture() {
-  ptHearPickRound(PT_WORDS, true);
+  ptHearPickRound(PT_WORDS);
 }
 
 /** Portuguese Level 1 – "What It Means!" (daily family phrases). */
 function ptPhraseRound() {
-  ptHearPickRound(PT_PHRASES, false);
+  ptHearPickRound(PT_PHRASES);
 }
 
 /** Portuguese Level 2 – "Ask Nicely!" — build a "___, por favor" request.
@@ -3093,8 +3036,6 @@ function ptPhraseRound() {
  * success the full polite request is spoken back in Portuguese.
  */
 function ptAskRound() {
-  preloadKoreanImagesFor(PT_REQUEST_ITEMS);
-
   const correct = PT_REQUEST_ITEMS[Math.floor(Math.random() * PT_REQUEST_ITEMS.length)];
   const options = pickN(PT_REQUEST_ITEMS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -3116,14 +3057,8 @@ function ptAskRound() {
     btn.className = 'choice-btn';
     btn.dataset.key = keyNum;
 
-    const imgUrl = KOREAN_IMAGE_CACHE[item.wiki];
-    const visualHTML = imgUrl
-      ? `<img src="${imgUrl}" alt="${item.en}"
-             style="width:72px;height:72px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 4px;">`
-      : `<span style="font-size:1.5em;">${item.emoji}</span>`;
-
     btn.innerHTML =
-      `<span class="choice-visual">${visualHTML}</span>` +
+      `<span class="choice-visual">${mediaVisualHTML(item, 72)}</span>` +
       `<span class="choice-visual" style="font-size:1.3em;font-weight:bold;">${item.pt}</span>` +
       `<span class="choice-subtext" style="font-size:0.7em;color:#888;">${item.en}</span>` +
       `<span class="choice-keycap">${keycapHTML(keyNum)}</span>`;
@@ -3133,6 +3068,7 @@ function ptAskRound() {
     choicesEl.appendChild(btn);
     activeKeyMap[keyNum] = i;
   });
+  hydrateMedia(options);
 
   correctKey = String(correctIdx + 1);
   setKeyHint(`${correct.en} → ${fullSentence}`);
@@ -3230,15 +3166,13 @@ function ptNumberRound() {
 /** Portuguese Level 4 – "My Body & Actions!" (50/50 mix). */
 function ptBodyActionRound() {
   const pool = Math.random() < 0.5 ? PT_BODY : PT_ACTIONS;
-  ptHearPickRound(pool, false);
+  ptHearPickRound(pool);
 }
 
 /** Portuguese Level 5 – "Say It in Portuguese!" — reverse mode: see a
  * picture and its English name, pick the written Portuguese word.
  */
 function ptSayItRound() {
-  preloadKoreanImagesFor(PT_WORDS);
-
   const correct = PT_WORDS[Math.floor(Math.random() * PT_WORDS.length)];
   const options = pickN(PT_WORDS, 4, correct);
   const correctIdx = options.indexOf(correct);
@@ -3247,14 +3181,11 @@ function ptSayItRound() {
   promptText.innerHTML =
     `How do you say <b>${correct.en}</b> in Portuguese?`;
   extraArea.innerHTML = '';
-  const imgUrl = KOREAN_IMAGE_CACHE[correct.wiki];
-  if (imgUrl) {
-    const pic = document.createElement('div');
-    pic.style.cssText = 'text-align:center;margin:4px 0;';
-    pic.innerHTML = `<img src="${imgUrl}" alt="${correct.en}"
-        style="width:110px;height:110px;object-fit:cover;border-radius:14px;">`;
-    extraArea.appendChild(pic);
-  }
+  const pic = document.createElement('div');
+  pic.style.cssText = 'text-align:center;margin:4px 0;';
+  pic.innerHTML = mediaVisualHTML(correct, 110, true);
+  extraArea.appendChild(pic);
+  hydrateMedia([correct]);
   extraArea.appendChild(koreanSpeakerButton(`How do you say ${correct.en} in Portuguese?`, 'en'));
 
   activeKeyMap = {};
