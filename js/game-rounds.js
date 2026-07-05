@@ -2076,7 +2076,7 @@ function readingRound() {
     });
     correctKey = target.onset.toLowerCase();
 
-    setKeyHint(t('pressLetter') + ' ' + target.onset.toUpperCase() + '!');
+    setKeyHint(t('whatStarts') + ' ' + target.word + '?');
     setTimeout(() => Audio_.speak(target.word + '! What sound does ' + target.word + ' start with?'), 300);
 
   } else {
