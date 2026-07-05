@@ -42,6 +42,18 @@ body {
 }
 .screen.active { display: flex; }
 
+/* Home screen scrolls internally once the game grid is taller than the
+   viewport (18 cards no longer fit on short/narrow screens), rather than
+   clipping cards off-screen top/bottom under the shared overflow:hidden. */
+#home.active {
+    height: 100vh;
+    height: 100dvh;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 90px; /* clears the fixed lang/sound buttons at the bottom */
+}
+
 /* ===== Animated background ===== */
 .bg-bubbles {
     position: fixed;
