@@ -40,7 +40,9 @@ const MEDIA_PHOTOS = {
   'Moon':       ['FullMoon2010.jpg'],
   'Sun':        ["The Sun by the Atmospheric Imaging Assembly of NASA's Solar Dynamics Observatory - 20100819.jpg"],
   'Flower':     ['Sunflower sky backdrop.jpg', 'Rose Amber Flush 20070601.jpg'],
-  'Water':      ['Stilles Mineralwasser.jpg'],
+  // Deliberately keyed to "Drinking_water", not "Water" — the Water
+  // article's lead image is an H2O molecule diagram, not a photo.
+  'Drinking_water': ['Glass of Water (closeup).jpg', 'Drinking glass with water.jpg', 'Stilles Mineralwasser.jpg'],
   'Book':       [],
   'Ball_(association_football)': [],
   'House':      [],

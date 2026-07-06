@@ -2363,7 +2363,7 @@ const KOREAN_WORDS = [
   { emoji: '🌙', en: 'moon',      kr: '달',    rom: 'dal',     wiki: 'Moon' },
   { emoji: '☀️', en: 'sun',       kr: '해',    rom: 'hae',     wiki: 'Sun' },
   { emoji: '🌸', en: 'flower',    kr: '꽃',    rom: 'kkot',    wiki: 'Flower' },
-  { emoji: '💧', en: 'water',     kr: '물',    rom: 'mul',     wiki: 'Water' },
+  { emoji: '💧', en: 'water',     kr: '물',    rom: 'mul',     wiki: 'Drinking_water' },
   { emoji: '📚', en: 'book',      kr: '책',    rom: 'chaek',   wiki: 'Book' },
   { emoji: '⚽', en: 'ball',      kr: '공',    rom: 'gong',    wiki: 'Ball_(association_football)' },
   { emoji: '🏠', en: 'house',     kr: '집',    rom: 'jip',     wiki: 'House' },
@@ -2402,7 +2402,7 @@ const KOREAN_PHRASES = [
   { emoji: '👩‍👧', en: 'mommy',           kr: '엄마',           rom: 'eomma', img: 'img/korean/mommy.jpg' },
   { emoji: '👨‍👧', en: 'daddy',           kr: '아빠',           rom: 'appa', img: 'img/korean/daddy.jpg' },
   { emoji: '➕🍽️', en: 'more please',     kr: '더 주세요',        rom: 'deo juseyo' },
-  { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo', wiki: 'Water' },
+  { emoji: '💧🥤', en: 'water please',    kr: '물 주세요',        rom: 'mul juseyo', wiki: 'Drinking_water' },
   { emoji: '🆘🙏', en: 'help me',         kr: '도와주세요',       rom: 'dowajuseyo' },
 ];
 
@@ -2852,7 +2852,7 @@ const PT_WORDS = [
   { emoji: '🌙', en: 'moon',       pt: 'lua',          wiki: 'Moon' },
   { emoji: '☀️', en: 'sun',        pt: 'sol',          wiki: 'Sun' },
   { emoji: '🌸', en: 'flower',     pt: 'flor',         wiki: 'Flower' },
-  { emoji: '💧', en: 'water',      pt: 'água',         wiki: 'Water' },
+  { emoji: '💧', en: 'water',      pt: 'água',         wiki: 'Drinking_water' },
   { emoji: '📚', en: 'book',       pt: 'livro',        wiki: 'Book' },
   { emoji: '⚽', en: 'ball',       pt: 'bola',         wiki: 'Ball_(association_football)' },
   { emoji: '🏠', en: 'house',      pt: 'casa',         wiki: 'House' },
@@ -2892,7 +2892,7 @@ const PT_PHRASES = [
   { emoji: '👩‍👧', en: 'mommy',             pt: 'mamãe', img: 'img/korean/mommy.jpg' },
   { emoji: '👨‍👧', en: 'daddy',             pt: 'papai', img: 'img/korean/daddy.jpg' },
   { emoji: '➕🍽️', en: 'more please',       pt: 'mais, por favor' },
-  { emoji: '💧🥤', en: 'water please',      pt: 'água, por favor', wiki: 'Water' },
+  { emoji: '💧🥤', en: 'water please',      pt: 'água, por favor', wiki: 'Drinking_water' },
   { emoji: '🆘🙏', en: 'help me',           pt: 'me ajuda' },
 ];
 
