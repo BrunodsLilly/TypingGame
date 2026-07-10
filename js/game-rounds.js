@@ -1800,6 +1800,268 @@ function handleFixWordKeyPress(key) {
 }
 
 // ============================================
+// WORD SEARCH Game — find the hidden word's row/column
+// ============================================
+
+/**
+ * State for the current Word Search round.
+ * `line` is where the target word is hidden; `cells` are its grid positions.
+ * @type {{target: {word: string, emoji: string}, grid: string[][], line: {type: 'row'|'col', idx: number}, cells: Array<{r: number, c: number}>, rows: number, cols: number, level: number}|null}
+ */
+let wsState = null;
+
+/**
+ * Counts how many rows/columns contain `word` reading left-to-right or
+ * top-to-bottom. Used to guarantee the puzzle has exactly one answer.
+ * @param {string[][]} grid
+ * @param {string} word
+ * @returns {number}
+ */
+function wsCountOccurrences(grid, word) {
+  const lines = grid.map(row => row.join(''));
+  for (let c = 0; c < grid[0].length; c++) {
+    lines.push(grid.map(row => row[c]).join(''));
+  }
+  let count = 0;
+  for (const s of lines) {
+    let i = s.indexOf(word);
+    while (i !== -1) { count++; i = s.indexOf(word, i + 1); }
+  }
+  return count;
+}
+
+/**
+ * Builds a word search grid with `target` hidden in one row (or column when
+ * `allowVertical`), optionally hiding a decoy word, filling the rest with
+ * letters from `alphabet`. Regenerates until the target appears in exactly
+ * one line so the puzzle is never ambiguous.
+ * @param {string} target - Word to hide (uppercase)
+ * @param {number} rows
+ * @param {number} cols
+ * @param {boolean} allowVertical - Allow the target/decoy in a column
+ * @param {string|null} decoy - Optional look-alike word to hide too
+ * @param {string} alphabet - Letters used to fill empty cells
+ * @returns {{grid: string[][], line: {type: 'row'|'col', idx: number}, cells: Array<{r: number, c: number}>}|null}
+ */
+function wsBuildGrid(target, rows, cols, allowVertical, decoy, alphabet) {
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const grid = Array.from({ length: rows }, () => new Array(cols).fill(null));
+    const cells = [];
+    let line;
+
+    // Place the target word
+    if (allowVertical && target.length <= rows && Math.random() < 0.5) {
+      const c = Math.floor(Math.random() * cols);
+      const start = Math.floor(Math.random() * (rows - target.length + 1));
+      for (let i = 0; i < target.length; i++) {
+        grid[start + i][c] = target[i];
+        cells.push({ r: start + i, c });
+      }
+      line = { type: 'col', idx: c };
+    } else {
+      const r = Math.floor(Math.random() * rows);
+      const start = Math.floor(Math.random() * (cols - target.length + 1));
+      for (let i = 0; i < target.length; i++) {
+        grid[r][start + i] = target[i];
+        cells.push({ r, c: start + i });
+      }
+      line = { type: 'row', idx: r };
+    }
+
+    // Place the decoy word in a different line (crossing letters may overlap)
+    if (decoy) {
+      let placed = false;
+      for (let tries = 0; tries < 40 && !placed; tries++) {
+        const vertical = allowVertical && decoy.length <= rows && Math.random() < 0.5;
+        if (vertical) {
+          const c = Math.floor(Math.random() * cols);
+          if (line.type === 'col' && c === line.idx) continue;
+          const start = Math.floor(Math.random() * (rows - decoy.length + 1));
+          let ok = true;
+          for (let i = 0; i < decoy.length; i++) {
+            const cur = grid[start + i][c];
+            if (cur !== null && cur !== decoy[i]) { ok = false; break; }
+          }
+          if (!ok) continue;
+          for (let i = 0; i < decoy.length; i++) grid[start + i][c] = decoy[i];
+          placed = true;
+        } else {
+          if (decoy.length > cols) continue;
+          const r = Math.floor(Math.random() * rows);
+          if (line.type === 'row' && r === line.idx) continue;
+          const start = Math.floor(Math.random() * (cols - decoy.length + 1));
+          let ok = true;
+          for (let i = 0; i < decoy.length; i++) {
+            const cur = grid[r][start + i];
+            if (cur !== null && cur !== decoy[i]) { ok = false; break; }
+          }
+          if (!ok) continue;
+          for (let i = 0; i < decoy.length; i++) grid[r][start + i] = decoy[i];
+          placed = true;
+        }
+      }
+      if (!placed) continue;
+    }
+
+    // Fill remaining cells with random letters
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === null) {
+          grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+        }
+      }
+    }
+
+    if (wsCountOccurrences(grid, target) === 1) return { grid, line, cells };
+  }
+  return null;
+}
+
+/**
+ * Sets up a Word Search round: hides a word from WORDS_DATA in a letter
+ * grid. The child sees the word + emoji clue and picks which row (level 1)
+ * or row/column (levels 2-3) hides it. Level 3 adds a look-alike decoy word.
+ * The word's location is never hinted at — only revealed after a correct pick.
+ */
+function wordsearchRound() {
+  const level = getLevel('wordsearch');
+  const rows = 4;
+  // Progressive difficulty: longer words at 3+ stars
+  const maxLen = level === 0 ? (stars >= 3 ? 5 : 3) : (stars >= 3 ? 4 : 3);
+  const pool = WORDS_DATA.filter(w => w.word.length >= 3 && w.word.length <= maxLen);
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  const cols = level === 0 ? Math.max(5, target.word.length + 2) : 4;
+  const allowVertical = level > 0;
+
+  // Level 3: hide a decoy that looks like the target (same first letter if possible)
+  let decoy = null;
+  if (level === 2) {
+    const sameLen = pool.filter(w => w.word.length === target.word.length && w.word !== target.word);
+    const sameFirst = sameLen.filter(w => w.word[0] === target.word[0]);
+    const src = sameFirst.length ? sameFirst : sameLen;
+    if (src.length) decoy = src[Math.floor(Math.random() * src.length)].word;
+  }
+
+  // Scaffold: while below 3 stars on level 1, filler letters avoid the
+  // target's letters so its letters only appear inside the hidden word
+  let alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (level === 0 && stars < 3) {
+    alphabet = alphabet.split('').filter(ch => !target.word.includes(ch)).join('');
+  }
+
+  let built = wsBuildGrid(target.word, rows, cols, allowVertical, decoy, alphabet);
+  if (!built) built = wsBuildGrid(target.word, rows, cols, allowVertical, null, alphabet);
+  wsState = { target, grid: built.grid, line: built.line, cells: built.cells, rows, cols, level };
+
+  promptEmoji.textContent = target.emoji;
+  promptText.innerHTML = `${t('wsFind')} <span class="ws-target-word">${target.word}</span>`;
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  renderWordSearch();
+
+  setKeyHint(level === 0 ? t('wsRowHint') : t('wsLineHint'));
+  setTimeout(() => Audio_.speak(t('wsSpeak').replace('%s', target.word)), 300);
+}
+
+/** Renders the word search board (badges + letter grid) into extraArea. */
+function renderWordSearch() {
+  const { grid, rows, cols, level } = wsState;
+  const showCols = level > 0;
+  let html = `<div class="ws-board" style="grid-template-columns: auto repeat(${cols}, auto);">`;
+  if (showCols) {
+    html += '<div class="ws-corner"></div>';
+    for (let c = 0; c < cols; c++) {
+      html += `<button class="ws-badge" data-type="col" data-idx="${c}">${keycapHTML(String(rows + c + 1), 'active-key')}</button>`;
+    }
+  }
+  for (let r = 0; r < rows; r++) {
+    html += `<button class="ws-badge" data-type="row" data-idx="${r}">${keycapHTML(String(r + 1), 'active-key')}</button>`;
+    for (let c = 0; c < cols; c++) {
+      html += `<div class="ws-cell${level === 0 ? ' ws-rowpick' : ''}" data-r="${r}" data-c="${c}">${grid[r][c]}</div>`;
+    }
+  }
+  html += '</div>';
+  extraArea.innerHTML = html;
+
+  extraArea.querySelectorAll('.ws-badge').forEach(b => {
+    b.addEventListener('click', () => selectWordSearchLine(b.dataset.type, parseInt(b.dataset.idx)));
+  });
+  // Level 1: tapping anywhere in a row picks that row
+  if (level === 0) {
+    extraArea.querySelectorAll('.ws-cell').forEach(cell => {
+      cell.addEventListener('click', () => selectWordSearchLine('row', parseInt(cell.dataset.r)));
+    });
+  }
+}
+
+/**
+ * Handles a number keypress in Word Search mode.
+ * Keys 1-4 select rows; keys 5-8 select columns (levels 2-3 only).
+ * @param {string} key - Key pressed ('1'-'8')
+ */
+function handleWordSearchKey(key) {
+  if (!wsState) return;
+  const n = parseInt(key);
+  if (n >= 1 && n <= wsState.rows) {
+    selectWordSearchLine('row', n - 1);
+  } else if (wsState.level > 0 && n > wsState.rows && n <= wsState.rows + wsState.cols) {
+    selectWordSearchLine('col', n - 1 - wsState.rows);
+  }
+}
+
+/**
+ * Checks whether the selected row/column hides the target word.
+ * Correct: lights up the word's letters, spells it aloud, awards a star.
+ * Wrong: shakes the selected line and encourages another try.
+ * @param {'row'|'col'} type
+ * @param {number} idx
+ */
+function selectWordSearchLine(type, idx) {
+  if (inputLocked || !wsState) return;
+  const { line, cells, target } = wsState;
+
+  const badgeKeycap = extraArea.querySelector(`.ws-badge[data-type="${type}"][data-idx="${idx}"] .keycap`);
+  if (badgeKeycap) {
+    badgeKeycap.classList.add('pressed-anim');
+    setTimeout(() => badgeKeycap.classList.remove('pressed-anim'), 150);
+  }
+
+  if (type === line.type && idx === line.idx) {
+    inputLocked = true;
+    cells.forEach(({ r, c }, i) => {
+      const el = extraArea.querySelector(`.ws-cell[data-r="${r}"][data-c="${c}"]`);
+      if (el) setTimeout(() => el.classList.add('ws-found'), i * 120);
+    });
+    Audio_.correct();
+    showCelebration();
+    earnStar();
+
+    // Spell the found word aloud: "C, A, T. CAT!"
+    const spell = `${target.word.split('').join(', ')}. ${target.word}!`;
+    setTimeout(() => Audio_.speak(spell, 0.8, 'en'), 500);
+
+    setTimeout(() => {
+      Audio_.celebration();
+      if (stars < MAX_STARS) {
+        setTimeout(() => {
+          inputLocked = false;
+          nextRound();
+        }, 1000);
+      }
+    }, 900);
+  } else {
+    const lineCells = extraArea.querySelectorAll(
+      type === 'row' ? `.ws-cell[data-r="${idx}"]` : `.ws-cell[data-c="${idx}"]`);
+    lineCells.forEach(el => el.classList.add('ws-miss'));
+    Audio_.wrong();
+    resetStreak();
+    const ta = t('tryAgain');
+    setTimeout(() => Audio_.speak(ta[Math.floor(Math.random() * ta.length)]), 300);
+    setTimeout(() => lineCells.forEach(el => el.classList.remove('ws-miss')), 700);
+  }
+}
+
+// ============================================
 // PATTERNS Game — "What comes next?" press 1, 2, 3, 4
 // ============================================
 
