@@ -111,6 +111,11 @@ const GAME_LEVELS = {
         { name: 'Any Letter', ptName: 'Qualquer Letra', desc: 'One letter is hiding', ptDesc: 'Uma letra sumiu', emoji: '🔍' },
         { name: 'Two Letters', ptName: 'Duas Letras', desc: 'Two letters are hiding', ptDesc: 'Duas letras sumiram', emoji: '🧩' },
     ],
+    wordsearch: [
+        { name: 'Across', ptName: 'Na Linha', desc: 'Which row hides it?', ptDesc: 'Qual linha esconde?', emoji: '➡️' },
+        { name: 'Across & Down', ptName: 'Linha e Coluna', desc: 'Rows and columns!', ptDesc: 'Linhas e colunas!', emoji: '⬇️' },
+        { name: 'Tricky Twin', ptName: 'Pegadinha', desc: 'A look-alike word hides too!', ptDesc: 'Uma palavra parecida se esconde!', emoji: '🕵️' },
+    ],
     portuguese: [
         { name: 'Match Picture', ptName: 'Combinar Figura', desc: 'Hear Portuguese, pick picture', ptDesc: 'Ouça e escolha a figura', emoji: '🖼️' },
         { name: 'What It Means', ptName: 'O Que Significa', desc: 'Hear a phrase, pick the meaning', ptDesc: 'Ouça a frase, escolha o sentido', emoji: '💬' },
@@ -283,6 +288,7 @@ const GAME_TINTS = {
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
     rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
     numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe', portuguese: '#009c3b',
+    wordsearch: '#a3cb38',
 };
 
 function startGame(game) {
@@ -561,6 +567,7 @@ function nextRound() {
         case 'takeaway':  takeawayRound();  break;
         case 'fixword':   fixwordRound();   break;
         case 'portuguese': portugueseRound(); break;
+        case 'wordsearch': wordsearchRound(); break;
     }
 }
 
@@ -576,7 +583,7 @@ document.addEventListener('keydown', (e) => {
             toggleLang();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -658,6 +665,12 @@ document.addEventListener('keydown', (e) => {
     // Fix the Word mode: free letter typing, no on-screen choices
     if (currentGame === 'fixword') {
         if (/^[a-z]$/.test(key)) handleFixWordKeyPress(key);
+        return;
+    }
+
+    // Word Search mode: keys 1-4 pick a row, 5-8 pick a column
+    if (currentGame === 'wordsearch') {
+        if (/^[1-8]$/.test(key)) handleWordSearchKey(key);
         return;
     }
 
