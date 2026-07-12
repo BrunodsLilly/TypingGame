@@ -31,6 +31,7 @@ TypingGame/
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
     game-rounds.js      All game data constants + all round functions + helpers
     progress.js         Progress IIFE (localStorage stats + mistake log) + Progress screen
+    settings.js         Settings IIFE (persisted options) + Settings screen
   CLAUDE.md             This file
 ```
 
@@ -44,6 +45,7 @@ TypingGame/
 <script src="js/game-engine.js"></script>    <!-- needs Audio_, showCelebration, t() -->
 <script src="js/game-rounds.js"></script>    <!-- needs everything above -->
 <script src="js/progress.js"></script>       <!-- needs everything above; engine calls it via typeof guards -->
+<script src="js/settings.js"></script>       <!-- last: applies saved lang/name/MAX_STARS on load -->
 ```
 
 All scripts share the global scope (no modules, no bundler). The load order matters because later scripts reference globals defined by earlier ones.
@@ -52,7 +54,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Three `<div class="screen">` elements (`#home`, `#game`, `#progress`) toggled via `.active` class. The `#game` screen is shared across all 19 modes — its content is rebuilt each round.
+**Screen Navigation**: Four `<div class="screen">` elements (`#home`, `#game`, `#progress`, `#settings`) toggled via `.active` class. The `#game` screen is shared across all 19 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven. Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
@@ -98,6 +100,8 @@ W. **Word Search** — Find a word from `WORDS_DATA` hidden in a letter grid (3 
 **Persistent Progress & Mistake Replay** (`progress.js`): The `Progress` IIFE persists per-game stats (plays, correct, wrong, finales) and a mistake log to localStorage (key `luaProgress`). Rounds are generated deterministically: `nextRound()` swaps `Math.random` for a seeded PRNG (`mulberry32`) for the synchronous duration of the round function, so `game + level + seed + stars` fully reconstruct any round — including star-gated difficulty, since `stars` is temporarily set to the recorded value during replay. Wrong answers are recorded via the shared `resetStreak()` hook (every mode calls it exactly once per wrong answer; Memory is excluded because mismatched flips are normal gameplay); correct answers via `earnStar()`. Words-mode mistakes store the word itself and replay jumps straight into spelling it (`selectWord`). New game modes get all of this for free as long as they generate the round synchronously inside their `*Round()` function and call `resetStreak()`/`earnStar()` once per answer.
 
 **Spaced Repetition** (`progress.js`): Each mistake carries Leitner-box state (`box`, `due`): box 0 🌱 is due immediately, a correct *due* review promotes it (box 1 🌿 due next day, box 2 🌳 due in 3 days), and a correct due review at box 2 graduates it ("Mastered"). Promotion only happens when the item is actually due (early practice is a no-op), and any wrong answer demotes to box 0 and stamps `meta.lapsed` so the same round's eventual correct answer doesn't promote. Due timestamps are local-midnight based so "tomorrow" means any time the next day. The Progress screen (`#progress`, opened with `S` on home or the 📊 button, which shows a due-count badge) has a "Ready to Practice" list (tap or press 1-9 to replay one, `R`/"Practice All" to review everything due) and a display-only "Growing" list showing when each item comes back. Review sessions chain items across game modes: `nextRound()` calls `advanceReviewSession()` (driven by the `reviewMode`/`reviewQueue` globals in game-engine.js) which feeds each mistake through the `pendingRetry` replay path with a fresh mini-session per item (stars reset, so the 5-star finale can't hijack the queue), and ends with a grand-finale celebration back on the Progress screen. Retries/reviews don't count as plays; Escape exits a review cleanly via `goHome()`.
+
+**Settings** (`settings.js`): The `Settings` IIFE persists options to localStorage (key `luaSettings`); other modules read them at call time behind `typeof Settings !== 'undefined'` guards, so `settings.js` loads last and applies saved state (lang, name, MAX_STARS) on startup. The Settings screen (`#settings`, ⚙️ button on home — deliberately no hotkey, it's a grown-up screen) configures: child's name (fills `t('homeTitle')` `%s` in the home title and browser tab via `applyChildName()`), language (also persisted by the `L` toggle), stars per game (`MAX_STARS` is a `let`: 3/5/7), spaced-repetition schedule (`Settings.srsDelays()` feeds `progress.js` box delays — presets quick `[0,1,2]`, standard `[0,1,3]`, thorough `[0,1,3,7]`), and voice speed (multiplier applied inside `Audio_.speak`).
 
 **Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
 

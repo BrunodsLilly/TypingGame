@@ -51,8 +51,8 @@ let streak = 0;
 /** @type {boolean} When true, keyboard/click input is ignored (during answer animations) */
 let inputLocked = false;
 
-/** @type {number} Number of stars needed to complete a game session */
-const MAX_STARS = 5;
+/** @type {number} Stars needed to complete a game session (configurable in Settings: 3/5/7) */
+let MAX_STARS = 5;
 
 /**
  * Maps keyboard key strings to choice indices for the current round.
@@ -252,6 +252,7 @@ const langBtn = document.getElementById('lang-btn');
 /** Toggles the language between EN and PT and refreshes the UI. */
 function toggleLang() {
     lang = lang === 'en' ? 'pt' : 'en';
+    if (typeof Settings !== 'undefined') Settings.set('lang', lang);
     Audio_.tap();
     updateLangUI();
     if (currentGame) {
@@ -274,6 +275,8 @@ function updateLangUI() {
     // Update back button text
     const backText = backBtn.querySelector('span:last-child');
     if (backText) backText.textContent = t('back');
+    // Home title carries the child's name in the current language
+    if (typeof applyChildName === 'function') applyChildName();
     // Re-render the progress screen if it's open
     const progressEl = document.getElementById('progress');
     if (progressEl && progressEl.classList.contains('active') && typeof renderProgressScreen === 'function') {

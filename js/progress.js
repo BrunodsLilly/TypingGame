@@ -34,10 +34,14 @@ const Progress = (() => {
     const DAY_MS = 24 * 60 * 60 * 1000;
 
     /**
-     * Days until an item is due again after being promoted INTO each box.
-     * Index = box. Box 0 is always due immediately.
+     * Days until an item is due again after being promoted INTO each box
+     * (index = box; box 0 is always due immediately). Read at call time so
+     * the Settings screen's schedule preset applies to future promotions.
+     * @returns {number[]}
      */
-    const BOX_DELAY_DAYS = [0, 1, 3];
+    function boxDelays() {
+        return (typeof Settings !== 'undefined') ? Settings.srsDelays() : [0, 1, 3];
+    }
 
     /** Blank data shape (also the migration target for missing fields). */
     function emptyData() {
@@ -75,7 +79,7 @@ const Progress = (() => {
 
     /** Due timestamp for an item promoted into `box` today. */
     function dueForBox(box) {
-        const days = BOX_DELAY_DAYS[box] || 0;
+        const days = boxDelays()[box] || 0;
         return days === 0 ? Date.now() : startOfDay(Date.now()) + days * DAY_MS;
     }
 
@@ -123,7 +127,7 @@ const Progress = (() => {
         const m = id && data.mistakes.find(x => x.id === id);
         if (m && !meta.lapsed && Date.now() >= m.due) {
             m.box++;
-            if (m.box >= BOX_DELAY_DAYS.length) {
+            if (m.box >= boxDelays().length) {
                 // Graduated — mastered!
                 data.mistakes = data.mistakes.filter(x => x.id !== m.id);
                 data.totals.fixed++;
@@ -207,8 +211,13 @@ const Progress = (() => {
 // Review Sessions (spaced repetition)
 // ============================================
 
-/** Growth-stage emoji per Leitner box. */
-const STAGE_EMOJI = ['🌱', '🌿', '🌳'];
+/** Growth-stage emoji per Leitner box (4th stage exists on the 'thorough' schedule). */
+const STAGE_EMOJI = ['🌱', '🌿', '🌳', '🌸'];
+
+/** Stage emoji for a mistake, clamped to the last stage. */
+function stageEmoji(box) {
+    return STAGE_EMOJI[Math.min(box, STAGE_EMOJI.length - 1)] || '🌱';
+}
 
 /**
  * Starts a review session over the given mistakes. Each item replays its
@@ -350,7 +359,7 @@ function renderProgressScreen() {
             html += `<span class="pg-mistake-emoji">${m.emoji || '❓'}</span>`;
             html += `<span class="pg-mistake-info"><span class="pg-mistake-label">${m.label}</span>`;
             html += `<span class="pg-mistake-game">${names[m.game] || m.game}</span></span>`;
-            html += `<span class="pg-mistake-stage">${STAGE_EMOJI[m.box] || '🌱'}</span>`;
+            html += `<span class="pg-mistake-stage">${stageEmoji(m.box)}</span>`;
             if (m.count > 1) html += `<span class="pg-mistake-count">×${m.count}</span>`;
             html += `<span class="pg-mistake-go">🔁</span>`;
             html += '</button>';
@@ -365,7 +374,7 @@ function renderProgressScreen() {
         growing.forEach(m => {
             const tint = GAME_TINTS[m.game] || '#4dc9f6';
             html += `<div class="pg-grow" style="--pg-tint:${tint}">`;
-            html += `<span class="pg-mistake-stage">${STAGE_EMOJI[m.box] || '🌱'}</span>`;
+            html += `<span class="pg-mistake-stage">${stageEmoji(m.box)}</span>`;
             html += `<span class="pg-mistake-emoji">${m.emoji || '❓'}</span>`;
             html += `<span class="pg-mistake-info"><span class="pg-mistake-label">${m.label}</span>`;
             html += `<span class="pg-mistake-game">${names[m.game] || m.game}</span></span>`;

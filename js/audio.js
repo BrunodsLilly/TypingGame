@@ -123,6 +123,8 @@ const Audio_ = (() => {
     function speak(text, rate = 0.85, language) {
         if (!soundEnabled) return;
         speechSynthesis.cancel();
+        // Global voice-speed multiplier from the Settings screen
+        if (typeof Settings !== 'undefined') rate *= (Settings.get('voiceRate') || 1);
         const useLang = language || (typeof lang !== 'undefined' ? lang : 'en');
         const u = new SpeechSynthesisUtterance(text);
         u.rate = rate;
