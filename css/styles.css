@@ -785,8 +785,116 @@ body {
     transition: transform 0.15s;
 }
 .progress-btn:active { transform: scale(0.9); }
+.pg-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    background: var(--red);
+    border: 2px solid var(--bg);
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 /* Only relevant on the home/progress screens — hide during games */
 body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display: none; }
+
+/* ===== Settings button (next to the progress button) ===== */
+.settings-btn {
+    position: fixed;
+    bottom: 16px;
+    left: 120px;
+    z-index: 60;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    color: white;
+    font-size: 1.3rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+}
+.settings-btn:active { transform: scale(0.9); }
+body:not(:has(#home.active)):not(:has(#settings.active)) .settings-btn { display: none; }
+
+/* ===== Settings Screen ===== */
+#settings.active {
+    height: 100vh;
+    height: 100dvh;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 90px;
+    z-index: 1;
+}
+.st-section {
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 20px;
+}
+.st-label {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+.st-desc {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+}
+.st-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    border-radius: 14px;
+    color: white;
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    outline: none;
+    user-select: text;
+    -webkit-user-select: text;
+}
+.st-input:focus { border-color: var(--blue); }
+.st-choices {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.st-choice {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 8px;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    border-radius: 14px;
+    color: white;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.12s, border-color 0.12s;
+}
+.st-choice:hover { transform: scale(1.02); }
+.st-choice.selected {
+    border-color: var(--green);
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.25);
+}
+.st-choice-label { font-size: 0.95rem; font-weight: 800; }
+.st-choice-desc { font-size: 0.68rem; color: rgba(255,255,255,0.5); }
 
 /* ===== Progress Screen ===== */
 #progress.active {
@@ -859,6 +967,29 @@ body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display
     color: rgba(255,255,255,0.6);
     margin-bottom: 16px;
 }
+.pg-review-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--green), #27ae60);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.pg-review-all:hover, .pg-review-all:active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 14px rgba(46, 204, 113, 0.4);
+}
 .pg-mistakes {
     display: flex;
     flex-direction: column;
@@ -866,6 +997,31 @@ body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display
     width: 100%;
     max-width: 580px;
     margin-bottom: 18px;
+}
+.pg-mistake-stage { font-size: 1.1rem; }
+.pg-growing {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 18px;
+}
+.pg-grow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 2px dashed var(--card-light);
+    border-radius: 16px;
+    padding: 8px 12px;
+    opacity: 0.75;
+}
+.pg-grow-when {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
 }
 .pg-mistake {
     display: flex;

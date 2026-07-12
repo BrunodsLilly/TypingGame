@@ -51,8 +51,8 @@ let streak = 0;
 /** @type {boolean} When true, keyboard/click input is ignored (during answer animations) */
 let inputLocked = false;
 
-/** @type {number} Number of stars needed to complete a game session */
-const MAX_STARS = 5;
+/** @type {number} Stars needed to complete a game session (configurable in Settings: 3/5/7) */
+let MAX_STARS = 5;
 
 /**
  * Maps keyboard key strings to choice indices for the current round.
@@ -88,6 +88,19 @@ let pendingRetry = null;
  * @type {{game: string, level: number}|null}
  */
 let levelOverride = null;
+
+/**
+ * Spaced-repetition review session state. While reviewMode is true,
+ * nextRound() hands control to advanceReviewSession() (progress.js), which
+ * feeds the next due mistake from reviewQueue into pendingRetry — chaining
+ * reviews across game modes — and celebrates when the queue empties.
+ * Cleared by goHome() so Escape always exits a review cleanly.
+ * @type {boolean}
+ */
+let reviewMode = false;
+
+/** @type {Array<object>} Remaining mistakes in the current review session */
+let reviewQueue = [];
 
 /**
  * Returns a deterministic pseudo-random generator (mulberry32) producing
@@ -221,6 +234,8 @@ function goHome() {
     currentRoundMeta = null;
     pendingRetry = null;
     levelOverride = null;
+    reviewMode = false;
+    reviewQueue = [];
     TouchKB.hide();
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
     updateHomeLevelBadges();
@@ -237,6 +252,7 @@ const langBtn = document.getElementById('lang-btn');
 /** Toggles the language between EN and PT and refreshes the UI. */
 function toggleLang() {
     lang = lang === 'en' ? 'pt' : 'en';
+    if (typeof Settings !== 'undefined') Settings.set('lang', lang);
     Audio_.tap();
     updateLangUI();
     if (currentGame) {
@@ -259,6 +275,8 @@ function updateLangUI() {
     // Update back button text
     const backText = backBtn.querySelector('span:last-child');
     if (backText) backText.textContent = t('back');
+    // Home title carries the child's name in the current language
+    if (typeof applyChildName === 'function') applyChildName();
     // Re-render the progress screen if it's open
     const progressEl = document.getElementById('progress');
     if (progressEl && progressEl.classList.contains('active') && typeof renderProgressScreen === 'function') {
@@ -353,7 +371,8 @@ function startGame(game) {
     levelPicking = false;
 
     currentGame = game;
-    if (typeof Progress !== 'undefined') Progress.recordPlay(game);
+    // Retries/reviews replay old rounds — only organic sessions count as plays
+    if (typeof Progress !== 'undefined' && !pendingRetry) Progress.recordPlay(game);
     stars = 0;
     streak = 0;
     renderStars();
@@ -646,6 +665,13 @@ function nextRound() {
     activeKeyMap = {};
     correctKey = null;
     inputLocked = false;  // CRITICAL: unlock input at start of every round
+
+    // Spaced-repetition review session: when the previous review round
+    // resolved and nothing is queued for this round yet, let the review
+    // driver (progress.js) feed the next due mistake or end the session.
+    if (reviewMode && !pendingRetry && typeof advanceReviewSession === 'function') {
+        if (advanceReviewSession()) return;
+    }
 
     const retry = (pendingRetry && pendingRetry.game === currentGame) ? pendingRetry : null;
     pendingRetry = null;

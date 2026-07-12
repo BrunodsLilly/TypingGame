@@ -59,6 +59,9 @@
 <!-- ===== PROGRESS SCREEN (stats + replayable mistakes) ===== -->
 <div class="screen" id="progress"></div>
 
+<!-- ===== SETTINGS SCREEN (grown-up options) ===== -->
+<div class="screen" id="settings"></div>
+
 <!-- ===== Celebration Overlay ===== -->
 <div class="celebration-overlay" id="celebration">
     <div class="celebration-text" id="celeb-text"></div>
@@ -73,7 +76,10 @@
 <button class="lang-btn" id="lang-btn">🇺🇸</button>
 
 <!-- Progress screen toggle (visible on home/progress screens only) -->
-<button class="progress-btn" id="progress-btn">📊</button>
+<button class="progress-btn" id="progress-btn">📊<span class="pg-badge" id="progress-badge" style="display:none;"></span></button>
+
+<!-- Settings screen toggle (visible on home/settings screens only) -->
+<button class="settings-btn" id="settings-btn">⚙️</button>
 
 <!-- Sound toggle -->
 <button class="sound-btn" id="sound-btn">🔊</button>
@@ -85,6 +91,7 @@
 <script src="js/game-engine.js"></script>
 <script src="js/game-rounds.js"></script>
 <script src="js/progress.js"></script>
+<script src="js/settings.js"></script>
 
 </body>
 </html>
