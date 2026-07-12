@@ -20,7 +20,7 @@ There are no tests, linter, or CI pipeline.
 
 ```
 TypingGame/
-  index.html            HTML shell — links CSS and 5 JS files
+  index.html            HTML shell — links CSS and 7 JS files
   css/
     styles.css          All CSS: variables, animations, responsive breakpoints
   js/
@@ -30,6 +30,7 @@ TypingGame/
     i18n.js             Language state (lang), I18N translations dict, t() helper
     game-engine.js      Navigation, state, utils, answer handler, keyboard listener
     game-rounds.js      All game data constants + all round functions + helpers
+    progress.js         Progress IIFE (localStorage stats + mistake log) + Progress screen
   CLAUDE.md             This file
 ```
 
@@ -42,6 +43,7 @@ TypingGame/
 <script src="js/i18n.js"></script>           <!-- defines lang, I18N, t() -->
 <script src="js/game-engine.js"></script>    <!-- needs Audio_, showCelebration, t() -->
 <script src="js/game-rounds.js"></script>    <!-- needs everything above -->
+<script src="js/progress.js"></script>       <!-- needs everything above; engine calls it via typeof guards -->
 ```
 
 All scripts share the global scope (no modules, no bundler). The load order matters because later scripts reference globals defined by earlier ones.
@@ -50,7 +52,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Two `<div class="screen">` elements toggled via `.active` class. The `#game` screen is shared across all 19 modes — its content is rebuilt each round.
+**Screen Navigation**: Three `<div class="screen">` elements (`#home`, `#game`, `#progress`) toggled via `.active` class. The `#game` screen is shared across all 19 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven. Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
@@ -92,6 +94,8 @@ W. **Word Search** — Find a word from `WORDS_DATA` hidden in a letter grid (3 
 **Audio**: `Audio_` singleton in `audio.js` using Web Audio API for sound effects (tones) and Web Speech API (`SpeechSynthesis`) for voice prompts. No external audio files or API keys.
 
 **Progress**: 5-star system per session, streak counter with fire badge at 3+ (animated fire at 5+). Completing all 5 stars triggers a grand finale celebration with multi-wave particle burst.
+
+**Persistent Progress & Mistake Replay** (`progress.js`): The `Progress` IIFE persists per-game stats (plays, correct, wrong, finales) and a mistake log to localStorage (key `luaProgress`). Rounds are generated deterministically: `nextRound()` swaps `Math.random` for a seeded PRNG (`mulberry32`) for the synchronous duration of the round function, so `game + level + seed + stars` fully reconstruct any round — including star-gated difficulty, since `stars` is temporarily set to the recorded value during replay. Wrong answers are recorded via the shared `resetStreak()` hook (every mode calls it exactly once per wrong answer; Memory is excluded because mismatched flips are normal gameplay); correct answers via `earnStar()`. The Progress screen (`#progress`, opened with `S` on home or the 📊 button, rendered by `renderProgressScreen()`) lists "tricky ones" — tapping one or pressing its number replays that exact round idempotently via the `pendingRetry` + `levelOverride` globals, bypassing the level picker; answering it correctly resolves the mistake. Words-mode mistakes store the word itself and replay jumps straight into spelling it (`selectWord`). New game modes get all of this for free as long as they generate the round synchronously inside their `*Round()` function and call `resetStreak()`/`earnStar()` once per answer.
 
 **Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
 

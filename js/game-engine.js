@@ -64,6 +64,47 @@ let activeKeyMap = {};
 /** @type {string|null} The key string for the correct answer in the current round */
 let correctKey = null;
 
+// ── Round Replay (progress tracking / retry) ──
+
+/**
+ * Metadata describing how the current round was generated. Rounds are
+ * generated synchronously from Math.random, which nextRound() swaps for a
+ * seeded PRNG — so game + level + seed + stars fully determine a round's
+ * content and any round can be rebuilt later, idempotently.
+ * @type {{game: string, level: number, seed: number, stars: number, retryId: string|null}|null}
+ */
+let currentRoundMeta = null;
+
+/**
+ * When set, the next round replays this recorded mistake instead of
+ * generating a fresh random round. Consumed (cleared) by nextRound().
+ * @type {{id: string, game: string, level: number, seed: number, stars: number, word: string|null}|null}
+ */
+let pendingRetry = null;
+
+/**
+ * Level override for retry practice sessions, so a mistake replays at the
+ * level it was made on without changing the saved level. Cleared by goHome().
+ * @type {{game: string, level: number}|null}
+ */
+let levelOverride = null;
+
+/**
+ * Returns a deterministic pseudo-random generator (mulberry32) producing
+ * numbers in [0, 1). Stands in for Math.random during round generation.
+ * @param {number} seed
+ * @returns {() => number}
+ */
+function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
 // ── Level System ──
 
 /**
@@ -158,6 +199,7 @@ function saveLevels() {
  * @returns {number}
  */
 function getLevel(game) {
+    if (levelOverride && levelOverride.game === game) return levelOverride.level;
     return gameLevels[game] || 0;
 }
 
@@ -176,6 +218,9 @@ function goHome() {
     levelPickingGame = null;
     activeKeyMap = {};
     correctKey = null;
+    currentRoundMeta = null;
+    pendingRetry = null;
+    levelOverride = null;
     TouchKB.hide();
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
     updateHomeLevelBadges();
@@ -214,6 +259,11 @@ function updateLangUI() {
     // Update back button text
     const backText = backBtn.querySelector('span:last-child');
     if (backText) backText.textContent = t('back');
+    // Re-render the progress screen if it's open
+    const progressEl = document.getElementById('progress');
+    if (progressEl && progressEl.classList.contains('active') && typeof renderProgressScreen === 'function') {
+        renderProgressScreen();
+    }
     // Restart home tips with new language
     startHomeTips();
 }
@@ -295,13 +345,15 @@ function startGame(game) {
     clearInterval(homeTipTimer);
 
     // If this game has levels, show the level picker first
-    if (GAME_LEVELS[game] && !levelPicking) {
+    // (retries skip it — the mistake already knows its level)
+    if (GAME_LEVELS[game] && !levelPicking && !pendingRetry) {
         showLevelPicker(game);
         return;
     }
     levelPicking = false;
 
     currentGame = game;
+    if (typeof Progress !== 'undefined') Progress.recordPlay(game);
     stars = 0;
     streak = 0;
     renderStars();
@@ -405,6 +457,9 @@ function updateStreak() {
  * If all stars are earned, speaks congratulations and returns home.
  */
 function earnStar() {
+    if (typeof Progress !== 'undefined' && currentRoundMeta && currentRoundMeta.game === currentGame) {
+        Progress.recordCorrect(currentRoundMeta, describeRound());
+    }
     if (stars < MAX_STARS) {
         stars++;
         renderStars();
@@ -412,6 +467,7 @@ function earnStar() {
     streak++;
     updateStreak();
     if (stars >= MAX_STARS) {
+        if (typeof Progress !== 'undefined') Progress.recordFinale(currentGame);
         setTimeout(() => {
             showGrandFinale();
             Audio_.celebration();
@@ -421,10 +477,46 @@ function earnStar() {
     }
 }
 
-/** Resets the streak counter to zero. */
+/**
+ * Resets the streak counter to zero. Called exactly once per wrong answer
+ * by every game mode, so it doubles as the shared mistake-recording hook.
+ * Memory is excluded — flipping a non-matching pair is normal gameplay.
+ */
 function resetStreak() {
     streak = 0;
     updateStreak();
+    if (typeof Progress !== 'undefined' && currentGame && currentGame !== 'memory' &&
+        currentRoundMeta && currentRoundMeta.game === currentGame) {
+        Progress.recordWrong(currentRoundMeta, describeRound());
+    }
+}
+
+/**
+ * Describes the current round for the progress log: a short label plus an
+ * emoji. The free-typing games are labelled with their word (and Words
+ * stores it so a retry can jump straight back into spelling that word);
+ * everything else falls back to the on-screen prompt.
+ * @returns {{label: string, emoji: string, word?: string}}
+ */
+function describeRound() {
+    if (currentGame === 'words' && typeof currentWordData !== 'undefined' && currentWordData) {
+        return { label: currentWordData.word, emoji: currentWordData.emoji, word: currentWordData.word };
+    }
+    if (currentGame === 'fixword' && typeof fixWordData !== 'undefined' && fixWordData) {
+        return { label: fixWordData.word, emoji: fixWordData.emoji };
+    }
+    if (currentGame === 'wordsearch' && typeof wsState !== 'undefined' && wsState) {
+        return { label: wsState.target.word, emoji: wsState.target.emoji };
+    }
+    // Some modes (e.g. Math) leave the prompt empty and put the question in
+    // the extra area — the key hint bar always describes the round, so fall
+    // back to it.
+    let label = (promptText.textContent || '').trim();
+    if (!label) label = (keyHintText.textContent || '').trim();
+    return {
+        label: label.slice(0, 60),
+        emoji: (promptEmoji.textContent || '').trim(),
+    };
 }
 
 /**
@@ -540,6 +632,13 @@ function handleAnswer(selectedIdx, correctIdx, onCorrect = null) {
 /**
  * Advances to the next round by dispatching to the current game mode's
  * round function. Clears previous round state first.
+ *
+ * Round generation runs against a seeded PRNG (swapped in for Math.random
+ * for the synchronous duration of the round function) and, when replaying
+ * a mistake, against the star count the mistake was made at — so the same
+ * seed always rebuilds the exact same round, including star-gated
+ * difficulty. Only speech/animation flourishes in later timeouts fall
+ * outside the seeded window.
  */
 function nextRound() {
     extraArea.innerHTML = '';
@@ -548,6 +647,38 @@ function nextRound() {
     correctKey = null;
     inputLocked = false;  // CRITICAL: unlock input at start of every round
 
+    const retry = (pendingRetry && pendingRetry.game === currentGame) ? pendingRetry : null;
+    pendingRetry = null;
+    const seed = retry ? retry.seed : Math.floor(Math.random() * 0x7fffffff);
+    currentRoundMeta = {
+        game: currentGame,
+        level: getLevel(currentGame),
+        seed,
+        stars: retry ? retry.stars : stars,
+        retryId: retry ? retry.id : null,
+    };
+
+    const realRandom = Math.random;
+    const realStars = stars;
+    Math.random = mulberry32(seed);
+    if (retry) stars = retry.stars;
+    try {
+        dispatchRound();
+    } finally {
+        Math.random = realRandom;
+        stars = realStars;
+    }
+
+    // A Words mistake happens while spelling a chosen word — jump straight
+    // back into spelling that word instead of the pick-a-word phase.
+    if (retry && retry.word && currentGame === 'words') {
+        const wordObj = WORDS_DATA.find(w => w.word === retry.word);
+        if (wordObj) selectWord(wordObj);
+    }
+}
+
+/** Dispatches to the current game mode's round function. */
+function dispatchRound() {
     switch (currentGame) {
         case 'colors':  colorsRound();  break;
         case 'shapes':  shapesRound();  break;
@@ -581,6 +712,10 @@ document.addEventListener('keydown', (e) => {
     if (currentGame === null && homeScreen.classList.contains('active')) {
         if (key === 'l') {
             toggleLang();
+            return;
+        }
+        if (key === 's') {
+            openProgressScreen();
             return;
         }
         const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch' };

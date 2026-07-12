@@ -765,6 +765,179 @@ body {
 }
 .lang-btn:active { transform: scale(0.9); }
 
+/* ===== Progress button (next to language toggle) ===== */
+.progress-btn {
+    position: fixed;
+    bottom: 16px;
+    left: 68px;
+    z-index: 60;
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    color: white;
+    font-size: 1.3rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+}
+.progress-btn:active { transform: scale(0.9); }
+/* Only relevant on the home/progress screens — hide during games */
+body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display: none; }
+
+/* ===== Progress Screen ===== */
+#progress.active {
+    height: 100vh;
+    height: 100dvh;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 90px; /* clears the fixed bottom buttons */
+    z-index: 1;
+}
+.pg-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 14px;
+}
+.pg-title {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.pg-chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 18px;
+}
+.pg-chip {
+    background: var(--card);
+    border: 2px solid var(--card-light);
+    border-radius: 16px;
+    padding: 10px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.pg-chip-emoji { font-size: 1.3rem; }
+.pg-chip-num { font-size: 1.4rem; font-weight: 800; }
+.pg-chip-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+.pg-section-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    width: 100%;
+    max-width: 580px;
+    margin: 6px 0 8px;
+}
+.pg-hint {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 8px;
+}
+.pg-empty {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+    max-width: 580px;
+    text-align: center;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 16px;
+}
+.pg-mistakes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 18px;
+}
+.pg-mistake {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 2px solid var(--pg-tint, var(--card-light));
+    border-radius: 16px;
+    padding: 8px 12px;
+    color: white;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.pg-mistake:hover, .pg-mistake:active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+.pg-mistake-key { min-width: 30px; display: flex; justify-content: center; }
+.pg-mistake-emoji { font-size: 1.6rem; }
+.pg-mistake-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.pg-mistake-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pg-mistake-game { font-size: 0.72rem; color: var(--pg-tint, rgba(255,255,255,0.5)); font-weight: 700; }
+.pg-mistake-count {
+    background: var(--pg-tint, var(--card-light));
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+}
+.pg-mistake-go { font-size: 1.1rem; }
+.pg-games {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 18px;
+}
+.pg-game {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border-left: 4px solid var(--pg-tint, var(--card-light));
+    border-radius: 12px;
+    padding: 8px 12px;
+}
+.pg-game-icon { font-size: 1.3rem; }
+.pg-game-name { flex: 1; font-weight: 700; font-size: 0.95rem; }
+.pg-game-stats { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+.pg-reset {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.4);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 4px;
+}
+.pg-reset:hover { color: rgba(255,255,255,0.7); }
+
 /* ===== Bilingual choice labels ===== */
 .choice-label-alt {
     display: block;
