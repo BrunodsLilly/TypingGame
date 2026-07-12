@@ -785,6 +785,23 @@ body {
     transition: transform 0.15s;
 }
 .progress-btn:active { transform: scale(0.9); }
+.pg-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    background: var(--red);
+    border: 2px solid var(--bg);
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 /* Only relevant on the home/progress screens — hide during games */
 body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display: none; }
 
@@ -859,6 +876,29 @@ body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display
     color: rgba(255,255,255,0.6);
     margin-bottom: 16px;
 }
+.pg-review-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--green), #27ae60);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.pg-review-all:hover, .pg-review-all:active {
+    transform: scale(1.02);
+    box-shadow: 0 4px 14px rgba(46, 204, 113, 0.4);
+}
 .pg-mistakes {
     display: flex;
     flex-direction: column;
@@ -866,6 +906,31 @@ body:not(:has(#home.active)):not(:has(#progress.active)) .progress-btn { display
     width: 100%;
     max-width: 580px;
     margin-bottom: 18px;
+}
+.pg-mistake-stage { font-size: 1.1rem; }
+.pg-growing {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 580px;
+    margin-bottom: 18px;
+}
+.pg-grow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 2px dashed var(--card-light);
+    border-radius: 16px;
+    padding: 8px 12px;
+    opacity: 0.75;
+}
+.pg-grow-when {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
 }
 .pg-mistake {
     display: flex;
