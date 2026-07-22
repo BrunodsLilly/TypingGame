@@ -838,3 +838,34 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// ============================================
+// Multi-Touch Guard
+// ============================================
+// Toddlers often rest a second thumb on the screen while tapping with
+// the other hand. Left alone, that extra contact point can make the
+// browser start its own gesture disambiguation (as if for pinch/pan),
+// which cancels the real touch and the intended tap never registers.
+// Tracking the first touch by identifier and swallowing every other
+// concurrent touch keeps the real tap working no matter what else is
+// resting on the glass.
+if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) {
+    let primaryTouchId = null;
+
+    document.addEventListener('touchstart', (e) => {
+        if (primaryTouchId === null) {
+            primaryTouchId = e.changedTouches[0].identifier;
+            return;
+        }
+        // Another finger is already down — ignore this extra touch entirely.
+        e.preventDefault();
+    }, { passive: false, capture: true });
+
+    const releasePrimary = (e) => {
+        for (const t of e.changedTouches) {
+            if (t.identifier === primaryTouchId) primaryTouchId = null;
+        }
+    };
+    document.addEventListener('touchend', releasePrimary, { capture: true });
+    document.addEventListener('touchcancel', releasePrimary, { capture: true });
+}
