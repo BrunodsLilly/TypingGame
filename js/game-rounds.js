@@ -1977,7 +1977,7 @@ function renderWordSearch() {
   for (let r = 0; r < rows; r++) {
     html += `<button class="ws-badge" data-type="row" data-idx="${r}">${keycapHTML(String(r + 1), 'active-key')}</button>`;
     for (let c = 0; c < cols; c++) {
-      html += `<div class="ws-cell${level === 0 ? ' ws-rowpick' : ''}" data-r="${r}" data-c="${c}">${grid[r][c]}</div>`;
+      html += `<div class="ws-cell ws-tappable" data-r="${r}" data-c="${c}">${grid[r][c]}</div>`;
     }
   }
   html += '</div>';
@@ -1986,12 +1986,11 @@ function renderWordSearch() {
   extraArea.querySelectorAll('.ws-badge').forEach(b => {
     b.addEventListener('click', () => selectWordSearchLine(b.dataset.type, parseInt(b.dataset.idx)));
   });
-  // Level 1: tapping anywhere in a row picks that row
-  if (level === 0) {
-    extraArea.querySelectorAll('.ws-cell').forEach(cell => {
-      cell.addEventListener('click', () => selectWordSearchLine('row', parseInt(cell.dataset.r)));
-    });
-  }
+  // Tapping a letter cell picks its row (level 1) or checks both the row
+  // and column it sits in (levels 2-3) — see handleWordSearchCellTap.
+  extraArea.querySelectorAll('.ws-cell').forEach(cell => {
+    cell.addEventListener('click', () => handleWordSearchCellTap(parseInt(cell.dataset.r), parseInt(cell.dataset.c)));
+  });
 }
 
 /**
@@ -2007,6 +2006,47 @@ function handleWordSearchKey(key) {
   } else if (wsState.level > 0 && n > wsState.rows && n <= wsState.rows + wsState.cols) {
     selectWordSearchLine('col', n - 1 - wsState.rows);
   }
+}
+
+/**
+ * Handles a tap on a grid letter cell (all levels). At level 1 every cell
+ * in a row picks that row, matching the number-key behavior. At levels
+ * 2-3 a cell sits at the intersection of a row and a column, so the tap
+ * checks both axes against the hidden line — correct if either matches,
+ * since exactly one line ever holds the word; wrong shakes both the row
+ * and column crossing at the tapped cell.
+ * @param {number} r
+ * @param {number} c
+ */
+function handleWordSearchCellTap(r, c) {
+  if (inputLocked || !wsState) return;
+  if (wsState.level === 0) {
+    selectWordSearchLine('row', r);
+    return;
+  }
+  const { line } = wsState;
+  if (line.type === 'row' && line.idx === r) {
+    selectWordSearchLine('row', r);
+  } else if (line.type === 'col' && line.idx === c) {
+    selectWordSearchLine('col', c);
+  } else {
+    wsMiss(extraArea.querySelectorAll(`.ws-cell[data-r="${r}"], .ws-cell[data-c="${c}"]`));
+  }
+}
+
+/**
+ * Shakes the given cells red, plays the wrong sound, resets the streak,
+ * and speaks an encouraging retry. Shared by line picks (badges/keyboard)
+ * and cell taps.
+ * @param {NodeListOf<Element>} cellEls
+ */
+function wsMiss(cellEls) {
+  cellEls.forEach(el => el.classList.add('ws-miss'));
+  Audio_.wrong();
+  resetStreak();
+  const ta = t('tryAgain');
+  setTimeout(() => Audio_.speak(ta[Math.floor(Math.random() * ta.length)]), 300);
+  setTimeout(() => cellEls.forEach(el => el.classList.remove('ws-miss')), 700);
 }
 
 /**
@@ -2050,14 +2090,8 @@ function selectWordSearchLine(type, idx) {
       }
     }, 900);
   } else {
-    const lineCells = extraArea.querySelectorAll(
-      type === 'row' ? `.ws-cell[data-r="${idx}"]` : `.ws-cell[data-c="${idx}"]`);
-    lineCells.forEach(el => el.classList.add('ws-miss'));
-    Audio_.wrong();
-    resetStreak();
-    const ta = t('tryAgain');
-    setTimeout(() => Audio_.speak(ta[Math.floor(Math.random() * ta.length)]), 300);
-    setTimeout(() => lineCells.forEach(el => el.classList.remove('ws-miss')), 700);
+    wsMiss(extraArea.querySelectorAll(
+      type === 'row' ? `.ws-cell[data-r="${idx}"]` : `.ws-cell[data-c="${idx}"]`));
   }
 }
 

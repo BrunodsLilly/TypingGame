@@ -1058,8 +1058,8 @@ body.kb-open .screen.game-screen { padding-bottom: 240px; }
     animation: popIn 0.3s ease-out backwards;
     transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
-.ws-cell.ws-rowpick { cursor: pointer; }
-.ws-cell.ws-rowpick:active { transform: scale(0.94); }
+.ws-cell.ws-tappable { cursor: pointer; }
+.ws-cell.ws-tappable:active { transform: scale(0.94); }
 .ws-cell.ws-found {
     background: linear-gradient(135deg, rgba(46, 204, 113, 0.35), rgba(46, 204, 113, 0.15));
     border-color: var(--green);
