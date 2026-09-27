@@ -11,6 +11,7 @@
  *   wrong: () => void,
  *   celebration: () => void,
  *   tap: () => void,
+ *   melody: (notes: Array<[number, number]>, beat?: number) => number,
  *   speak: (text: string, rate?: number, language?: string) => void,
  *   toggle: () => boolean,
  *   enabled: boolean
@@ -82,6 +83,21 @@ const Audio_ = (() => {
         setTimeout(() => tone(659, 0.12), 80);
         setTimeout(() => tone(784, 0.12), 160);
         setTimeout(() => tone(1047, 0.3), 240);
+    }
+
+    /**
+     * Plays a music-box style tune.
+     * @param {Array<[number, number]>} notes - [frequency Hz, beats] pairs
+     * @param {number} [beat=0.25] - Seconds per beat
+     * @returns {number} Total length in seconds
+     */
+    function melody(notes, beat = 0.25) {
+        let at = 0;
+        notes.forEach(([freq, beats]) => {
+            setTimeout(() => tone(freq, beats * beat * 0.95, 'triangle', 0.2), at * 1000);
+            at += beats * beat;
+        });
+        return at;
     }
 
     /** Plays a short high-pitched tap sound for UI feedback. */
@@ -170,7 +186,7 @@ const Audio_ = (() => {
     initVoice();
     ['pointerdown', 'touchend', 'mousedown', 'keydown'].forEach(ev =>
         window.addEventListener(ev, unlockAudio, { passive: true }));
-    return { correct, wrong, celebration, tap, speak, toggle, get enabled() { return soundEnabled; } };
+    return { correct, wrong, celebration, tap, melody, speak, toggle, get enabled() { return soundEnabled; } };
 })();
 
 // Sound button

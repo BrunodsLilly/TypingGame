@@ -165,6 +165,11 @@ const GAME_LEVELS = {
         { name: 'My Body & Actions', ptName: 'Corpo e Ações', desc: 'Body parts + doing words', ptDesc: 'Partes do corpo + ações', emoji: '🙆' },
         { name: 'Say It in Portuguese', ptName: 'Fale em Português', desc: 'Pick the Portuguese word', ptDesc: 'Escolha a palavra', emoji: '🗣️' },
     ],
+    farm: [
+        { name: 'Little Farm', ptName: 'Fazendinha', desc: '3 slow animals', ptDesc: '3 animais devagar', emoji: '🐣' },
+        { name: 'Busy Farm', ptName: 'Fazenda Agitada', desc: 'Listen for color AND animal!', ptDesc: 'Ouça a cor E o animal!', emoji: '🐄' },
+        { name: 'Crazy Farm', ptName: 'Fazenda Maluca', desc: 'Speedy look-alike twins!', ptDesc: 'Gêmeos rápidos!', emoji: '🌪️' },
+    ],
 };
 
 /**
@@ -223,6 +228,7 @@ function goHome() {
     levelOverride = null;
     TouchKB.hide();
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
+    if (typeof farmEndSession === 'function') farmEndSession();
     updateHomeLevelBadges();
     startHomeTips();
 }
@@ -338,7 +344,7 @@ const GAME_TINTS = {
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
     rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
     numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe', portuguese: '#009c3b',
-    wordsearch: '#a3cb38',
+    wordsearch: '#a3cb38', farm: '#d35400',
 };
 
 function startGame(game) {
@@ -507,6 +513,10 @@ function describeRound() {
     }
     if (currentGame === 'wordsearch' && typeof wsState !== 'undefined' && wsState) {
         return { label: wsState.target.word, emoji: wsState.target.emoji };
+    }
+    if (currentGame === 'farm' && typeof farmState !== 'undefined' && farmState) {
+        const a = farmState.animals[farmState.targetIdx];
+        return { label: farmName(a.kind, a.color).phrase, emoji: a.kind.emoji };
     }
     // Some modes (e.g. Math) leave the prompt empty and put the question in
     // the extra area — the key hint bar always describes the round, so fall
@@ -699,6 +709,7 @@ function dispatchRound() {
         case 'fixword':   fixwordRound();   break;
         case 'portuguese': portugueseRound(); break;
         case 'wordsearch': wordsearchRound(); break;
+        case 'farm':      farmRound();      break;
     }
 }
 
@@ -718,7 +729,7 @@ document.addEventListener('keydown', (e) => {
             openProgressScreen();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch', 'm': 'farm' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -806,6 +817,15 @@ document.addEventListener('keydown', (e) => {
     // Word Search mode: keys 1-4 pick a row, 5-8 pick a column
     if (currentGame === 'wordsearch') {
         if (/^[1-8]$/.test(key)) handleWordSearchKey(key);
+        return;
+    }
+
+    // Farm mode: number keys pick an animal, Space repeats the prompt
+    if (currentGame === 'farm') {
+        if (/^[1-9 ]$/.test(key)) {
+            e.preventDefault();
+            handleFarmKey(key);
+        }
         return;
     }
 

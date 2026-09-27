@@ -3543,3 +3543,699 @@ function ptSayItRound() {
   setKeyHint(`${correct.en} = ${correct.pt}`);
   setTimeout(() => Audio_.speak(`How do you say ${correct.en} in Portuguese?`, 0.85, 'en'), 300);
 }
+
+// ============================================
+// OLD MACDONALD'S FARM — touch the colorful animal ("Touch the red dog!")
+// ============================================
+
+/** Cartoon outline color shared by every farm drawing. */
+const FARM_OL = '#4a2c1d';
+
+/** Standard cartoon outline attributes. */
+const FARM_S = `stroke="${FARM_OL}" stroke-width="2.5" stroke-linejoin="round"`;
+
+/**
+ * Colors the farm animals come in. `ptF` is the feminine Portuguese form
+ * (a vaca vermelha vs. o cachorro vermelho).
+ * @type {Array<{name: string, pt: string, ptF: string, hex: string}>}
+ */
+const FARM_COLORS = [
+  { name: 'red', pt: 'vermelho', ptF: 'vermelha', hex: '#e74c3c' },
+  { name: 'blue', pt: 'azul', ptF: 'azul', hex: '#3498db' },
+  { name: 'yellow', pt: 'amarelo', ptF: 'amarela', hex: '#f1c40f' },
+  { name: 'green', pt: 'verde', ptF: 'verde', hex: '#2ecc71' },
+  { name: 'orange', pt: 'laranja', ptF: 'laranja', hex: '#e67e22' },
+  { name: 'purple', pt: 'roxo', ptF: 'roxa', hex: '#9b59b6' },
+  { name: 'pink', pt: 'rosa', ptF: 'rosa', hex: '#ff6b9d' },
+];
+
+/** Colors used on Little Farm before 3 stars. */
+const FARM_PRIMARY = ['red', 'blue', 'yellow', 'green'];
+
+/** Easily-confused color pairs, used for the twin animals at 3+ stars. */
+const FARM_LOOKALIKE = {
+  red: ['pink', 'orange'], blue: ['purple', 'green'], yellow: ['orange', 'green'],
+  green: ['blue', 'yellow'], orange: ['red', 'yellow'], purple: ['blue', 'pink'], pink: ['red', 'purple'],
+};
+
+/**
+ * Mixes a hex color toward black (amt < 0) or white (amt > 0).
+ * @param {string} hex - '#rrggbb'
+ * @param {number} amt - -1..1
+ * @returns {string}
+ */
+function farmShade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = v => Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt);
+  const r = mix(n >> 16), g = mix((n >> 8) & 255), b = mix(n & 255);
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+
+/** A big shiny cartoon eye (blinks via CSS). */
+function farmEye(x, y, s = 1) {
+  return `<g class="fa-eye"><ellipse cx="${x}" cy="${y}" rx="${4.6 * s}" ry="${5.6 * s}" fill="#fff" stroke="${FARM_OL}" stroke-width="1.5"/>` +
+    `<circle cx="${x + 0.8 * s}" cy="${y + 0.8 * s}" r="${3 * s}" fill="#1e130c"/>` +
+    `<circle cx="${x + 1.8 * s}" cy="${y - 0.8 * s}" r="${1.2 * s}" fill="#fff"/></g>`;
+}
+
+/** Rosy blush cheek. */
+function farmCheek(x, y) {
+  return `<ellipse cx="${x}" cy="${y}" rx="4.5" ry="2.8" fill="#ff8fab" opacity="0.75"/>`;
+}
+
+/**
+ * A four-legged animal's leg, swinging from the hip (class fa-leg-a/b).
+ * @param {number} x - Leg center x
+ * @param {number} y1 - Hip y
+ * @param {number} y2 - Foot y
+ * @param {number} w - Leg width
+ * @param {string} fill
+ * @param {string} cls - 'fa-leg-a' | 'fa-leg-b' (alternate swing phases)
+ * @param {string|null} [hoof] - Optional hoof color
+ */
+function farmLeg(x, y1, y2, w, fill, cls, hoof = null) {
+  let s = `<g class="${cls}" style="transform-origin:${x}px ${y1}px">`;
+  s += `<rect x="${x - w / 2}" y="${y1}" width="${w}" height="${y2 - y1}" rx="${w / 2}" fill="${fill}" ${FARM_S}/>`;
+  if (hoof) s += `<rect x="${x - w / 2}" y="${y2 - 6}" width="${w}" height="6" rx="2" fill="${hoof}" ${FARM_S}/>`;
+  return s + '</g>';
+}
+
+/** A bird leg with a webbed/three-toed orange foot. */
+function farmBirdLeg(x, y1, cls) {
+  return `<g class="${cls}" style="transform-origin:${x}px ${y1}px">` +
+    `<path d="M${x} ${y1} L${x} 92" stroke="${FARM_OL}" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="M${x} ${y1} L${x} 92" stroke="#f39c12" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M${x - 4} 91 L${x + 10} 94 L${x - 4} 96 Z" fill="#f39c12" stroke="${FARM_OL}" stroke-width="2" stroke-linejoin="round"/></g>`;
+}
+
+/** A tail drawn as an outlined stroke (class fa-tail wags from its base). */
+function farmStrokeTail(d, ox, oy, w, color) {
+  return `<g class="fa-tail" style="transform-origin:${ox}px ${oy}px">` +
+    `<path d="${d}" fill="none" stroke="${FARM_OL}" stroke-width="${w + 4.5}" stroke-linecap="round"/>` +
+    `<path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/></g>`;
+}
+
+// Each drawing: side view facing right, viewBox 0 0 120 100, feet at ~y 94.
+// c = body color, d = darker shade, l = lighter shade.
+
+function farmDogSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    ${farmStrokeTail('M28 54 Q14 48 17 30', 28, 54, 5.5, c)}
+    ${farmLeg(38, 64, 94, 10, d, 'fa-leg-b')}${farmLeg(72, 64, 94, 10, d, 'fa-leg-a')}
+    ${farmLeg(46, 64, 94, 10, c, 'fa-leg-a')}${farmLeg(80, 64, 94, 10, c, 'fa-leg-b')}
+    <ellipse cx="58" cy="60" rx="32" ry="19" fill="${c}" ${FARM_S}/>
+    <ellipse cx="60" cy="69" rx="18" ry="6" fill="${l}"/>
+    <ellipse cx="46" cy="52" rx="9" ry="7" fill="${d}"/>
+    <g class="fa-head" style="transform-origin:84px 56px">
+      <ellipse cx="103" cy="24" rx="6" ry="10" transform="rotate(-25 103 24)" fill="${d}" ${FARM_S}/>
+      <circle cx="90" cy="40" r="21" fill="${c}" ${FARM_S}/>
+      <ellipse cx="104" cy="50" rx="11" ry="8.5" fill="${l}" ${FARM_S}/>
+      <ellipse cx="111" cy="46" rx="4.5" ry="3.5" fill="#2d1b12"/>
+      <path d="M106 56 Q108 64 111 56 Z" fill="#ff6b8a" stroke="${FARM_OL}" stroke-width="1.5"/>
+      <path d="M102 55 Q107 59 112 55" fill="none" stroke="${FARM_OL}" stroke-width="2" stroke-linecap="round"/>
+      ${farmEye(86, 37)}${farmEye(98, 36)}${farmCheek(83, 49)}
+      <ellipse cx="74" cy="40" rx="7" ry="15" transform="rotate(18 74 40)" fill="${d}" ${FARM_S}/>
+    </g>
+  </svg>`;
+}
+
+function farmCatSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    ${farmStrokeTail('M30 58 Q10 54 12 34 Q13 22 22 24', 30, 58, 5, c)}
+    ${farmLeg(40, 66, 94, 8, d, 'fa-leg-b')}${farmLeg(70, 66, 94, 8, d, 'fa-leg-a')}
+    ${farmLeg(48, 66, 94, 8, c, 'fa-leg-a')}${farmLeg(78, 66, 94, 8, c, 'fa-leg-b')}
+    <ellipse cx="58" cy="62" rx="29" ry="16" fill="${c}" ${FARM_S}/>
+    <ellipse cx="60" cy="70" rx="15" ry="5" fill="${l}"/>
+    <path d="M46 48 q3 6 0 11 M56 47 q3 6 0 11 M66 48 q3 6 0 11" fill="none" stroke="${d}" stroke-width="3.5" stroke-linecap="round"/>
+    <g class="fa-head" style="transform-origin:84px 58px">
+      <path d="M74 32 L75 12 L90 26 Z" fill="${c}" ${FARM_S}/><path d="M92 25 L106 12 L106 34 Z" fill="${c}" ${FARM_S}/>
+      <path d="M77 28 L78 18 L86 26 Z" fill="#ffb3c6"/><path d="M95 26 L103 18 L103 30 Z" fill="#ffb3c6"/>
+      <circle cx="90" cy="42" r="19" fill="${c}" ${FARM_S}/>
+      ${farmEye(84, 40)}${farmEye(97, 40)}${farmCheek(79, 50)}${farmCheek(103, 50)}
+      <path d="M88 48 L94 48 L91 51 Z" fill="#ff8fab" stroke="${FARM_OL}" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="M91 51 q-3 4 -6 1 M91 51 q3 4 6 1" fill="none" stroke="${FARM_OL}" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M80 49 L66 46 M80 52 L66 54 M102 49 L116 46 M102 52 L116 54" stroke="${FARM_OL}" stroke-width="1.3" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+function farmPigSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    ${farmStrokeTail('M26 58 q-9 -1 -9 -8 q0 -6 6 -5 q4 1 2 5', 26, 58, 3, c)}
+    ${farmLeg(38, 72, 94, 11, d, 'fa-leg-b')}${farmLeg(70, 72, 94, 11, d, 'fa-leg-a')}
+    ${farmLeg(47, 72, 94, 11, c, 'fa-leg-a')}${farmLeg(79, 72, 94, 11, c, 'fa-leg-b')}
+    <ellipse cx="56" cy="62" rx="33" ry="22" fill="${c}" ${FARM_S}/>
+    <ellipse cx="58" cy="74" rx="18" ry="6" fill="${l}"/>
+    <g class="fa-head" style="transform-origin:86px 64px">
+      <path d="M76 36 L76 20 L89 30 Z" fill="${d}" ${FARM_S}/><path d="M95 29 L106 19 L106 37 Z" fill="${d}" ${FARM_S}/>
+      <circle cx="91" cy="48" r="20" fill="${c}" ${FARM_S}/>
+      ${farmEye(84, 42)}${farmEye(96, 41)}${farmCheek(80, 55)}
+      <ellipse cx="101" cy="55" rx="10" ry="7.5" fill="${l}" ${FARM_S}/>
+      <ellipse cx="98" cy="55" rx="1.8" ry="2.8" fill="${d}"/><ellipse cx="104" cy="55" rx="1.8" ry="2.8" fill="${d}"/>
+      <path d="M88 62 q4 3 8 0" fill="none" stroke="${FARM_OL}" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+function farmCowSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    <g class="fa-tail" style="transform-origin:24px 50px">
+      <path d="M24 50 Q12 58 15 76" fill="none" stroke="${FARM_OL}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M24 50 Q12 58 15 76" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="15" cy="79" rx="4" ry="5.5" fill="${d}" stroke="${FARM_OL}" stroke-width="2"/>
+    </g>
+    ${farmLeg(34, 66, 94, 10, d, 'fa-leg-b', '#3d2b1f')}${farmLeg(72, 66, 94, 10, d, 'fa-leg-a', '#3d2b1f')}
+    ${farmLeg(42, 66, 94, 10, c, 'fa-leg-a', '#3d2b1f')}${farmLeg(80, 66, 94, 10, c, 'fa-leg-b', '#3d2b1f')}
+    <rect x="20" y="40" width="70" height="36" rx="18" fill="${c}" ${FARM_S}/>
+    <path d="M32 44 q10 -3 13 5 q1 9 -8 9 q-8 -1 -5 -14 Z" fill="#fff" opacity="0.92"/>
+    <ellipse cx="68" cy="62" rx="9" ry="6" fill="#fff" opacity="0.92"/>
+    <ellipse cx="57" cy="48" rx="5" ry="3.5" fill="#fff" opacity="0.92"/>
+    <g class="fa-head" style="transform-origin:86px 58px">
+      <path d="M81 26 Q74 17 80 11" fill="none" stroke="${FARM_OL}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M81 26 Q74 17 80 11" fill="none" stroke="#fff3d6" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M101 26 Q108 17 102 11" fill="none" stroke="${FARM_OL}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M101 26 Q108 17 102 11" fill="none" stroke="#fff3d6" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="73" cy="32" rx="9" ry="4.5" transform="rotate(-20 73 32)" fill="${c}" ${FARM_S}/>
+      <ellipse cx="109" cy="32" rx="9" ry="4.5" transform="rotate(20 109 32)" fill="${c}" ${FARM_S}/>
+      <ellipse cx="91" cy="40" rx="17" ry="18" fill="${c}" ${FARM_S}/>
+      ${farmEye(84, 36)}${farmEye(98, 36)}
+      <ellipse cx="91" cy="53" rx="14" ry="9" fill="#ffc9d6" ${FARM_S}/>
+      <ellipse cx="86" cy="53" rx="2" ry="2.8" fill="#c0587a"/><ellipse cx="96" cy="53" rx="2" ry="2.8" fill="#c0587a"/>
+    </g>
+  </svg>`;
+}
+
+function farmDuckSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    ${farmBirdLeg(50, 78, 'fa-leg-b')}${farmBirdLeg(62, 78, 'fa-leg-a')}
+    <path d="M20 46 Q34 60 56 46 Q86 42 90 64 Q88 84 58 84 Q30 84 24 64 Q20 56 20 46 Z" fill="${c}" ${FARM_S}/>
+    <ellipse cx="60" cy="76" rx="18" ry="5" fill="${l}"/>
+    <path class="fa-wing" style="transform-origin:42px 62px" d="M40 62 Q54 50 70 60 Q60 74 40 62 Z" fill="${d}" stroke="${FARM_OL}" stroke-width="2" stroke-linejoin="round"/>
+    <g class="fa-head" style="transform-origin:84px 54px">
+      <path d="M84 20 Q86 10 92 13" fill="none" stroke="${FARM_OL}" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M84 20 Q86 10 92 13" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="86" cy="34" r="16" fill="${c}" ${FARM_S}/>
+      <path d="M97 32 Q115 33 114 40 Q106 46 96 42 Z" fill="#ffa41b" ${FARM_S}/>
+      <path d="M99 38 L112 38" stroke="${FARM_OL}" stroke-width="1.5" stroke-linecap="round"/>
+      ${farmEye(80, 31, 0.85)}${farmEye(91, 30, 0.85)}${farmCheek(80, 41)}
+    </g>
+  </svg>`;
+}
+
+function farmSheepSVG(c, d, l) {
+  const legD = '#3f322d', legC = '#5d4c46';
+  const puffs = [[36, 58, 12], [46, 47, 13], [60, 44, 13], [74, 48, 12], [80, 60, 11], [70, 71, 12], [55, 73, 13], [40, 70, 12]];
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    <g class="fa-tail" style="transform-origin:28px 58px"><circle cx="24" cy="58" r="7" fill="${c}" ${FARM_S}/></g>
+    ${farmLeg(38, 68, 94, 8, legD, 'fa-leg-b')}${farmLeg(68, 68, 94, 8, legD, 'fa-leg-a')}
+    ${farmLeg(46, 68, 94, 8, legC, 'fa-leg-a')}${farmLeg(76, 68, 94, 8, legC, 'fa-leg-b')}
+    ${puffs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" ${FARM_S}/>`).join('')}
+    <ellipse cx="58" cy="60" rx="25" ry="15" fill="${c}"/>
+    <circle cx="48" cy="52" r="4" fill="${l}"/><circle cx="63" cy="49" r="3" fill="${l}"/><circle cx="70" cy="64" r="3.5" fill="${l}"/>
+    <g class="fa-head" style="transform-origin:86px 60px">
+      <ellipse cx="78" cy="45" rx="9" ry="4" transform="rotate(25 78 45)" fill="${d}" ${FARM_S}/>
+      <ellipse cx="107" cy="45" rx="9" ry="4" transform="rotate(-25 107 45)" fill="${d}" ${FARM_S}/>
+      <ellipse cx="92.5" cy="51" rx="13" ry="15" fill="${d}" ${FARM_S}/>
+      <circle cx="85" cy="37" r="6" fill="${c}" ${FARM_S}/><circle cx="93" cy="34" r="6.5" fill="${c}" ${FARM_S}/><circle cx="100" cy="38" r="5.5" fill="${c}" ${FARM_S}/>
+      ${farmEye(87, 49)}${farmEye(98, 49)}${farmCheek(84, 57)}${farmCheek(101, 57)}
+      <ellipse cx="92.5" cy="59" rx="5.5" ry="3.5" fill="${l}"/>
+      <path d="M90 59.5 q2.5 3 5 0" fill="none" stroke="${FARM_OL}" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+
+function farmChickenSVG(c, d, l) {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    ${farmBirdLeg(50, 76, 'fa-leg-b')}${farmBirdLeg(60, 76, 'fa-leg-a')}
+    <g class="fa-tail" style="transform-origin:36px 54px">
+      <path d="M36 56 Q18 46 22 30 Q30 38 34 44 Q30 28 40 24 Q42 38 46 46 Z" fill="${d}" ${FARM_S}/>
+    </g>
+    <ellipse cx="56" cy="60" rx="25" ry="21" fill="${c}" ${FARM_S}/>
+    <ellipse cx="60" cy="72" rx="14" ry="5" fill="${l}"/>
+    <path class="fa-wing" style="transform-origin:44px 58px" d="M42 58 Q56 48 68 60 Q58 72 42 58 Z" fill="${d}" stroke="${FARM_OL}" stroke-width="2" stroke-linejoin="round"/>
+    <g class="fa-head" style="transform-origin:72px 52px">
+      <circle cx="70" cy="22" r="5" fill="#e74c3c" ${FARM_S}/><circle cx="77" cy="19" r="5.5" fill="#e74c3c" ${FARM_S}/><circle cx="84" cy="22" r="5" fill="#e74c3c" ${FARM_S}/>
+      <circle cx="77" cy="35" r="14" fill="${c}" ${FARM_S}/>
+      <path d="M89 32 L101 37 L89 42 Z" fill="#ffb020" ${FARM_S}/>
+      <ellipse cx="88" cy="46" rx="3.5" ry="5" fill="#e74c3c" stroke="${FARM_OL}" stroke-width="1.5"/>
+      ${farmEye(72, 32, 0.85)}${farmEye(83, 31, 0.85)}${farmCheek(73, 41)}
+    </g>
+  </svg>`;
+}
+
+/**
+ * The farm animals. `g` is the Portuguese grammatical gender (article and
+ * color agreement); `bird` switches the walk to a waddle.
+ * @type {Array<{name: string, pt: string, g: 'm'|'f', emoji: string, sound: string, ptSound: string, bird?: boolean, draw: (c: string, d: string, l: string) => string}>}
+ */
+const FARM_ANIMALS = [
+  { name: 'dog', pt: 'cachorro', g: 'm', emoji: '🐶', sound: 'woof woof', ptSound: 'au au', draw: farmDogSVG },
+  { name: 'cat', pt: 'gato', g: 'm', emoji: '🐱', sound: 'meow', ptSound: 'miau', draw: farmCatSVG },
+  { name: 'pig', pt: 'porco', g: 'm', emoji: '🐷', sound: 'oink oink', ptSound: 'oinc oinc', draw: farmPigSVG },
+  { name: 'cow', pt: 'vaca', g: 'f', emoji: '🐮', sound: 'moo', ptSound: 'muuu', draw: farmCowSVG },
+  { name: 'duck', pt: 'pato', g: 'm', emoji: '🦆', sound: 'quack quack', ptSound: 'quá quá', bird: true, draw: farmDuckSVG },
+  { name: 'sheep', pt: 'ovelha', g: 'f', emoji: '🐑', sound: 'baa baa', ptSound: 'bé bé', draw: farmSheepSVG },
+  { name: 'chicken', pt: 'galinha', g: 'f', emoji: '🐔', sound: 'cluck cluck', ptSound: 'có có', bird: true, draw: farmChickenSVG },
+];
+
+/** "Old MacDonald had a farm, E-I-E-I-O" as [frequency Hz, beats]. */
+const OLD_MACDONALD_TUNE = [
+  [392, 1], [392, 1], [392, 1], [293.66, 1], [329.63, 1], [329.63, 1], [293.66, 2],
+  [493.88, 1], [493.88, 1], [440, 1], [440, 1], [392, 2.5],
+];
+
+/** Pasture bounds (fractions of the field) for an animal's feet. */
+const FARM_Y_MIN = 0.62;
+const FARM_Y_MAX = 0.95;
+
+/**
+ * State for the current farm round. Each animal tracks its position
+ * (x = center, y = feet, as fractions of the field), velocity, and whether
+ * it's pausing to graze.
+ * @type {{field: HTMLElement, animals: Array<{kind: object, color: object, el: HTMLElement, x: number, y: number, vx: number, vy: number, idle: boolean, timer: number, frozen: boolean, oops: boolean}>, targetIdx: number, speed: number, pauseChance: number, wrong: number, raf: number|null, last: number}|null}
+ */
+let farmState = null;
+
+/** Points earned in the current farm session (reset on goHome). */
+let farmScore = 0;
+
+/** True once the Old MacDonald tune has played this session. */
+let farmSongPlayed = false;
+
+/** Best farm score ever, persisted to localStorage. */
+let farmBest = 0;
+try { farmBest = parseInt(localStorage.getItem('farmBest')) || 0; } catch (_) { /* ignore */ }
+
+/**
+ * Names an animal in the current language.
+ * EN: "red dog". PT: "cachorro vermelho" (color agrees with gender), with
+ * the matching article 'o'/'a'.
+ * @returns {{phrase: string, art: string, colorWord: string, noun: string}}
+ */
+function farmName(kind, color) {
+  if (lang === 'pt') {
+    const colorWord = kind.g === 'f' ? color.ptF : color.pt;
+    return { phrase: `${kind.pt} ${colorWord}`, art: kind.g === 'f' ? 'a' : 'o', colorWord, noun: kind.pt };
+  }
+  return { phrase: `${color.name} ${kind.name}`, art: 'the', colorWord: color.name, noun: kind.name };
+}
+
+/** The spoken "Touch the red dog!" prompt for the current target. */
+function farmPromptSpeech() {
+  const a = farmState.animals[farmState.targetIdx];
+  const n = farmName(a.kind, a.color);
+  return lang === 'pt'
+    ? t('farmTouch').replace('%s', `${n.art === 'a' ? 'na' : 'no'} ${n.phrase}`)
+    : t('farmTouch').replace('%s', n.phrase);
+}
+
+/** Speaks the current prompt again (speaker button / Space). */
+function farmSayPrompt() {
+  if (farmState) Audio_.speak(farmPromptSpeech());
+}
+
+/** Stops the animation loop for the current farm round. */
+function farmStop() {
+  if (farmState && farmState.raf) cancelAnimationFrame(farmState.raf);
+  if (farmState) farmState.raf = null;
+}
+
+/** Ends a farm session: stops animation and resets session points. */
+function farmEndSession() {
+  farmStop();
+  farmState = null;
+  farmScore = 0;
+  farmSongPlayed = false;
+}
+
+/**
+ * Picks the animals for a round. Returns the group (target first, unshuffled).
+ * - Little Farm: 3 animals, every kind and color different (either clue works)
+ * - Busy Farm: 4 animals; the target's color AND kind each appear on another
+ *   animal, so both words matter
+ * - Crazy Farm: 4 animals as a 2×2 of two kinds × two colors
+ * At 3+ stars, the twin color is a look-alike (red/pink, blue/purple…).
+ */
+function farmPickGroup(level, hard) {
+  const colorPool = (level === 0 && !hard) ? FARM_COLORS.filter(c => FARM_PRIMARY.includes(c.name)) : FARM_COLORS;
+  const kind = FARM_ANIMALS[Math.floor(Math.random() * FARM_ANIMALS.length)];
+  const color = colorPool[Math.floor(Math.random() * colorPool.length)];
+  const otherKinds = shuffle(FARM_ANIMALS.filter(k => k !== kind));
+  const otherColors = shuffle(colorPool.filter(c => c !== color));
+
+  // A second color close to the target's, for the "twin" animals at 3+ stars
+  let twinColor = otherColors[0];
+  if (hard && level > 0) {
+    const names = FARM_LOOKALIKE[color.name];
+    twinColor = FARM_COLORS.find(c => c.name === names[Math.floor(Math.random() * names.length)]);
+  }
+
+  if (level === 0) {
+    return [
+      { kind, color },
+      { kind: otherKinds[0], color: otherColors[0] },
+      { kind: otherKinds[1], color: otherColors[1] },
+    ];
+  }
+  if (level === 1) {
+    const extraColor = otherColors.find(c => c !== twinColor) || otherColors[1];
+    return [
+      { kind, color },
+      { kind, color: twinColor },
+      { kind: otherKinds[0], color },
+      { kind: otherKinds[1], color: extraColor },
+    ];
+  }
+  return [
+    { kind, color },
+    { kind, color: twinColor },
+    { kind: otherKinds[0], color },
+    { kind: otherKinds[0], color: twinColor },
+  ];
+}
+
+/** Builds the farm backdrop: sky, sun, clouds, hills, barn, silo, tree, fence, grass. */
+function farmSceneHTML() {
+  let html = '<div class="farm-sky"></div><div class="farm-sun"></div>';
+  html += '<div class="farm-cloud fc1"></div><div class="farm-cloud fc2"></div><div class="farm-cloud fc3"></div>';
+  html += `<svg class="farm-hills" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 20 L0 9 Q15 0 32 8 Q48 15 62 6 Q80 -2 100 8 L100 20 Z" fill="#7bc96f"/>
+      <path d="M0 20 L0 14 Q20 7 40 13 Q60 18 78 11 Q90 7 100 12 L100 20 Z" fill="#5fb85a"/></svg>`;
+  html += `<svg class="farm-barn" viewBox="0 0 112 100" aria-hidden="true">
+      <rect x="84" y="24" width="24" height="72" fill="#cfd8dc" ${FARM_S}/>
+      <path d="M84 36 H108 M84 52 H108 M84 68 H108 M84 84 H108" stroke="#90a4ae" stroke-width="2"/>
+      <path d="M84 25 Q96 6 108 25 Z" fill="#78909c" ${FARM_S}/>
+      <rect x="10" y="42" width="66" height="54" fill="#d63031" ${FARM_S}/>
+      <path d="M18 48 V94 M26 48 V94 M60 48 V94 M68 48 V94" stroke="#b02525" stroke-width="1.5"/>
+      <path d="M4 46 L43 12 L82 46 Z" fill="#8e1b1b" ${FARM_S}/>
+      <path d="M6 45 L43 13 L80 45" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/>
+      <rect x="34" y="24" width="18" height="13" fill="#ffe8a3" ${FARM_S}/>
+      <path d="M36 37 q7 -8 14 0" fill="#e1b12c"/>
+      <rect x="28" y="60" width="30" height="36" fill="#a51e1e" stroke="#fff" stroke-width="3"/>
+      <path d="M28 60 L58 96 M58 60 L28 96" stroke="#fff" stroke-width="3"/>
+    </svg>`;
+  html += `<svg class="farm-tree" viewBox="0 0 60 80" aria-hidden="true">
+      <rect x="25" y="44" width="10" height="34" rx="3" fill="#8d5a3b" ${FARM_S}/>
+      <circle cx="18" cy="34" r="15" fill="#43a047" ${FARM_S}/><circle cx="42" cy="34" r="15" fill="#43a047" ${FARM_S}/>
+      <circle cx="30" cy="20" r="17" fill="#4caf50" ${FARM_S}/><circle cx="30" cy="38" r="12" fill="#4caf50"/>
+      <circle cx="20" cy="30" r="3" fill="#e53935"/><circle cx="38" cy="22" r="3" fill="#e53935"/><circle cx="42" cy="38" r="3" fill="#e53935"/><circle cx="27" cy="40" r="3" fill="#e53935"/>
+    </svg>`;
+  html += '<div class="farm-grass"></div>';
+  html += `<svg class="farm-fence" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+      <rect x="0" y="3" width="100" height="1.6" fill="#f5deb3"/><rect x="0" y="6.5" width="100" height="1.6" fill="#f5deb3"/>
+      ${Array.from({ length: 21 }, (_, i) => `<rect x="${i * 5 - 0.6}" y="1" width="1.2" height="9" fill="#e8c99a"/>`).join('')}
+    </svg>`;
+  html += '<div class="farm-hay"></div>';
+  // Scattered flowers in the grass
+  const flowers = ['🌼', '🌷', '🌸', '🌻'];
+  for (let i = 0; i < 9; i++) {
+    const x = 3 + Math.random() * 94;
+    const y = 57 + Math.random() * 40;
+    html += `<span class="farm-flower" style="left:${x}%;top:${y}%">${flowers[i % flowers.length]}</span>`;
+  }
+  html += '<span class="farm-butterfly fb1">🦋</span><span class="farm-butterfly fb2">🦋</span>';
+  html += `<div class="farm-sign"><span class="farm-sign-pts">🌽 <b id="farm-score">${farmScore}</b></span>` +
+    `<span class="farm-sign-best">🏆 ${t('farmBest')} <b id="farm-best">${farmBest}</b></span></div>`;
+  return html;
+}
+
+/**
+ * Sets up an Old MacDonald's Farm round: colorful cartoon animals wander
+ * the farm, and the child touches (or presses the number of) the one named
+ * in the prompt — "Touch the red dog!". Correct touches earn points
+ * (+10, or +15 on the first try) as well as a star.
+ */
+function farmRound() {
+  farmStop();
+  const level = getLevel('farm');
+  const hard = stars >= 3;
+  const group = farmPickGroup(level, hard);
+  const target = group[0];
+  const order = shuffle(group);
+  const targetIdx = order.indexOf(target);
+
+  const speed = [0.045, 0.07, 0.095][level] * (hard ? 1.3 : 1);
+  const step = [0.5, 0.42, 0.34][level];
+
+  let html = `<div class="farm-field" id="farm-field">${farmSceneHTML()}`;
+  const n = order.length;
+  const animals = order.map((a, i) => {
+    const x = 0.12 + (i + 0.3 + Math.random() * 0.4) / n * 0.76;
+    const y = FARM_Y_MIN + Math.random() * (FARM_Y_MAX - FARM_Y_MIN);
+    const angle = Math.random() * Math.PI * 2;
+    const blink = (Math.random() * 4).toFixed(2);
+    const c = a.color.hex;
+    html += `<div class="farm-animal${a.kind.bird ? ' bird' : ''}" data-idx="${i}" style="--step:${step}s;--blink:-${blink}s">`;
+    html += `<div class="fa-shadow"></div><div class="fa-flip"><div class="fa-bob">${a.kind.draw(c, farmShade(c, -0.28), farmShade(c, 0.5))}</div></div>`;
+    html += `<span class="fa-key">${keycapHTML(String(i + 1))}</span></div>`;
+    return {
+      kind: a.kind, color: a.color, el: null, x, y,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed * 0.5,
+      idle: false, timer: 1 + Math.random() * 2, frozen: false, oops: false,
+    };
+  });
+  html += '</div>';
+  extraArea.innerHTML = html;
+
+  const field = extraArea.querySelector('#farm-field');
+  animals.forEach((a, i) => { a.el = field.querySelector(`.farm-animal[data-idx="${i}"]`); });
+  farmState = { field, animals, targetIdx, speed, pauseChance: [0.45, 0.3, 0.2][level], wrong: 0, raf: null, last: performance.now() };
+  field.addEventListener('pointerdown', farmPointer);
+  farmRender();
+
+  // Prompt: "Touch the [red] dog!" with the color word highlighted
+  const nm = farmName(target.kind, target.color);
+  const hl = `<span class="prompt-highlight farm-color-word" style="background:${target.color.hex}">${nm.colorWord}</span>`;
+  const phraseHTML = lang === 'pt' ? `${nm.noun} ${hl}` : `${hl} ${nm.noun}`;
+  const lead = lang === 'pt' ? `${nm.art === 'a' ? 'na' : 'no'} ${phraseHTML}` : phraseHTML;
+  promptEmoji.textContent = '';
+  promptText.innerHTML = `<span class="farm-prompt-emoji">${target.kind.emoji}</span> ${t('farmTouch').replace('%s', lead)} <button class="farm-say" aria-label="say again">🔊</button>`;
+  promptText.querySelector('.farm-say').addEventListener('click', farmSayPrompt);
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+
+  setKeyHint(t('farmHint').replace('%d', n));
+
+  // First round of a session: sing "Old MacDonald had a farm, E-I-E-I-O" first
+  let delay = 300;
+  if (!farmSongPlayed) {
+    farmSongPlayed = true;
+    delay = Audio_.melody(OLD_MACDONALD_TUNE, 0.26) * 1000 + 300;
+  }
+  setTimeout(() => {
+    if (currentGame === 'farm' && farmState && farmState.field === field) farmSayPrompt();
+  }, delay);
+
+  farmState.raf = requestAnimationFrame(farmTick);
+}
+
+/** Positions every animal: depth-scaled (nearer = bigger) and facing its direction. */
+function farmRender() {
+  const span = FARM_Y_MAX - FARM_Y_MIN;
+  farmState.animals.forEach(a => {
+    const s = 0.78 + 0.4 * (a.y - FARM_Y_MIN) / span;
+    a.el.style.left = (a.x * 100) + '%';
+    a.el.style.top = (a.y * 100) + '%';
+    a.el.style.transform = `translate(-50%, -100%) scale(${s.toFixed(3)})`;
+    a.el.style.zIndex = String(10 + Math.round(a.y * 100));
+    if (Math.abs(a.vx) > 0.001 && !a.idle) a.el.classList.toggle('facing-left', a.vx < 0);
+  });
+}
+
+/** Animation loop: wander, pause to graze, bounce off the pasture edges, keep apart. */
+function farmTick(now) {
+  const st = farmState;
+  if (!st || !st.field.isConnected) return;
+  const dt = Math.min(0.05, (now - st.last) / 1000);
+  st.last = now;
+
+  // Keep animals fully on the field: half an animal's width, as a fraction
+  const fw = st.field.clientWidth || 1;
+  const halfW = Math.min(0.2, (st.animals[0].el.offsetWidth / 2) / fw + 0.01);
+  const xMin = halfW, xMax = 1 - halfW;
+
+  st.animals.forEach(a => {
+    if (a.frozen) return;
+    a.timer -= dt;
+    if (a.timer <= 0) {
+      if (a.idle || Math.random() > st.pauseChance) {
+        // Set off in a new direction (mostly sideways, so the walk reads well)
+        a.idle = false;
+        const angle = (Math.random() < 0.5 ? 0 : Math.PI) + (Math.random() - 0.5) * 1.6;
+        a.vx = Math.cos(angle) * st.speed;
+        a.vy = Math.sin(angle) * st.speed * 0.5;
+        a.timer = 1.5 + Math.random() * 2.5;
+      } else {
+        a.idle = true;
+        a.timer = 0.8 + Math.random() * 1.4;
+      }
+      a.el.classList.toggle('idle', a.idle);
+    }
+    if (!a.idle) {
+      a.x += a.vx * dt;
+      a.y += a.vy * dt;
+      if (a.x < xMin) { a.x = xMin; a.vx = Math.abs(a.vx); }
+      if (a.x > xMax) { a.x = xMax; a.vx = -Math.abs(a.vx); }
+      if (a.y < FARM_Y_MIN) { a.y = FARM_Y_MIN; a.vy = Math.abs(a.vy); }
+      if (a.y > FARM_Y_MAX) { a.y = FARM_Y_MAX; a.vy = -Math.abs(a.vy); }
+    }
+  });
+
+  // Gentle separation so animals don't pile on top of each other
+  const minD = 0.17;
+  for (let i = 0; i < st.animals.length; i++) {
+    for (let j = i + 1; j < st.animals.length; j++) {
+      const a = st.animals[i], b = st.animals[j];
+      const dx = b.x - a.x, dy = (b.y - a.y) * 1.5;
+      const d = Math.hypot(dx, dy) || 0.001;
+      if (d < minD) {
+        const push = (minD - d) * dt * 2;
+        const ux = dx / d, uy = dy / d;
+        if (!a.frozen) { a.x = Math.max(xMin, a.x - ux * push); a.y = Math.min(FARM_Y_MAX, Math.max(FARM_Y_MIN, a.y - uy * push)); }
+        if (!b.frozen) { b.x = Math.min(xMax, b.x + ux * push); b.y = Math.min(FARM_Y_MAX, Math.max(FARM_Y_MIN, b.y + uy * push)); }
+      }
+    }
+  }
+
+  farmRender();
+  st.raf = requestAnimationFrame(farmTick);
+}
+
+/**
+ * Touch/click on the farm. Picks the front-most animal actually drawn under
+ * the finger (only the SVG shapes are hit-testable, so an animal's empty
+ * corners never steal a tap from its neighbour). A near miss still counts
+ * for the closest animal — moving targets are hard for little hands. Taps
+ * on empty grass are ignored.
+ * @param {PointerEvent} e
+ */
+function farmPointer(e) {
+  if (inputLocked || !farmState) return;
+  let idx = -1;
+  for (const el of document.elementsFromPoint(e.clientX, e.clientY)) {
+    const host = el.closest && el.closest('.farm-animal');
+    if (host && farmState.field.contains(host)) { idx = parseInt(host.dataset.idx); break; }
+  }
+  if (idx < 0) {
+    let bestD = Infinity;
+    farmState.animals.forEach((a, i) => {
+      const r = a.el.querySelector('svg').getBoundingClientRect();
+      const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+      if (d < bestD && d < Math.max(r.width, r.height) * 0.6) { bestD = d; idx = i; }
+    });
+  }
+  if (idx >= 0) {
+    e.preventDefault();
+    selectFarmAnimal(idx);
+  }
+}
+
+/**
+ * Handles a keypress in farm mode: number keys pick that animal, Space
+ * repeats the prompt.
+ * @param {string} key
+ */
+function handleFarmKey(key) {
+  if (!farmState) return;
+  if (key === ' ') { farmSayPrompt(); return; }
+  const n = parseInt(key);
+  if (n >= 1 && n <= farmState.animals.length) selectFarmAnimal(n - 1);
+}
+
+/** Floats a "+15" and hearts up from an animal. */
+function farmPop(a, text) {
+  const field = farmState.field;
+  const r = a.el.getBoundingClientRect(), fr = field.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'farm-pop';
+  pop.textContent = text;
+  pop.style.left = (r.left + r.width / 2 - fr.left) + 'px';
+  pop.style.top = (r.top - fr.top) + 'px';
+  field.appendChild(pop);
+  setTimeout(() => pop.remove(), 1400);
+  ['💖', '💛', '💚'].forEach((h, i) => {
+    const heart = document.createElement('span');
+    heart.className = 'farm-heart';
+    heart.textContent = h;
+    heart.style.left = (r.left + r.width * (0.25 + i * 0.25) - fr.left) + 'px';
+    heart.style.top = (r.top + r.height * 0.3 - fr.top) + 'px';
+    heart.style.animationDelay = (i * 0.12) + 's';
+    field.appendChild(heart);
+    setTimeout(() => heart.remove(), 1600);
+  });
+}
+
+/**
+ * Checks the touched animal. Correct: it hops for joy, points float up,
+ * a star is earned, and it "speaks" (The red dog says woof woof!).
+ * Wrong: it shakes its head, and the child hears what it actually was.
+ * @param {number} idx
+ */
+function selectFarmAnimal(idx) {
+  if (inputLocked || !farmState) return;
+  const st = farmState;
+  const a = st.animals[idx];
+
+  const keycap = a.el.querySelector('.keycap');
+  if (keycap) {
+    keycap.classList.add('pressed-anim');
+    setTimeout(() => keycap.classList.remove('pressed-anim'), 150);
+  }
+
+  const nm = farmName(a.kind, a.color);
+  if (idx === st.targetIdx) {
+    inputLocked = true;
+    a.frozen = true;
+    a.idle = false;
+    a.el.classList.remove('idle');
+    a.el.classList.add('happy');
+
+    const pts = st.wrong === 0 ? 15 : 10; // first-try bonus
+    farmScore += pts;
+    const scoreEl = st.field.querySelector('#farm-score');
+    if (scoreEl) {
+      scoreEl.textContent = farmScore;
+      scoreEl.parentElement.classList.remove('bump');
+      void scoreEl.parentElement.offsetWidth;
+      scoreEl.parentElement.classList.add('bump');
+    }
+    if (farmScore > farmBest) {
+      farmBest = farmScore;
+      try { localStorage.setItem('farmBest', String(farmBest)); } catch (_) { /* ignore */ }
+      const bestEl = st.field.querySelector('#farm-best');
+      if (bestEl) bestEl.textContent = farmBest;
+    }
+    farmPop(a, `+${pts}`);
+
+    Audio_.correct();
+    showCelebration();
+    earnStar();
+
+    const who = lang === 'pt' ? `${nm.art === 'a' ? 'A' : 'O'} ${nm.phrase}` : nm.phrase;
+    const says = t('farmSays').replace('%s', who).replace('%s', lang === 'pt' ? a.kind.ptSound : a.kind.sound);
+    setTimeout(() => Audio_.speak(says), 400);
+
+    setTimeout(() => {
+      Audio_.celebration();
+      if (stars < MAX_STARS) {
+        setTimeout(() => {
+          inputLocked = false;
+          nextRound();
+        }, 1400);
+      }
+    }, 900);
+  } else {
+    if (a.oops) return; // ignore rapid repeat taps on the same animal
+    a.oops = true;
+    st.wrong++;
+    a.el.classList.add('oops');
+    Audio_.wrong();
+    resetStreak();
+    const which = lang === 'pt' ? `${nm.art === 'a' ? 'Essa é a' : 'Esse é o'} ${nm.phrase}` : nm.phrase;
+    setTimeout(() => Audio_.speak(t('farmOops').replace('%s', which)), 300);
+    setTimeout(() => {
+      a.oops = false;
+      a.el.classList.remove('oops');
+    }, 800);
+  }
+}
