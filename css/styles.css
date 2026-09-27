@@ -176,6 +176,7 @@ body {
 .game-card.fixword { border-color: #a29bfe;        } .game-card.fixword::before { background: #a29bfe; }
 .game-card.portuguese { border-color: #009c3b;     } .game-card.portuguese::before { background: #009c3b; }
 .game-card.wordsearch { border-color: #a3cb38;     } .game-card.wordsearch::before { background: #a3cb38; }
+.game-card.farm { border-color: #d35400;           } .game-card.farm::before { background: #d35400; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -1512,4 +1513,296 @@ body.kb-open .screen.game-screen { padding-bottom: 240px; }
     font-size: clamp(1.5rem, 5vw, 2rem);
     font-weight: 800;
     color: rgba(255,255,255,0.3);
+}
+
+/* ===== Old MacDonald's Farm ===== */
+.farm-prompt-emoji { font-size: 1.3em; vertical-align: -0.12em; }
+.farm-color-word { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.55); }
+.farm-say {
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 50%;
+    width: 1.8em;
+    height: 1.8em;
+    font-size: 0.8em;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+.farm-say:active { transform: scale(0.9); }
+
+.farm-field {
+    position: relative;
+    width: min(960px, calc(100vw - 40px));
+    height: clamp(280px, calc(100dvh - 215px), 640px);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 4px solid #8d5a3b;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    touch-action: none;
+    cursor: pointer;
+}
+.farm-sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #6ec6ff 0%, #b3e5fc 45%, #e1f5fe 60%);
+}
+.farm-sun {
+    position: absolute;
+    top: 6%;
+    right: 8%;
+    width: clamp(44px, 9vw, 80px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #fff59d, #ffd54f 60%, #ffb300);
+    box-shadow: 0 0 0 10px rgba(255, 235, 59, 0.25), 0 0 40px 18px rgba(255, 213, 79, 0.45);
+    animation: farmSunPulse 3s ease-in-out infinite;
+}
+@keyframes farmSunPulse {
+    0%, 100% { box-shadow: 0 0 0 8px rgba(255,235,59,0.25), 0 0 34px 14px rgba(255,213,79,0.4); }
+    50% { box-shadow: 0 0 0 14px rgba(255,235,59,0.18), 0 0 50px 24px rgba(255,213,79,0.5); }
+}
+.farm-cloud {
+    position: absolute;
+    width: 90px;
+    height: 28px;
+    background: #fff;
+    border-radius: 20px;
+    opacity: 0.95;
+    animation: farmCloud linear infinite;
+}
+.farm-cloud::before, .farm-cloud::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+}
+.farm-cloud::before { width: 40px; height: 40px; top: -20px; left: 14px; }
+.farm-cloud::after { width: 32px; height: 32px; top: -14px; left: 44px; }
+.farm-cloud.fc1 { top: 12%; animation-duration: 55s; animation-delay: -10s; }
+.farm-cloud.fc2 { top: 24%; animation-duration: 70s; animation-delay: -40s; transform: scale(0.75); }
+.farm-cloud.fc3 { top: 8%; animation-duration: 85s; animation-delay: -70s; }
+@keyframes farmCloud {
+    from { left: -120px; }
+    to { left: 105%; }
+}
+.farm-hills {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30%;
+    width: 100%;
+    height: 24%;
+}
+.farm-barn {
+    position: absolute;
+    left: 3%;
+    bottom: 45%;
+    height: 40%;
+    z-index: 2;
+}
+.farm-tree {
+    position: absolute;
+    right: 5%;
+    bottom: 44%;
+    height: 34%;
+    z-index: 2;
+}
+.farm-grass {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 47%;
+    background:
+        radial-gradient(ellipse 30px 10px at 20% 30%, rgba(255,255,255,0.12), transparent),
+        radial-gradient(ellipse 40px 12px at 70% 60%, rgba(255,255,255,0.1), transparent),
+        linear-gradient(180deg, #7cc85a 0%, #5cae3d 60%, #4a9a31 100%);
+    z-index: 1;
+}
+.farm-fence {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 49%;
+    width: 100%;
+    height: 7%;
+    z-index: 3;
+}
+.farm-hay {
+    position: absolute;
+    left: 30%;
+    top: 50%;
+    width: clamp(34px, 6vw, 56px);
+    aspect-ratio: 1.4;
+    border-radius: 10px;
+    background: repeating-linear-gradient(90deg, #f6c453 0 6px, #e3a82b 6px 8px);
+    border: 2.5px solid #4a2c1d;
+    z-index: 4;
+}
+.farm-flower {
+    position: absolute;
+    font-size: clamp(0.8rem, 2vw, 1.2rem);
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+    animation: farmSway 3s ease-in-out infinite alternate;
+}
+@keyframes farmSway {
+    from { transform: translate(-50%, -50%) rotate(-8deg); }
+    to { transform: translate(-50%, -50%) rotate(8deg); }
+}
+.farm-butterfly {
+    position: absolute;
+    font-size: 1.1rem;
+    z-index: 200;
+    pointer-events: none;
+}
+.farm-butterfly.fb1 { animation: farmFly1 14s ease-in-out infinite; }
+.farm-butterfly.fb2 { animation: farmFly2 18s ease-in-out infinite; }
+@keyframes farmFly1 {
+    0%, 100% { left: 10%; top: 40%; }
+    25% { left: 40%; top: 30%; }
+    50% { left: 70%; top: 45%; }
+    75% { left: 45%; top: 55%; }
+}
+@keyframes farmFly2 {
+    0%, 100% { left: 85%; top: 60%; }
+    33% { left: 55%; top: 38%; }
+    66% { left: 20%; top: 58%; }
+}
+.farm-sign {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 16px 6px;
+    background: linear-gradient(180deg, #c68a52, #a86b37);
+    border: 3px solid #6b3f1d;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    pointer-events: none;
+    color: #fff8e1;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.farm-sign-pts { font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 900; }
+.farm-sign-pts.bump { animation: farmBump 0.5s ease-out; }
+.farm-sign-best { font-size: 0.7rem; font-weight: 700; opacity: 0.9; }
+@keyframes farmBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.4); color: #fff59d; }
+    100% { transform: scale(1); }
+}
+
+/* Animals: positioned by feet (left/top set in JS), scaled for depth */
+.farm-animal {
+    position: absolute;
+    width: clamp(92px, 16vw, 160px);
+    transform-origin: 50% 100%;
+    will-change: left, top, transform;
+}
+.farm-animal svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* Only the drawn shapes are touchable (see farmPointer) */
+.farm-animal, .farm-animal svg, .fa-shadow { pointer-events: none; }
+.farm-animal svg * { pointer-events: visiblePainted; }
+.fa-shadow {
+    position: absolute;
+    left: 18%;
+    right: 12%;
+    bottom: 2%;
+    height: 10%;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.22);
+}
+.fa-flip { transition: transform 0.25s ease; }
+.farm-animal.facing-left .fa-flip { transform: scaleX(-1); }
+.fa-key {
+    position: absolute;
+    left: 50%;
+    top: -4px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.fa-bob { animation: faBob var(--step, 0.45s) ease-in-out infinite alternate; }
+.farm-animal.bird .fa-bob { animation-name: faWaddle; transform-origin: 50% 95%; }
+.fa-leg-a { animation: faLegA var(--step, 0.45s) ease-in-out infinite alternate; }
+.fa-leg-b { animation: faLegB var(--step, 0.45s) ease-in-out infinite alternate; }
+.fa-tail { animation: faWag 0.35s ease-in-out infinite alternate; }
+.fa-wing { animation: faFlap 1.2s ease-in-out infinite; }
+.fa-head { animation: faNod 2.4s ease-in-out infinite; animation-delay: var(--blink, 0s); }
+.fa-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: faBlink 4s infinite;
+    animation-delay: var(--blink, 0s);
+}
+.farm-animal.idle .fa-bob,
+.farm-animal.idle .fa-leg-a,
+.farm-animal.idle .fa-leg-b { animation: none; }
+.farm-animal.idle .fa-head { animation: faGraze 1.4s ease-in-out infinite; }
+
+@keyframes faBob { from { transform: translateY(0); } to { transform: translateY(-4%); } }
+@keyframes faWaddle { from { transform: rotate(-6deg); } to { transform: rotate(6deg) translateY(-3%); } }
+@keyframes faLegA { from { transform: rotate(20deg); } to { transform: rotate(-20deg); } }
+@keyframes faLegB { from { transform: rotate(-20deg); } to { transform: rotate(20deg); } }
+@keyframes faWag { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+@keyframes faFlap { 0%, 80%, 100% { transform: rotate(0); } 88% { transform: rotate(-18deg); } }
+@keyframes faNod { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+@keyframes faGraze { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(14deg); } }
+@keyframes faBlink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+
+/* Correct: hop for joy. Wrong: shake "no". */
+.farm-animal.happy .fa-bob { animation: faHappy 0.5s ease-out 3; }
+.farm-animal.happy .fa-tail { animation-duration: 0.15s; }
+.farm-animal.oops .fa-bob { animation: faShake 0.5s ease-in-out; }
+.farm-animal.oops .fa-leg-a, .farm-animal.oops .fa-leg-b { animation: none; }
+@keyframes faHappy {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    20% { transform: translateY(0) scale(1.08, 0.9); }
+    55% { transform: translateY(-28%) scale(0.95, 1.08) rotate(-4deg); }
+}
+@keyframes faShake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-6%) rotate(-5deg); }
+    40% { transform: translateX(6%) rotate(5deg); }
+    60% { transform: translateX(-4%) rotate(-3deg); }
+    80% { transform: translateX(4%) rotate(3deg); }
+}
+.farm-pop {
+    position: absolute;
+    z-index: 400;
+    transform: translate(-50%, 0);
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 900;
+    color: #fff59d;
+    -webkit-text-stroke: 2px #6b3f1d;
+    text-shadow: 0 3px 8px rgba(0,0,0,0.4);
+    pointer-events: none;
+    animation: farmPopUp 1.4s ease-out forwards;
+}
+@keyframes farmPopUp {
+    0% { opacity: 0; transform: translate(-50%, 10px) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -10px) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -70px) scale(1); }
+}
+.farm-heart {
+    position: absolute;
+    z-index: 400;
+    font-size: 1.3rem;
+    pointer-events: none;
+    opacity: 0;
+    animation: farmHeart 1.3s ease-out forwards;
+}
+@keyframes farmHeart {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.4); }
+    25% { opacity: 1; transform: translate(-50%, -20px) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -80px) scale(0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .farm-cloud, .farm-butterfly, .farm-flower { animation: none; }
 }

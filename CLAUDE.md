@@ -52,7 +52,7 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 
 ### Key Architectural Patterns
 
-**Screen Navigation**: Three `<div class="screen">` elements (`#home`, `#game`, `#progress`) toggled via `.active` class. The `#game` screen is shared across all 19 modes — its content is rebuilt each round.
+**Screen Navigation**: Three `<div class="screen">` elements (`#home`, `#game`, `#progress`) toggled via `.active` class. The `#game` screen is shared across all 20 modes — its content is rebuilt each round.
 
 **Keyboard-First Input**: All interaction is keyboard-driven. Each game mode populates `activeKeyMap` (a dict mapping key strings to choice indices) and sets `correctKey`. The master `keydown` listener in `game-engine.js` dispatches through this map.
 
@@ -65,8 +65,9 @@ All scripts share the global scope (no modules, no bundler). The load order matt
 - Fix the Word mode uses `handleFixWordKeyPress(key)` for free letter typing
 - Memory mode uses `handleMemoryKeyPress(key)` for card flipping
 - Word Search mode uses `handleWordSearchKey(key)` for row/column picking
+- Old MacDonald mode uses `handleFarmKey(key)` for number keys and `farmPointer(e)` for touches on the moving animals
 
-**19 Game Modes** (keys 1-9, 0, E, R, G, K, N, T, F, P, W):
+**20 Game Modes** (keys 1-9, 0, E, R, G, K, N, T, F, P, W, M):
 1. **Colors** — Find the named color swatch
 2. **Shapes** — Find the named shape (SVG)
 3. **Count** — Count emoji items and press the number
@@ -86,8 +87,9 @@ T. **Take Away** — Subtraction (3 levels): story mode where an animal eats tre
 F. **Fix the Word** — Free-typing spelling recall (3 levels): a word from `WORDS_DATA` appears with hidden letters and the child types what's missing — first letter, any one letter, or two letters. Uses `handleFixWordKeyPress(key)`; no on-screen key hint (the word is spoken instead; the letter is spoken as a rescue hint after two misses)
 P. **Portuguese** — Brazilian Portuguese words and phrases (6 levels), mirroring the Korean game's structure: match pictures to spoken vocabulary, phrase comprehension, polite "___, por favor" requests, colors & numbers 1-5, body parts & action verbs, and reverse mode (see a picture, pick the Portuguese word). Shares Wikipedia photo thumbnails with the Korean game via `KOREAN_IMAGE_CACHE` (keyed by wiki title)
 W. **Word Search** — Find a word from `WORDS_DATA` hidden in a letter grid (3 levels): press the number of the row that hides it (level 1), rows 1-4 or columns 5-8 (level 2), and level 3 adds a look-alike decoy word so every letter must be checked. The word and emoji clue are shown, but its location is never hinted at; the letters light up and are spelled aloud only after a correct pick. `wsBuildGrid()` guarantees exactly one row/column contains the word
+M. **Old MacDonald** — Cute cartoon farm animals (hand-drawn inline SVG: dog, cat, pig, cow, duck, sheep, chicken, each tinted any of 7 colors) wander Old MacDonald's farm, walking, grazing, blinking and wagging. The child touches the one named in the prompt ("Touch the red dog!") or presses its number (3 levels): Little Farm (3 animals, every kind and color different), Busy Farm (the target's color and kind each appear on another animal), Crazy Farm (a 2×2 of two kinds × two colors, faster). At 3+ stars they move faster and twin colors become look-alikes (red/pink, blue/purple). Correct touches earn points (+10, +15 on the first try) shown on the farm sign; the best score persists in localStorage (`farmBest`). The first round of a session plays the Old MacDonald tune (`Audio_.melody`). Animals move in a `requestAnimationFrame` loop (`farmTick`) that `goHome()` stops via `farmEndSession()`; only the painted SVG shapes are hit-testable so overlapping animals never steal a tap, and near misses count for the closest animal
 
-**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, Take Away, Fix the Word, and Word Search (longer words, trickier filler letters) get harder at 3+ stars.
+**Progressive Difficulty**: Colors (advanced colors at 3+), Count, Math, Patterns, Words, More & Less, Take Away, Fix the Word, Word Search (longer words, trickier filler letters), and Old MacDonald (faster animals, look-alike colors) get harder at 3+ stars.
 
 **No Answer Giveaways**: Choice-based games do NOT highlight the correct answer or auto-hint. The child is expected to be supervised by an adult who provides contextual help when needed. Voice prompts ask the question without revealing which key to press.
 
@@ -99,7 +101,7 @@ W. **Word Search** — Find a word from `WORDS_DATA` hidden in a letter grid (3 
 
 **Color Theming**: Each game has a theme color that tints the game screen header area, matching the home screen card border color.
 
-**Bilingual Mode (EN/PT)**: A language toggle button (bottom-left, or `L` key on home screen) switches between English and Portuguese. When PT is active: voice prompts speak Portuguese (pt-BR), choice labels show both languages (e.g. "vermelho" with "red" below), home card labels switch to Portuguese names. The `lang` global ('en'|'pt') is defined in `i18n.js`. All UI strings go through the `t()` helper. Words, Fix the Word, Word Search, and Rhymes games use English words (spelling/rhyming is language-specific); Word Search UI strings still translate. Game data objects have `pt` fields for Portuguese names (Colors, Shapes, Animals, Elements).
+**Bilingual Mode (EN/PT)**: A language toggle button (bottom-left, or `L` key on home screen) switches between English and Portuguese. When PT is active: voice prompts speak Portuguese (pt-BR), choice labels show both languages (e.g. "vermelho" with "red" below), home card labels switch to Portuguese names. The `lang` global ('en'|'pt') is defined in `i18n.js`. All UI strings go through the `t()` helper. Words, Fix the Word, Word Search, and Rhymes games use English words (spelling/rhyming is language-specific); Word Search UI strings still translate. Game data objects have `pt` fields for Portuguese names (Colors, Shapes, Animals, Elements). Old MacDonald's colors also carry a feminine `ptF` form so they agree with the animal's gender ("a vaca vermelha").
 
 ## Design Constraints
 
