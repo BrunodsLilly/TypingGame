@@ -4239,3 +4239,517 @@ function selectFarmAnimal(idx) {
     }, 800);
   }
 }
+
+// ============================================
+// BALLOON POP — pop only the balloons of the named color
+// ============================================
+//
+// Balloons float up from the hills. The child pops the ones in the target
+// color ("Pop the red balloons!") by touching them or pressing the number on
+// them. Each good pop fills a slot on the tally; fill them all to earn a star.
+// Popping a wrong color is a goofy little disaster: it bursts into a goo
+// splat, a grumpy rain cloud rumbles over with a sad "wah-wah-wah-wahhh", and
+// a gust blows one of the collected balloons away.
+
+/**
+ * Balloon colors. `ptPl` is the masculine plural Portuguese form, since
+ * "balões" is masculine plural ("os balões vermelhos").
+ * @type {Array<{name: string, pt: string, ptPl: string, hex: string}>}
+ */
+const BALLOON_COLORS = [
+  { name: 'red', pt: 'vermelho', ptPl: 'vermelhos', hex: '#e74c3c' },
+  { name: 'blue', pt: 'azul', ptPl: 'azuis', hex: '#3498db' },
+  { name: 'yellow', pt: 'amarelo', ptPl: 'amarelos', hex: '#f1c40f' },
+  { name: 'green', pt: 'verde', ptPl: 'verdes', hex: '#2ecc71' },
+  { name: 'orange', pt: 'laranja', ptPl: 'laranja', hex: '#e67e22' },
+  { name: 'purple', pt: 'roxo', ptPl: 'roxos', hex: '#9b59b6' },
+  { name: 'pink', pt: 'rosa', ptPl: 'rosa', hex: '#ff6b9d' },
+];
+
+/**
+ * Per-level tuning.
+ * - colors: how many colors are in the air (target included)
+ * - need: balloons to pop for a star
+ * - speed: rise speed in field heights per second
+ * - every: seconds between new balloons
+ * - max: most balloons in the air at once (≤ 9 so each gets a number key)
+ * - share: chance a new balloon is the target color
+ * - twins: the other colors include look-alikes (red/pink, blue/purple…)
+ */
+const BALLOON_LEVELS = [
+  { colors: 3, need: 3, speed: 0.10, every: 1.2, max: 5, share: 0.45, twins: false },
+  { colors: 5, need: 4, speed: 0.14, every: 0.9, max: 7, share: 0.38, twins: false },
+  { colors: 4, need: 5, speed: 0.18, every: 0.7, max: 8, share: 0.34, twins: true },
+];
+
+/** Where balloons appear (below the field) and vanish (above it), as fractions of its height. */
+const BALLOON_START_Y = 1.18;
+const BALLOON_END_Y = -0.3;
+
+/** "Wah wah wah wahhh" for a wrong pop. */
+const BALLOON_SAD_TUNE = [[392, 1], [370, 1], [349, 1], [330, 3.5]];
+
+/** Rising notes for each good pop (C D E F G A). */
+const BALLOON_POP_NOTES = [523.25, 587.33, 659.25, 698.46, 783.99, 880];
+
+/**
+ * State for the current balloon round.
+ * @type {{field: HTMLElement, layer: HTMLElement, cfg: object, target: object, speed: number,
+ *   seq: Array<object>, seqIdx: number, balloons: Array<{spec: object, el: HTMLElement, key: number, x: number, y: number}>,
+ *   need: number, got: number, wrong: number, done: boolean, time: number, spawnIn: number,
+ *   raf: number|null, last: number, stormTimer: number|null}|null}
+ */
+let balloonState = null;
+
+/** "red balloons" / "balões vermelhos" — used for the progress log. */
+function balloonColorPhrase(color) {
+  return lang === 'pt' ? `balões ${color.ptPl}` : `${color.name} balloons`;
+}
+
+/** The color word for a single balloon ("blue" / "azul"). */
+function balloonColorWord(color) {
+  return lang === 'pt' ? color.pt : color.name;
+}
+
+/** The spoken "Pop the red balloons!" prompt. */
+function balloonPromptSpeech() {
+  const c = balloonState.target;
+  return t('blPop').replace('%s', lang === 'pt' ? c.ptPl : c.name);
+}
+
+/** Speaks the prompt again (speaker button / Space). */
+function balloonSayPrompt() {
+  if (balloonState) Audio_.speak(balloonPromptSpeech());
+}
+
+/** Stops the animation loop for the current round. */
+function balloonStop() {
+  if (!balloonState) return;
+  if (balloonState.raf) cancelAnimationFrame(balloonState.raf);
+  clearTimeout(balloonState.stormTimer);
+  balloonState.raf = null;
+}
+
+/** Ends a balloon session (called from goHome). */
+function balloonEndSession() {
+  balloonStop();
+  balloonState = null;
+}
+
+/**
+ * A shiny cartoon balloon with a knot and a wiggly string.
+ * viewBox 0 0 60 110: the body is centered around (30, 36).
+ * Only the body and knot are hit-testable (see balloonPointer).
+ */
+function balloonSVG(hex) {
+  const d = farmShade(hex, -0.3), l = farmShade(hex, 0.6);
+  return `<svg viewBox="0 0 60 110" aria-hidden="true">
+    <path class="bl-string" d="M30 75 q-7 8 0 16 q7 8 0 17" fill="none" stroke="#fff" stroke-opacity="0.9" stroke-width="1.8" stroke-linecap="round"/>
+    <path class="bl-body" d="M30 3 C13 3 3 18 3 34 C3 52 18 66 27.5 70 L32.5 70 C42 66 57 52 57 34 C57 18 47 3 30 3 Z" fill="${hex}" stroke="${d}" stroke-width="2"/>
+    <path d="M48 20 C55 32 52 48 40 60" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+    <ellipse cx="19" cy="22" rx="5.5" ry="10" transform="rotate(28 19 22)" fill="${l}" opacity="0.8"/>
+    <circle cx="14" cy="38" r="2.6" fill="#fff" opacity="0.7"/>
+    <path class="bl-knot" d="M25 77 L30 69 L35 77 Z" fill="${d}" stroke="${d}" stroke-width="1.5" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+/** A tiny balloon for the tally sign. */
+function balloonMiniSVG(hex) {
+  return `<svg viewBox="0 0 60 90" aria-hidden="true">
+    <path d="M30 75 q-5 6 0 13" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M30 3 C13 3 3 18 3 34 C3 52 18 66 27.5 70 L32.5 70 C42 66 57 52 57 34 C57 18 47 3 30 3 Z" fill="${hex}" stroke="${farmShade(hex, -0.3)}" stroke-width="3"/>
+    <ellipse cx="19" cy="22" rx="5.5" ry="10" transform="rotate(28 19 22)" fill="#fff" opacity="0.55"/>
+    <path d="M25 77 L30 69 L35 77 Z" fill="${farmShade(hex, -0.3)}"/>
+  </svg>`;
+}
+
+/** The grumpy (but cute) rain cloud that shows up after a wrong pop. */
+function balloonStormHTML() {
+  let drops = '';
+  // Scrambled delays so the drops don't fall in a neat diagonal line
+  const delays = [0.1, 0.45, 0.25, 0.6, 0.05, 0.35, 0.55, 0.2, 0.5, 0.0, 0.3, 0.65];
+  for (let i = 0; i < 12; i++) {
+    drops += `<span class="bl-drop" style="left:${(i * 8.3).toFixed(1)}%;animation-delay:-${delays[i]}s"></span>`;
+  }
+  return `<div class="bl-storm" id="bl-storm"><div class="bl-rain">${drops}</div>
+    <svg viewBox="0 0 120 76" aria-hidden="true">
+      <g fill="#a3aec2" stroke="#5d6b82" stroke-width="3">
+        <circle cx="34" cy="38" r="20"/><circle cx="60" cy="28" r="24"/><circle cx="86" cy="38" r="20"/>
+        <rect x="16" y="36" width="88" height="30" rx="15"/>
+      </g>
+      <g fill="#a3aec2"><circle cx="34" cy="38" r="17.5"/><circle cx="60" cy="28" r="21.5"/><circle cx="86" cy="38" r="17.5"/><rect x="18" y="38" width="84" height="26" rx="13"/></g>
+      <path d="M40 36 L52 40 M80 36 L68 40" stroke="#3b4559" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="48" cy="46" rx="3.6" ry="4.4" fill="#2b3242"/><ellipse cx="72" cy="46" rx="3.6" ry="4.4" fill="#2b3242"/>
+      <circle cx="49.3" cy="44.6" r="1.3" fill="#fff"/><circle cx="73.3" cy="44.6" r="1.3" fill="#fff"/>
+      <ellipse cx="40" cy="54" rx="5" ry="3" fill="#ff8fab" opacity="0.7"/><ellipse cx="80" cy="54" rx="5" ry="3" fill="#ff8fab" opacity="0.7"/>
+      <path d="M53 58 Q60 52 67 58" fill="none" stroke="#3b4559" stroke-width="3" stroke-linecap="round"/>
+    </svg></div>`;
+}
+
+/**
+ * Picks the target color and the other colors in the air.
+ * Level 0 sticks to red/blue/yellow/green until 3 stars. Tricky Twins (and
+ * Rainbow Sky at 3+ stars) puts the target's look-alike colors in the air.
+ */
+function balloonPickColors(cfg, level, hard) {
+  const pool = (level === 0 && !hard) ? BALLOON_COLORS.filter(c => FARM_PRIMARY.includes(c.name)) : BALLOON_COLORS;
+  const target = pool[Math.floor(Math.random() * pool.length)];
+  let others = shuffle(pool.filter(c => c !== target));
+  const twins = cfg.twins || (hard && level > 0);
+  if (twins) {
+    const names = FARM_LOOKALIKE[target.name];
+    const lookalikes = BALLOON_COLORS.filter(c => names.includes(c.name));
+    others = [...lookalikes, ...others.filter(c => !lookalikes.includes(c))];
+  }
+  return { target, others: others.slice(0, cfg.colors - 1), twins };
+}
+
+/**
+ * Builds the round's balloon sequence up front, while the seeded PRNG is
+ * active, so a replayed round launches exactly the same balloons. The target
+ * color never goes missing for more than three balloons in a row.
+ */
+function balloonBuildSeq(cfg, target, others, twins) {
+  const seq = [];
+  let sinceTarget = 0;
+  let prevX = [0.5, 0.5];
+  for (let i = 0; i < 80; i++) {
+    let color;
+    if (sinceTarget >= 3 || Math.random() < cfg.share) {
+      color = target;
+      sinceTarget = 0;
+    } else {
+      // On twin levels, the look-alikes (first in `others`) show up most
+      const pickFrom = twins && Math.random() < 0.65 ? others.slice(0, 2) : others;
+      color = pickFrom[Math.floor(Math.random() * pickFrom.length)];
+      sinceTarget++;
+    }
+    // Spread balloons across the sky instead of stacking them in one lane
+    let x = 0.5;
+    for (let tries = 0; tries < 6; tries++) {
+      x = 0.1 + Math.random() * 0.8;
+      if (Math.abs(x - prevX[0]) > 0.2 && Math.abs(x - prevX[1]) > 0.12) break;
+    }
+    prevX = [x, prevX[0]];
+    seq.push({
+      color, x,
+      rise: 0.85 + Math.random() * 0.3,
+      phase: Math.random() * Math.PI * 2,
+      sway: 0.012 + Math.random() * 0.02,
+      size: 0.9 + Math.random() * 0.2,
+    });
+  }
+  return seq;
+}
+
+/**
+ * Releases the next balloon from the sequence at height y.
+ * Each balloon gets the lowest free number key 1-9.
+ * @returns {boolean} false if the sky is full
+ */
+function balloonSpawn(y) {
+  const st = balloonState;
+  if (st.balloons.length >= st.cfg.max) return false;
+  const used = new Set(st.balloons.map(b => b.key));
+  let key = 1;
+  while (used.has(key)) key++;
+  const spec = st.seq[st.seqIdx % st.seq.length];
+  st.seqIdx++;
+
+  const el = document.createElement('div');
+  el.className = 'balloon';
+  el.style.setProperty('--bl-size', spec.size.toFixed(2));
+  el.style.setProperty('--bl-phase', `-${(spec.phase % 1.6).toFixed(2)}s`);
+  el.innerHTML = `${balloonSVG(spec.color.hex)}<span class="bl-key">${keycapHTML(String(key))}</span>`;
+  st.layer.appendChild(el);
+  st.balloons.push({ spec, el, key, x: spec.x, y });
+  return true;
+}
+
+/** Positions every balloon with a gentle side-to-side sway. */
+function balloonRender() {
+  const st = balloonState;
+  st.balloons.forEach(b => {
+    const s = Math.sin(st.time * 1.3 + b.spec.phase);
+    b.x = b.spec.x + s * b.spec.sway;
+    b.el.style.left = (b.x * 100) + '%';
+    b.el.style.top = (b.y * 100) + '%';
+    b.el.style.transform = `translate(-50%, -33%) rotate(${(s * 5).toFixed(2)}deg)`;
+  });
+}
+
+/** Animation loop: release new balloons, float them up, drop the ones that left the sky. */
+function balloonTick(now) {
+  const st = balloonState;
+  if (!st || !st.field.isConnected) return;
+  const dt = Math.min(0.05, (now - st.last) / 1000);
+  st.last = now;
+  st.time += dt;
+
+  if (!st.done) {
+    st.spawnIn -= dt;
+    if (st.spawnIn <= 0) st.spawnIn = balloonSpawn(BALLOON_START_Y) ? st.cfg.every : 0.3;
+  }
+
+  const boost = st.done ? 5 : 1; // round won: everything whooshes up and away
+  st.balloons = st.balloons.filter(b => {
+    b.y -= st.speed * b.spec.rise * boost * dt;
+    if (b.y < BALLOON_END_Y) { b.el.remove(); return false; }
+    return true;
+  });
+
+  balloonRender();
+  st.raf = requestAnimationFrame(balloonTick);
+}
+
+/** Builds the sky backdrop: sun, clouds, hills, flowers, and the tally sign. */
+function balloonSceneHTML(target, need) {
+  let html = '<div class="farm-sun"></div>';
+  html += '<div class="farm-cloud fc1"></div><div class="farm-cloud fc2"></div><div class="farm-cloud fc3"></div>';
+  html += `<svg class="bl-hills" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 20 L0 8 Q18 0 36 7 Q52 13 66 5 Q84 -2 100 7 L100 20 Z" fill="#8bd47e"/>
+      <path d="M0 20 L0 13 Q22 6 44 12 Q62 17 80 10 Q92 6 100 11 L100 20 Z" fill="#62bb57"/></svg>`;
+  const flowers = ['🌼', '🌷', '🌸', '🌻'];
+  for (let i = 0; i < 7; i++) {
+    html += `<span class="farm-flower bl-flower" style="left:${(6 + i * 14 + Math.random() * 6).toFixed(1)}%;top:${(91 + Math.random() * 6).toFixed(1)}%">${flowers[i % flowers.length]}</span>`;
+  }
+  html += '<div class="bl-tally" id="bl-tally">';
+  for (let i = 0; i < need; i++) html += `<span class="bl-slot">${balloonMiniSVG(target.hex)}</span>`;
+  html += '</div>';
+  html += balloonStormHTML();
+  html += '<div class="bl-layer" id="bl-layer"></div>';
+  return html;
+}
+
+/**
+ * Sets up a Balloon Pop round: colorful balloons float up, and the child
+ * pops only the ones in the named color. Pop `need` of them to earn a star.
+ */
+function balloonsRound() {
+  balloonStop();
+  const level = getLevel('balloons');
+  const hard = stars >= 3;
+  const cfg = BALLOON_LEVELS[level];
+  const { target, others, twins } = balloonPickColors(cfg, level, hard);
+  const seq = balloonBuildSeq(cfg, target, others, twins);
+  const need = cfg.need;
+
+  extraArea.innerHTML = `<div class="bl-field" id="bl-field">${balloonSceneHTML(target, need)}</div>`;
+  const field = extraArea.querySelector('#bl-field');
+  balloonState = {
+    field, layer: field.querySelector('#bl-layer'), cfg, target,
+    speed: cfg.speed * (hard ? 1.25 : 1),
+    seq, seqIdx: 0, balloons: [], need, got: 0, wrong: 0, done: false,
+    time: 0, spawnIn: cfg.every, raf: null, last: performance.now(), stormTimer: null,
+  };
+
+  // Start with some balloons already in the air (the 4th is always the target color)
+  const initial = Math.min(cfg.max - 1, 4);
+  for (let i = 0; i < initial; i++) balloonSpawn(0.45 + i * (0.55 / initial));
+  balloonRender();
+  field.addEventListener('pointerdown', balloonPointer);
+
+  // Prompt: "Pop the [red] balloons!" with the color word highlighted
+  const word = lang === 'pt' ? target.ptPl : target.name;
+  const hl = `<span class="prompt-highlight farm-color-word" style="background:${target.hex}">${word}</span>`;
+  promptEmoji.textContent = '';
+  promptText.innerHTML = `<span class="farm-prompt-emoji">🎈</span> ${t('blPop').replace('%s', hl)} <button class="farm-say" aria-label="say again">🔊</button>`;
+  promptText.querySelector('.farm-say').addEventListener('click', balloonSayPrompt);
+  choicesEl.className = 'choices';
+  choicesEl.innerHTML = '';
+  setKeyHint(t('blHint'));
+
+  setTimeout(() => {
+    if (currentGame === 'balloons' && balloonState && balloonState.field === field) balloonSayPrompt();
+  }, 300);
+
+  balloonState.raf = requestAnimationFrame(balloonTick);
+}
+
+/**
+ * Touch/click on the sky. Pops the front-most balloon actually drawn under
+ * the finger (only the balloon bodies are hit-testable, never the strings).
+ * A near miss still counts for the closest balloon — moving targets are hard
+ * for little hands. Taps on empty sky are ignored.
+ * @param {PointerEvent} e
+ */
+function balloonPointer(e) {
+  const st = balloonState;
+  if (inputLocked || !st || st.done) return;
+  let hit = null;
+  for (const el of document.elementsFromPoint(e.clientX, e.clientY)) {
+    const host = el.closest && el.closest('.balloon');
+    if (host && st.layer.contains(host)) { hit = st.balloons.find(b => b.el === host); break; }
+  }
+  if (!hit) {
+    let bestD = Infinity;
+    st.balloons.forEach(b => {
+      const r = b.el.querySelector('.bl-body').getBoundingClientRect();
+      const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+      if (d < bestD && d < Math.max(r.width, r.height) * 0.75) { bestD = d; hit = b; }
+    });
+  }
+  if (hit) {
+    e.preventDefault();
+    popBalloon(hit);
+  }
+}
+
+/**
+ * Keypress in Balloon Pop: a number pops the balloon wearing it, Space
+ * repeats the prompt.
+ * @param {string} key
+ */
+function handleBalloonKey(key) {
+  const st = balloonState;
+  if (!st || st.done) return;
+  if (key === ' ') { balloonSayPrompt(); return; }
+  const b = st.balloons.find(x => x.key === parseInt(key));
+  if (b) popBalloon(b);
+}
+
+/** Center of a balloon's body, in field pixels. */
+function balloonCenter(b) {
+  const r = b.el.querySelector('.bl-body').getBoundingClientRect();
+  const fr = balloonState.field.getBoundingClientRect();
+  return { x: r.left + r.width / 2 - fr.left, y: r.top + r.height / 2 - fr.top, w: r.width };
+}
+
+/** Confetti shards and a big "POP!" where a balloon burst. */
+function balloonBurst(at, hex) {
+  const burst = document.createElement('div');
+  burst.className = 'bl-burst';
+  burst.style.left = at.x + 'px';
+  burst.style.top = at.y + 'px';
+  let html = '';
+  const bits = 14;
+  for (let i = 0; i < bits; i++) {
+    const ang = (i / bits) * Math.PI * 2 + Math.random() * 0.3;
+    const dist = at.w * (0.7 + Math.random() * 0.6);
+    const c = i % 3 === 0 ? '#fff' : (i % 3 === 1 ? hex : farmShade(hex, 0.4));
+    html += `<span class="bl-bit" style="background:${c};--dx:${(Math.cos(ang) * dist).toFixed(0)}px;--dy:${(Math.sin(ang) * dist).toFixed(0)}px;--rot:${Math.round(Math.random() * 540 - 270)}deg"></span>`;
+  }
+  html += `<span class="bl-word" style="--c:${farmShade(hex, -0.35)}">POP!</span>`;
+  burst.innerHTML = html;
+  balloonState.field.appendChild(burst);
+  setTimeout(() => burst.remove(), 900);
+}
+
+/** A goofy goo splat (with drips) where a wrong balloon burst. */
+function balloonSplat(at, hex) {
+  const d = farmShade(hex, -0.25);
+  let blobs = '<circle cx="60" cy="56" r="26"/>';
+  for (let i = 0; i < 8; i++) {
+    const ang = (i / 8) * Math.PI * 2 + Math.random() * 0.5;
+    const dist = 28 + Math.random() * 10;
+    blobs += `<circle cx="${(60 + Math.cos(ang) * dist).toFixed(1)}" cy="${(56 + Math.sin(ang) * dist * 0.8).toFixed(1)}" r="${(5 + Math.random() * 6).toFixed(1)}"/>`;
+  }
+  const drips = [42, 58, 74].map((x, i) =>
+    `<rect class="bl-drip" style="animation-delay:${i * 0.15}s" x="${x - 4}" y="66" width="8" height="${18 + i * 6}" rx="4"/>`).join('');
+  const el = document.createElement('div');
+  el.className = 'bl-splat';
+  el.style.left = at.x + 'px';
+  el.style.top = at.y + 'px';
+  el.innerHTML = `<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="${hex}" stroke="${d}" stroke-width="2">${blobs}${drips}</g>
+      <ellipse cx="50" cy="46" rx="7" ry="4" fill="#fff" opacity="0.5" transform="rotate(-25 50 46)"/></svg>` +
+    `<span class="bl-word bl-splat-word" style="--c:${d}">SPLAT!</span>`;
+  balloonState.field.appendChild(el);
+  setTimeout(() => el.remove(), 2300);
+}
+
+/** The grumpy cloud drifts over to x (field pixels) and rains for a moment. */
+function balloonStorm(x) {
+  const st = balloonState;
+  const storm = st.field.querySelector('#bl-storm');
+  if (!storm) return;
+  const fw = st.field.clientWidth || 1;
+  storm.style.left = Math.min(85, Math.max(15, x / fw * 100)) + '%';
+  storm.classList.add('show');
+  clearTimeout(st.stormTimer);
+  st.stormTimer = setTimeout(() => storm.classList.remove('show'), 2200);
+}
+
+/** The wind blows the last collected balloon off the tally sign. */
+function balloonLoseOne() {
+  const st = balloonState;
+  const slots = st.field.querySelectorAll('.bl-slot');
+  const slot = slots[st.got - 1];
+  st.got--;
+  if (!slot) return;
+  slot.classList.remove('got');
+  const r = slot.getBoundingClientRect(), fr = st.field.getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'bl-fly';
+  fly.style.left = (r.left - fr.left) + 'px';
+  fly.style.top = (r.top - fr.top) + 'px';
+  fly.style.width = r.width + 'px';
+  fly.innerHTML = balloonMiniSVG(st.target.hex);
+  st.field.appendChild(fly);
+  setTimeout(() => fly.remove(), 1600);
+}
+
+/**
+ * Pops a balloon.
+ * Right color: confetti burst, a rising note, the number is counted aloud
+ * and a tally slot fills — fill them all to earn a star.
+ * Wrong color: goo splat, sad trombone, grumpy rain cloud, and one collected
+ * balloon blows away.
+ * @param {{spec: object, el: HTMLElement, key: number}} b
+ */
+function popBalloon(b) {
+  const st = balloonState;
+  if (inputLocked || !st || st.done || !st.balloons.includes(b)) return;
+  const keycap = b.el.querySelector('.keycap');
+  if (keycap) keycap.classList.add('pressed-anim');
+  const at = balloonCenter(b);
+  st.balloons = st.balloons.filter(x => x !== b);
+  b.el.remove();
+
+  if (b.spec.color === st.target) {
+    Audio_.pop();
+    balloonBurst(at, b.spec.color.hex);
+    Audio_.melody([[BALLOON_POP_NOTES[Math.min(st.got, BALLOON_POP_NOTES.length - 1)], 1]], 0.16);
+    const slot = st.field.querySelectorAll('.bl-slot')[st.got];
+    if (slot) slot.classList.add('got');
+    st.got++;
+
+    if (st.got >= st.need) {
+      st.done = true;
+      inputLocked = true;
+      const field = st.field;
+      showCelebration();
+      setTimeout(() => Audio_.correct(), 150);
+      earnStar();
+      const enc = t('encouragements');
+      setTimeout(() => Audio_.speak(enc[Math.floor(Math.random() * enc.length)]), 450);
+      setTimeout(() => {
+        Audio_.celebration();
+        if (stars < MAX_STARS) {
+          setTimeout(() => {
+            if (currentGame !== 'balloons' || !balloonState || balloonState.field !== field) return;
+            inputLocked = false;
+            nextRound();
+          }, 1300);
+        }
+      }, 900);
+    } else {
+      Audio_.speak(t('blCount')[st.got - 1] || String(st.got));
+    }
+  } else {
+    st.wrong++;
+    Audio_.pop(420, 0.7);
+    balloonSplat(at, b.spec.color.hex);
+    setTimeout(() => Audio_.melody(BALLOON_SAD_TUNE, 0.2), 150);
+    balloonStorm(at.x);
+    const lost = st.got > 0;
+    if (lost) balloonLoseOne();
+    resetStreak();
+    const field = st.field;
+    const oops = t('blOops').replace('%s', balloonColorWord(b.spec.color));
+    setTimeout(() => {
+      if (balloonState && balloonState.field === field && !balloonState.done) {
+        Audio_.speak(`${oops} ${lost ? t('blFlewAway') : balloonPromptSpeech()}`);
+      }
+    }, 1300);
+  }
+}

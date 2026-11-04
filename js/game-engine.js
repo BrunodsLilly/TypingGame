@@ -170,6 +170,11 @@ const GAME_LEVELS = {
         { name: 'Busy Farm', ptName: 'Fazenda Agitada', desc: 'Listen for color AND animal!', ptDesc: 'Ouça a cor E o animal!', emoji: '🐄' },
         { name: 'Crazy Farm', ptName: 'Fazenda Maluca', desc: 'Speedy look-alike twins!', ptDesc: 'Gêmeos rápidos!', emoji: '🌪️' },
     ],
+    balloons: [
+        { name: 'Balloon Party', ptName: 'Festa dos Balões', desc: '3 colors, slow balloons', ptDesc: '3 cores, bem devagar', emoji: '🎈' },
+        { name: 'Rainbow Sky', ptName: 'Céu Arco-Íris', desc: 'Lots of colors!', ptDesc: 'Muitas cores!', emoji: '🌈' },
+        { name: 'Tricky Twins', ptName: 'Cores Gêmeas', desc: 'Look-alike colors, fast!', ptDesc: 'Cores parecidas, rápido!', emoji: '⚡' },
+    ],
 };
 
 /**
@@ -229,6 +234,7 @@ function goHome() {
     TouchKB.hide();
     if (typeof wordCarouselTimer !== 'undefined') clearInterval(wordCarouselTimer);
     if (typeof farmEndSession === 'function') farmEndSession();
+    if (typeof balloonEndSession === 'function') balloonEndSession();
     updateHomeLevelBadges();
     startHomeTips();
 }
@@ -344,7 +350,7 @@ const GAME_TINTS = {
     animals: '#f1c40f', math: '#e67e22', words: '#1abc9c', patterns: '#e056a0',
     rhymes: '#3dc1d3', memory: '#fd79a8', opposites: '#5DADE2', reading: '#e17055', geometry: '#E8A0BF', korean: '#C0392B',
     numberfun: '#6c5ce7', takeaway: '#16a085', fixword: '#a29bfe', portuguese: '#009c3b',
-    wordsearch: '#a3cb38', farm: '#d35400',
+    wordsearch: '#a3cb38', farm: '#d35400', balloons: '#ff4757',
 };
 
 function startGame(game) {
@@ -517,6 +523,9 @@ function describeRound() {
     if (currentGame === 'farm' && typeof farmState !== 'undefined' && farmState) {
         const a = farmState.animals[farmState.targetIdx];
         return { label: farmName(a.kind, a.color).phrase, emoji: a.kind.emoji };
+    }
+    if (currentGame === 'balloons' && typeof balloonState !== 'undefined' && balloonState) {
+        return { label: balloonColorPhrase(balloonState.target), emoji: '🎈' };
     }
     // Some modes (e.g. Math) leave the prompt empty and put the question in
     // the extra area — the key hint bar always describes the round, so fall
@@ -710,6 +719,7 @@ function dispatchRound() {
         case 'portuguese': portugueseRound(); break;
         case 'wordsearch': wordsearchRound(); break;
         case 'farm':      farmRound();      break;
+        case 'balloons':  balloonsRound();  break;
     }
 }
 
@@ -729,7 +739,7 @@ document.addEventListener('keydown', (e) => {
             openProgressScreen();
             return;
         }
-        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch', 'm': 'farm' };
+        const gameMap = { '1': 'colors', '2': 'shapes', '3': 'count', '4': 'letters', '5': 'animals', '6': 'math', '7': 'words', '8': 'patterns', '9': 'rhymes', '0': 'memory', 'e': 'opposites', 'r': 'reading', 'g': 'geometry', 'k': 'korean', 'n': 'numberfun', 't': 'takeaway', 'f': 'fixword', 'p': 'portuguese', 'w': 'wordsearch', 'm': 'farm', 'b': 'balloons' };
         if (gameMap[key]) {
             // Visual feedback on the card
             const card = document.querySelector(`.game-card[data-key="${key}"]`);
@@ -825,6 +835,15 @@ document.addEventListener('keydown', (e) => {
         if (/^[1-9 ]$/.test(key)) {
             e.preventDefault();
             handleFarmKey(key);
+        }
+        return;
+    }
+
+    // Balloon Pop: number keys pop that balloon, Space repeats the prompt
+    if (currentGame === 'balloons') {
+        if (/^[1-9 ]$/.test(key)) {
+            e.preventDefault();
+            handleBalloonKey(key);
         }
         return;
     }
