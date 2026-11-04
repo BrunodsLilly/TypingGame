@@ -177,6 +177,7 @@ body {
 .game-card.portuguese { border-color: #009c3b;     } .game-card.portuguese::before { background: #009c3b; }
 .game-card.wordsearch { border-color: #a3cb38;     } .game-card.wordsearch::before { background: #a3cb38; }
 .game-card.farm { border-color: #d35400;           } .game-card.farm::before { background: #d35400; }
+.game-card.balloons { border-color: #ff4757;       } .game-card.balloons::before { background: #ff4757; }
 
 /* ===== Keycap badges ===== */
 .keycap {
@@ -1806,3 +1807,216 @@ body.kb-open .screen.game-screen { padding-bottom: 240px; }
 @media (prefers-reduced-motion: reduce) {
     .farm-cloud, .farm-butterfly, .farm-flower { animation: none; }
 }
+
+/* ===== Balloon Pop ===== */
+.bl-field {
+    position: relative;
+    width: min(960px, calc(100vw - 40px));
+    height: clamp(280px, calc(100dvh - 215px), 640px);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    touch-action: none;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    background: linear-gradient(180deg, #6ec6ff 0%, #a9e0ff 50%, #e3f6ff 100%);
+}
+.bl-hills {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 16%;
+    z-index: 1;
+}
+.bl-flower { z-index: 2; }
+.bl-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+.balloon {
+    position: absolute;
+    width: calc(clamp(58px, 10vw, 100px) * var(--bl-size, 1));
+    pointer-events: none;
+    will-change: left, top, transform;
+}
+.balloon svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* Only the balloon itself is touchable, never the string (see balloonPointer) */
+.balloon svg * { pointer-events: none; }
+.balloon svg .bl-body, .balloon svg .bl-knot { pointer-events: visiblePainted; }
+.bl-string {
+    transform-origin: 30px 75px;
+    animation: blString 1.6s ease-in-out infinite alternate;
+    animation-delay: var(--bl-phase, 0s);
+}
+@keyframes blString { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+.bl-key {
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+/* Tally sign: one slot per balloon to pop */
+.bl-tally {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    gap: 6px;
+    padding: 6px 14px 4px;
+    background: rgba(255,255,255,0.8);
+    border: 3px solid #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+.bl-slot {
+    width: clamp(22px, 4vw, 34px);
+    opacity: 0.3;
+    filter: grayscale(1);
+    transition: opacity 0.2s, filter 0.2s;
+}
+.bl-slot svg { display: block; width: 100%; height: auto; }
+.bl-slot.got { opacity: 1; filter: none; animation: blSlotIn 0.45s ease-out; }
+@keyframes blSlotIn {
+    0% { transform: scale(0.4); }
+    60% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+.bl-fly {
+    position: absolute;
+    z-index: 310;
+    pointer-events: none;
+    animation: blFly 1.5s ease-in forwards;
+}
+.bl-fly svg { display: block; width: 100%; height: auto; }
+@keyframes blFly {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    30% { transform: translate(30px, -20px) rotate(15deg); opacity: 1; }
+    100% { transform: translate(120px, -160px) rotate(35deg); opacity: 0; }
+}
+
+/* Good pop: confetti + "POP!" */
+.bl-burst {
+    position: absolute;
+    width: 0;
+    height: 0;
+    z-index: 350;
+    pointer-events: none;
+}
+.bl-bit {
+    position: absolute;
+    left: -6px;
+    top: -4px;
+    width: 12px;
+    height: 8px;
+    border-radius: 3px;
+    animation: blBit 0.8s ease-out forwards;
+}
+@keyframes blBit {
+    0% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.5); opacity: 0; }
+}
+.bl-word {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+    font-weight: 900;
+    color: #fff;
+    -webkit-text-stroke: 2px var(--c, #333);
+    text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    animation: blWord 0.8s ease-out forwards;
+}
+@keyframes blWord {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    25% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
+    100% { transform: translate(-50%, -110%) scale(1); opacity: 0; }
+}
+
+/* Wrong pop: goo splat + grumpy rain cloud */
+.bl-splat {
+    position: absolute;
+    width: clamp(90px, 15vw, 150px);
+    z-index: 4;
+    pointer-events: none;
+    animation: blSplat 2.2s ease-out forwards;
+}
+.bl-splat svg { display: block; width: 100%; height: auto; overflow: visible; }
+@keyframes blSplat {
+    0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+    12% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    22% { transform: translate(-50%, -50%) scale(1); }
+    75% { transform: translate(-50%, -48%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -40%) scale(1); opacity: 0; }
+}
+.bl-drip {
+    transform-box: fill-box;
+    transform-origin: top;
+    animation: blDrip 2s ease-in forwards;
+}
+@keyframes blDrip { from { transform: scaleY(0.3); } to { transform: scaleY(1.7); } }
+.bl-splat-word {
+    left: 50%;
+    top: 50%;
+    animation: blSplatWord 1.2s ease-out forwards;
+}
+@keyframes blSplatWord {
+    0% { transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1.2) rotate(-6deg); opacity: 1; }
+    70% { transform: translate(-50%, -50%) scale(1) rotate(-6deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(-6deg); opacity: 0; }
+}
+.bl-storm {
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    width: clamp(120px, 22vw, 200px);
+    transform: translateX(-50%);
+    z-index: 320;
+    pointer-events: none;
+    transition: top 0.5s cubic-bezier(0.3, 1.4, 0.6, 1), left 0.35s ease;
+}
+.bl-storm.show { top: 15%; } /* just below the tally, so the lost balloon is visible */
+.bl-storm svg {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    animation: blGrumble 0.3s ease-in-out infinite alternate;
+}
+@keyframes blGrumble {
+    from { transform: translateX(-3px) rotate(-1.5deg); }
+    to { transform: translateX(3px) rotate(1.5deg); }
+}
+.bl-rain {
+    position: absolute;
+    left: 14%;
+    right: 14%;
+    top: 70%;
+    height: 220%;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.bl-storm.show .bl-rain { opacity: 1; }
+.bl-drop {
+    position: absolute;
+    top: -10%;
+    width: 4px;
+    height: 14px;
+    border-radius: 2px;
+    background: #4aa3df;
+    animation: blDrop 0.7s linear infinite;
+}
+@keyframes blDrop { from { top: -10%; } to { top: 100%; } }

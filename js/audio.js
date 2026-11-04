@@ -12,6 +12,7 @@
  *   celebration: () => void,
  *   tap: () => void,
  *   melody: (notes: Array<[number, number]>, beat?: number) => number,
+ *   pop: (freq?: number, vol?: number) => void,
  *   speak: (text: string, rate?: number, language?: string) => void,
  *   toggle: () => boolean,
  *   enabled: boolean
@@ -100,6 +101,32 @@ const Audio_ = (() => {
         return at;
     }
 
+    /**
+     * Plays a balloon "pop": a short burst of filtered noise.
+     * @param {number} [freq=1500] - Band center in Hz (lower = squelchier "splat")
+     * @param {number} [vol=0.6] - Gain (0-1)
+     */
+    function pop(freq = 1500, vol = 0.6) {
+        if (!soundEnabled) return;
+        const c = getCtx();
+        const len = Math.floor(c.sampleRate * 0.14);
+        const buf = c.createBuffer(1, len, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 4);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        const filter = c.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = freq;
+        filter.Q.value = 0.8;
+        const gain = c.createGain();
+        gain.gain.value = vol;
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(c.destination);
+        src.start();
+    }
+
     /** Plays a short high-pitched tap sound for UI feedback. */
     function tap() {
         tone(880, 0.06, 'sine', 0.1);
@@ -186,7 +213,7 @@ const Audio_ = (() => {
     initVoice();
     ['pointerdown', 'touchend', 'mousedown', 'keydown'].forEach(ev =>
         window.addEventListener(ev, unlockAudio, { passive: true }));
-    return { correct, wrong, celebration, tap, melody, speak, toggle, get enabled() { return soundEnabled; } };
+    return { correct, wrong, celebration, tap, melody, pop, speak, toggle, get enabled() { return soundEnabled; } };
 })();
 
 // Sound button
